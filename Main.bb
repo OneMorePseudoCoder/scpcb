@@ -8,18 +8,13 @@
 ;    See Credits.txt for a list of contributors
 
 Local InitErrorStr$ = ""
-;If FileSize("bb_fmod.dll")=0 Then InitErrorStr=InitErrorStr+ "bb_fmod.dll"+Chr(13)+Chr(10)
-If FileSize("fmod.dll")=0 Then InitErrorStr=InitErrorStr+ "fmod.dll"+Chr(13)+Chr(10)
 If FileSize("zlibwapi.dll")=0 Then InitErrorStr=InitErrorStr+ "zlibwapi.dll"+Chr(13)+Chr(10)
 
 If Len(InitErrorStr)>0 Then
 	RuntimeError "The following DLLs were not found in the game directory:"+Chr(13)+Chr(10)+Chr(13)+Chr(10)+InitErrorStr
 EndIf
 
-Include "FMod.bb"
-
 Include "StrictLoads.bb"
-Include "fullscreen_window_fix.bb"
 Include "KeyName.bb"
 
 Global OptionFile$ = "options.ini"
@@ -27,7 +22,6 @@ Global OptionFile$ = "options.ini"
 Include "Blitz_Basic_Bank.bb"
 Include "Blitz_File_FileName.bb"
 Include "Blitz_File_ZipApi.bb"
-Include "Update.bb"
 
 Include "DevilParticleSystem.bb"
 
@@ -105,38 +99,9 @@ Global SFXVolume# = GetINIFloat(OptionFile, "audio", "sound volume")
 
 Global Bit16Mode = GetINIInt(OptionFile, "options", "16bit")
 
-Include "AAText.bb"
-
 If LauncherEnabled Then 
 	AspectRatioRatio = 1.0
 	UpdateLauncher()
-	
-	;New "fake fullscreen" - ENDSHN Psst, it's called borderless windowed mode --Love Mark,
-	If BorderlessWindowed
-		DebugLog "Using Borderless Windowed Mode"
-		Graphics3DExt G_viewport_width, G_viewport_height, 0, 2
-		
-		; -- Change the window style to 'WS_POPUP' and then set the window position to force the style to update.
-		api_SetWindowLong( G_app_handle, C_GWL_STYLE, C_WS_POPUP )
-		api_SetWindowPos( G_app_handle, C_HWND_TOP, G_viewport_x, G_viewport_y, G_viewport_width, G_viewport_height, C_SWP_SHOWWINDOW )
-		
-		RealGraphicWidth = G_viewport_width
-		RealGraphicHeight = G_viewport_height
-		
-		AspectRatioRatio = (Float(GraphicWidth)/Float(GraphicHeight))/(Float(RealGraphicWidth)/Float(RealGraphicHeight))
-		
-		Fullscreen = False
-	Else
-		AspectRatioRatio = 1.0
-		RealGraphicWidth = GraphicWidth
-		RealGraphicHeight = GraphicHeight
-		If Fullscreen Then
-			Graphics3DExt(GraphicWidth, GraphicHeight, (16*Bit16Mode), 1)
-		Else
-			Graphics3DExt(GraphicWidth, GraphicHeight, 0, 2)
-		End If
-	EndIf
-	
 Else
 	For i% = 1 To TotalGFXModes
 		Local samefound% = False
@@ -153,33 +118,28 @@ Else
 	
 	GraphicWidth = GfxModeWidths(SelectedGFXMode)
 	GraphicHeight = GfxModeHeights(SelectedGFXMode)
+EndIf
 	
-	;New "fake fullscreen" - ENDSHN Psst, it's called borderless windowed mode --Love Mark,
-	If BorderlessWindowed
-		DebugLog "Using Faked Fullscreen"
-		Graphics3DExt G_viewport_width, G_viewport_height, 0, 2
-		
-		; -- Change the window style to 'WS_POPUP' and then set the window position to force the style to update.
-		api_SetWindowLong( G_app_handle, C_GWL_STYLE, C_WS_POPUP )
-		api_SetWindowPos( G_app_handle, C_HWND_TOP, G_viewport_x, G_viewport_y, G_viewport_width, G_viewport_height, C_SWP_SHOWWINDOW )
-		
-		RealGraphicWidth = G_viewport_width
-		RealGraphicHeight = G_viewport_height
-		
-		AspectRatioRatio = (Float(GraphicWidth)/Float(GraphicHeight))/(Float(RealGraphicWidth)/Float(RealGraphicHeight))
-		
-		Fullscreen = False
+;New "fake fullscreen" - ENDSHN Psst, it's called borderless windowed mode --Love Mark,
+If BorderlessWindowed
+	DebugLog "Using Faked Fullscreen"
+	Graphics3DExt DesktopWidth(), DesktopHeight(), 0, 4
+	
+	RealGraphicWidth = DesktopWidth()
+	RealGraphicHeight = DesktopHeight()
+	
+	AspectRatioRatio = (Float(GraphicWidth)/Float(GraphicHeight))/(Float(RealGraphicWidth)/Float(RealGraphicHeight))
+	
+	Fullscreen = False
+Else
+	AspectRatioRatio = 1.0
+	RealGraphicWidth = GraphicWidth
+	RealGraphicHeight = GraphicHeight
+	If Fullscreen Then
+		Graphics3DExt(GraphicWidth, GraphicHeight, (16*Bit16Mode), 1)
 	Else
-		AspectRatioRatio = 1.0
-		RealGraphicWidth = GraphicWidth
-		RealGraphicHeight = GraphicHeight
-		If Fullscreen Then
-			Graphics3DExt(GraphicWidth, GraphicHeight, (16*Bit16Mode), 1)
-		Else
-			Graphics3DExt(GraphicWidth, GraphicHeight, 0, 2)
-		End If
-	EndIf
-	
+		Graphics3DExt(GraphicWidth, GraphicHeight, 0, 2)
+	End If
 EndIf
 
 Global MenuScale# = (GraphicHeight / 1024.0)
@@ -222,22 +182,21 @@ Global SelectedLoadingScreen.LoadingScreens, LoadingScreenAmount%, LoadingScreen
 Global LoadingBack% = LoadImage_Strict("Loadingscreens\loadingback.jpg")
 InitLoadingScreens("Loadingscreens\loadingscreens.ini")
 
-InitAAFont()
 ;For some reason, Blitz3D doesn't load fonts that have filenames that
 ;don't match their "internal name" (i.e. their display name in applications
 ;like Word and such). As a workaround, I moved the files and renamed them so they
 ;can load without FastText.
-Font1% = AALoadFont("GFX\font\cour\Courier New.ttf", Int(19 * (GraphicHeight / 1024.0)), 0,0,0)
-Font2% = AALoadFont("GFX\font\courbd\Courier New.ttf", Int(58 * (GraphicHeight / 1024.0)), 0,0,0)
-Font3% = AALoadFont("GFX\font\DS-DIGI\DS-Digital.ttf", Int(22 * (GraphicHeight / 1024.0)), 0,0,0)
-Font4% = AALoadFont("GFX\font\DS-DIGI\DS-Digital.ttf", Int(60 * (GraphicHeight / 1024.0)), 0,0,0)
-Font5% = AALoadFont("GFX\font\Journal\Journal.ttf", Int(58 * (GraphicHeight / 1024.0)), 0,0,0)
+Font1% = LoadFont_Strict("GFX\font\cour\Courier New.ttf", Int(19 * (GraphicHeight / 1024.0)))
+Font2% = LoadFont_Strict("GFX\font\cour\Courier New.ttf", Int(52 * (GraphicHeight / 1024.0)))
+Font3% = LoadFont_Strict("GFX\font\DS-DIGI\DS-Digital.ttf", Int(22 * (GraphicHeight / 1024.0)))
+Font4% = LoadFont_Strict("GFX\font\DS-DIGI\DS-Digital.ttf", Int(60 * (GraphicHeight / 1024.0)))
+Font5% = LoadFont_Strict("GFX\font\Journal\Journal.ttf", Int(58 * (GraphicHeight / 1024.0)))
 
 Global CreditsFont%,CreditsFont2%
 
-ConsoleFont% = AALoadFont("Blitz", Int(20 * (GraphicHeight / 1024.0)), 0,0,0,1)
+ConsoleFont% = LoadFont_Strict("GFX\font\cour\Courier New.ttf", Int(20 * (GraphicHeight / 1024.0)))
 
-AASetFont Font2
+SetFont Font2
 
 Global BlinkMeterIMG% = LoadImage_Strict("GFX\blinkmeter.jpg")
 
@@ -268,7 +227,7 @@ Global KEY_CONSOLE = GetINIInt(OptionFile, "binds", "Console key")
 
 Global MouseSmooth# = GetINIFloat(OptionFile,"options", "mouse smoothing", 1.0)
 
-Const INFINITY# = (999.0) ^ (99999.0), NAN# = (-1.0) ^ (0.5)
+Const NAN# = (-1.0) ^ (0.5)
 
 Global Mesh_MinX#, Mesh_MinY#, Mesh_MinZ#
 Global Mesh_MaxX#, Mesh_MaxY#, Mesh_MaxZ#
@@ -408,7 +367,7 @@ Function UpdateConsole()
 	If ConsoleOpen Then
 		Local cm.ConsoleMsg
 		
-		AASetFont ConsoleFont
+		SetFont ConsoleFont
 		
 		ConsoleR = 255 : ConsoleG = 255 : ConsoleB = 255
 		
@@ -1480,9 +1439,9 @@ Function UpdateConsole()
 					EndIf
 					Color cm\r,cm\g,cm\b
 					If cm\isCommand Then
-						AAText(x + 20*MenuScale, TempY, "> "+cm\txt)
+						Text(x + 20*MenuScale, TempY, "> "+cm\txt)
 					Else
-						AAText(x + 20*MenuScale, TempY, cm\txt)
+						Text(x + 20*MenuScale, TempY, cm\txt)
 					EndIf
 				EndIf
 				TempY = TempY - 15*MenuScale
@@ -1495,7 +1454,7 @@ Function UpdateConsole()
 		If Fullscreen Then DrawImage CursorIMG, ScaledMouseX(),ScaledMouseY()
 	End If
 	
-	AASetFont Font1
+	SetFont Font1
 	
 End Function
 
@@ -1785,7 +1744,7 @@ Global LightConeModel
 
 Global ParticleEffect[10]
 
-Const MaxDTextures=8
+Const MaxDTextures=9
 Global DTextures[MaxDTextures]
 
 Global NPC049OBJ, NPC0492OBJ
@@ -2702,12 +2661,6 @@ Collisions HIT_178, HIT_MAP, 2, 2
 Collisions HIT_178, HIT_178, 1, 3
 Collisions HIT_DEAD, HIT_MAP, 2, 2
 
-Function MilliSecs2()
-	Local retVal% = MilliSecs()
-	If retVal < 0 Then retVal = retVal + 2147483648
-	Return retVal
-End Function
-
 DrawLoading(90, True)
 
 ;----------------------------------- meshes and textures ----------------------------------------------------------------
@@ -2787,14 +2740,14 @@ Global Input_ResetTime# = 0
 Type SCP427
 	Field Using%
 	Field Timer#
-	Field Sound[1]
-	Field SoundCHN[1]
+	Field Sound[2]
+	Field SoundCHN[2]
 End Type
 
 Global I_427.SCP427 = New SCP427
 
 Type MapZones
-	Field Transition%[1]
+	Field Transition%[2]
 	Field HasCustomForest%
 	Field HasCustomMT%
 End Type
@@ -2810,7 +2763,7 @@ Repeat
 	
 	Cls
 	
-	CurTime = MilliSecs2()
+	CurTime = MilliSecs()
 	ElapsedTime = (CurTime - PrevTime) / 1000.0
 	PrevTime = CurTime
 	PrevFPSFactor = FPSfactor
@@ -2821,17 +2774,17 @@ Repeat
 	
 	If Framelimit > 0 Then
 	    ;Framelimit
-		Local WaitingTime% = (1000.0 / Framelimit) - (MilliSecs2() - LoopDelay)
+		Local WaitingTime% = (1000.0 / Framelimit) - (MilliSecs() - LoopDelay)
 		Delay WaitingTime%
 		
-		LoopDelay = MilliSecs2()
+		LoopDelay = MilliSecs()
 	EndIf
 	
 	;Counting the fps
-	If CheckFPS < MilliSecs2() Then
+	If CheckFPS < MilliSecs() Then
 		FPS = ElapsedLoops
 		ElapsedLoops = 0
-		CheckFPS = MilliSecs2()+1000
+		CheckFPS = MilliSecs()+1000
 	EndIf
 	ElapsedLoops = ElapsedLoops + 1
 	
@@ -2839,8 +2792,8 @@ Repeat
 		DoubleClick = False
 		MouseHit1 = MouseHit(1)
 		If MouseHit1 Then
-			If MilliSecs2() - LastMouseHit1 < 800 Then DoubleClick = True
-			LastMouseHit1 = MilliSecs2()
+			If MilliSecs() - LastMouseHit1 < 800 Then DoubleClick = True
+			LastMouseHit1 = MilliSecs()
 		EndIf
 		
 		Local prevmousedown1 = MouseDown1
@@ -3275,28 +3228,29 @@ Repeat
 				EndIf
 			EndIf
 			
+			Local messageOpacity% = Min(MsgTimer / 2, 255)
 			If (Not temp%)
 				Color 0,0,0
-				AAText((GraphicWidth / 2)+1, (GraphicHeight / 2) + 201, Msg, True, False, Min(MsgTimer / 2, 255)/255.0)
-				Color 255,255,255;Min(MsgTimer / 2, 255), Min(MsgTimer / 2, 255), Min(MsgTimer / 2, 255)
+				Text((GraphicWidth / 2)+1, (GraphicHeight / 2) + 201, Msg, True, False)
+				Color messageOpacity, messageOpacity, messageOpacity
 				If Left(Msg,14)="Blitz3D Error!" Then
 					Color 255,0,0
 				EndIf
-				AAText((GraphicWidth / 2), (GraphicHeight / 2) + 200, Msg, True, False, Min(MsgTimer / 2, 255)/255.0)
+				Text((GraphicWidth / 2), (GraphicHeight / 2) + 200, Msg, True, False)
 			Else
 				Color 0,0,0
-				AAText((GraphicWidth / 2)+1, (GraphicHeight * 0.94) + 1, Msg, True, False, Min(MsgTimer / 2, 255)/255.0)
-				Color 255,255,255;Min(MsgTimer / 2, 255), Min(MsgTimer / 2, 255), Min(MsgTimer / 2, 255)
+				Text((GraphicWidth / 2)+1, (GraphicHeight * 0.94) + 1, Msg, True, False)
+				Color messageOpacity, messageOpacity, messageOpacity
 				If Left(Msg,14)="Blitz3D Error!" Then
 					Color 255,0,0
 				EndIf
-				AAText((GraphicWidth / 2), (GraphicHeight * 0.94), Msg, True, False, Min(MsgTimer / 2, 255)/255.0)
+				Text((GraphicWidth / 2), (GraphicHeight * 0.94), Msg, True, False)
 			EndIf
 			MsgTimer=MsgTimer-FPSfactor2 
 		End If
 		
 		Color 255, 255, 255
-		If ShowFPS Then AASetFont ConsoleFont : AAText 20, 20, "FPS: " + FPS : AASetFont Font1
+		If ShowFPS Then SetFont ConsoleFont : Text 20, 20, "FPS: " + FPS : SetFont Font1
 		
 		DrawQuickLoading()
 		
@@ -3776,9 +3730,9 @@ Function DrawEnding()
 				DrawImage PauseMenuIMG, x, y
 				
 				Color(255, 255, 255)
-				AASetFont Font2
-				AAText(x + width / 2 + 40*MenuScale, y + 20*MenuScale, "THE END", True)
-				AASetFont Font1
+				SetFont Font2
+				Text(x + width / 2 + 40*MenuScale, y + 20*MenuScale, "THE END", True)
+				SetFont Font1
 				
 				If AchievementsMenu=0 Then 
 					x = x+132*MenuScale
@@ -3808,11 +3762,11 @@ Function DrawEnding()
 						achievementsUnlocked = achievementsUnlocked + Achievements(i)
 					Next
 					
-					AAText x, y, "SCPs encountered: " +scpsEncountered
-					AAText x, y+20*MenuScale, "Achievements unlocked: " + achievementsUnlocked+"/"+(MAXACHIEVEMENTS)
-					AAText x, y+40*MenuScale, "Rooms found: " + roomsfound+"/"+roomamount
-					AAText x, y+60*MenuScale, "Documents discovered: " +docsfound+"/"+docamount
-					AAText x, y+80*MenuScale, "Items refined in SCP-914: " +RefinedItems			
+					Text x, y, "SCPs encountered: " +scpsEncountered
+					Text x, y+20*MenuScale, "Achievements unlocked: " + achievementsUnlocked+"/"+(MAXACHIEVEMENTS)
+					Text x, y+40*MenuScale, "Rooms found: " + roomsfound+"/"+roomamount
+					Text x, y+60*MenuScale, "Documents discovered: " +docsfound+"/"+docamount
+					Text x, y+80*MenuScale, "Items refined in SCP-914: " +RefinedItems			
 					
 					x = GraphicWidth / 2 - width / 2
 					y = GraphicHeight / 2 - height / 2
@@ -3864,7 +3818,7 @@ Function DrawEnding()
 	
 	If Fullscreen Then DrawImage CursorIMG, ScaledMouseX(),ScaledMouseY()
 	
-	AASetFont Font1
+	SetFont Font1
 End Function
 
 Type CreditsLine
@@ -3881,8 +3835,8 @@ Function InitCredits()
 	Local file% = OpenFile("Credits.txt")
 	Local l$
 	
-	CreditsFont% = LoadFont_Strict("GFX\font\cour\Courier New.ttf", Int(21 * (GraphicHeight / 1024.0)), 0,0,0)
-	CreditsFont2% = LoadFont_Strict("GFX\font\courbd\Courier New.ttf", Int(35 * (GraphicHeight / 1024.0)), 0,0,0)
+	CreditsFont% = LoadFont_Strict("GFX\font\cour\Courier New.ttf", Int(21 * (GraphicHeight / 1024.0)))
+	CreditsFont2% = LoadFont_Strict("GFX\font\cour\Courier New.ttf", Int(35 * (GraphicHeight / 1024.0)))
 	
 	If CreditsScreen = 0
 		CreditsScreen = LoadImage_Strict("GFX\creditsscreen.pt")
@@ -4005,7 +3959,7 @@ End Function
 ;Function UpdateSaveMSG()
 ;	Local scale# = GraphicHeight/768.0
 ;	;Local width% = 200*scale
-;	Local width = AAStringWidth(Save_MSG)+20*scale
+;	Local width = StringWidth(Save_MSG)+20*scale
 ;	Local height% = 30*scale
 ;	Local x% = (GraphicWidth/2)-(width/2)
 ;	Local y% = (-height)+Save_MSG_Y
@@ -4029,8 +3983,8 @@ End Function
 ;		EndIf
 ;		DrawFrame(x,y,width,height)
 ;		Color 255,255,255
-;		AASetFont Font1
-;		AAText(GraphicWidth/2,y+(height/2),Save_MSG,True,True)
+;		SetFont Font1
+;		Text(GraphicWidth/2,y+(height/2),Save_MSG,True,True)
 ;	EndIf
 ;	
 ;End Function
@@ -4295,7 +4249,7 @@ Function MovePlayer()
 	
 	If Injuries > 1.0 Then
 		temp2 = Bloodloss
-		BlurTimer = Max(Max(Sin(MilliSecs2()/100.0)*Bloodloss*30.0,Bloodloss*2*(2.0-CrouchState)),BlurTimer)
+		BlurTimer = Max(Max(Sin(MilliSecs()/100.0)*Bloodloss*30.0,Bloodloss*2*(2.0-CrouchState)),BlurTimer)
 		If (Not I_427\Using And I_427\Timer < 70*360) Then
 			Bloodloss = Min(Bloodloss + (Min(Injuries,3.5)/300.0)*FPSfactor,100)
 		EndIf
@@ -4323,7 +4277,7 @@ Function MovePlayer()
 			FreeEntity pvt
 		EndIf
 		
-		CurrCameraZoom = Max(CurrCameraZoom, (Sin(Float(MilliSecs2())/20.0)+1.0)*Bloodloss*0.2)
+		CurrCameraZoom = Max(CurrCameraZoom, (Sin(Float(MilliSecs())/20.0)+1.0)*Bloodloss*0.2)
 		
 		If Bloodloss > 60 Then Crouch = True
 		If Bloodloss => 100 Then 
@@ -4434,7 +4388,7 @@ Function MouseLook()
 		
 		If PlayerRoom\RoomTemplate\Name = "pocketdimension" Then
 			If EntityY(Collider)<2000*RoomScale Or EntityY(Collider)>2608*RoomScale Then
-				RotateEntity Camera, WrapAngle(EntityPitch(Camera)),WrapAngle(EntityYaw(Camera)), roll+WrapAngle(Sin(MilliSecs2()/150.0)*30.0) ; Pitch the user;s camera up And down.
+				RotateEntity Camera, WrapAngle(EntityPitch(Camera)),WrapAngle(EntityYaw(Camera)), roll+WrapAngle(Sin(MilliSecs()/150.0)*30.0) ; Pitch the user;s camera up And down.
 			EndIf
 		EndIf
 		
@@ -4789,82 +4743,80 @@ Function DrawGUI()
 		
 		If DebugHUD Then
 			Color 255, 255, 255
-			AASetFont ConsoleFont
+			SetFont ConsoleFont
 			
 			;Text x + 250, 50, "Zone: " + (EntityZ(Collider)/8.0)
-			AAText x - 50, 50, "Player Position: (" + f2s(EntityX(Collider), 3) + ", " + f2s(EntityY(Collider), 3) + ", " + f2s(EntityZ(Collider), 3) + ")"
-			AAText x - 50, 70, "Camera Position: (" + f2s(EntityX(Camera), 3)+ ", " + f2s(EntityY(Camera), 3) +", " + f2s(EntityZ(Camera), 3) + ")"
-			AAText x - 50, 100, "Player Rotation: (" + f2s(EntityPitch(Collider), 3) + ", " + f2s(EntityYaw(Collider), 3) + ", " + f2s(EntityRoll(Collider), 3) + ")"
-			AAText x - 50, 120, "Camera Rotation: (" + f2s(EntityPitch(Camera), 3)+ ", " + f2s(EntityYaw(Camera), 3) +", " + f2s(EntityRoll(Camera), 3) + ")"
-			AAText x - 50, 150, "Room: " + PlayerRoom\RoomTemplate\Name
+			Text x - 50, 50, "Player Position: (" + f2s(EntityX(Collider), 3) + ", " + f2s(EntityY(Collider), 3) + ", " + f2s(EntityZ(Collider), 3) + ")"
+			Text x - 50, 70, "Camera Position: (" + f2s(EntityX(Camera), 3)+ ", " + f2s(EntityY(Camera), 3) +", " + f2s(EntityZ(Camera), 3) + ")"
+			Text x - 50, 100, "Player Rotation: (" + f2s(EntityPitch(Collider), 3) + ", " + f2s(EntityYaw(Collider), 3) + ", " + f2s(EntityRoll(Collider), 3) + ")"
+			Text x - 50, 120, "Camera Rotation: (" + f2s(EntityPitch(Camera), 3)+ ", " + f2s(EntityYaw(Camera), 3) +", " + f2s(EntityRoll(Camera), 3) + ")"
+			Text x - 50, 150, "Room: " + PlayerRoom\RoomTemplate\Name
 			For ev.Events = Each Events
 				If ev\room = PlayerRoom Then
-					AAText x - 50, 170, "Room event: " + ev\EventName   
-					AAText x - 50, 190, "state: " + ev\EventState
-					AAText x - 50, 210, "state2: " + ev\EventState2   
-					AAText x - 50, 230, "state3: " + ev\EventState3
-					AAText x - 50, 250, "str: "+ ev\EventStr
+					Text x - 50, 170, "Room event: " + ev\EventName   
+					Text x - 50, 190, "state: " + ev\EventState
+					Text x - 50, 210, "state2: " + ev\EventState2   
+					Text x - 50, 230, "state3: " + ev\EventState3
+					Text x - 50, 250, "str: "+ ev\EventStr
 					Exit
 				EndIf
 			Next
-			AAText x - 50, 280, "Room coordinates: (" + Floor(EntityX(PlayerRoom\obj) / 8.0 + 0.5) + ", " + Floor(EntityZ(PlayerRoom\obj) / 8.0 + 0.5) + ", angle: "+PlayerRoom\angle + ")"
-			AAText x - 50, 300, "Stamina: " + f2s(Stamina, 3)
-			AAText x - 50, 320, "Death timer: " + f2s(KillTimer, 3)               
-			AAText x - 50, 340, "Blink timer: " + f2s(BlinkTimer, 3)
-			AAText x - 50, 360, "Injuries: " + Injuries
-			AAText x - 50, 380, "Bloodloss: " + Bloodloss
+			Text x - 50, 280, "Room coordinates: (" + Floor(EntityX(PlayerRoom\obj) / 8.0 + 0.5) + ", " + Floor(EntityZ(PlayerRoom\obj) / 8.0 + 0.5) + ", angle: "+PlayerRoom\angle + ")"
+			Text x - 50, 300, "Stamina: " + f2s(Stamina, 3)
+			Text x - 50, 320, "Death timer: " + f2s(KillTimer, 3)               
+			Text x - 50, 340, "Blink timer: " + f2s(BlinkTimer, 3)
+			Text x - 50, 360, "Injuries: " + Injuries
+			Text x - 50, 380, "Bloodloss: " + Bloodloss
 			If Curr173 <> Null
-				AAText x - 50, 410, "SCP - 173 Position (collider): (" + f2s(EntityX(Curr173\Collider), 3) + ", " + f2s(EntityY(Curr173\Collider), 3) + ", " + f2s(EntityZ(Curr173\Collider), 3) + ")"
-				AAText x - 50, 430, "SCP - 173 Position (obj): (" + f2s(EntityX(Curr173\obj), 3) + ", " + f2s(EntityY(Curr173\obj), 3) + ", " + f2s(EntityZ(Curr173\obj), 3) + ")"
+				Text x - 50, 410, "SCP - 173 Position (collider): (" + f2s(EntityX(Curr173\Collider), 3) + ", " + f2s(EntityY(Curr173\Collider), 3) + ", " + f2s(EntityZ(Curr173\Collider), 3) + ")"
+				Text x - 50, 430, "SCP - 173 Position (obj): (" + f2s(EntityX(Curr173\obj), 3) + ", " + f2s(EntityY(Curr173\obj), 3) + ", " + f2s(EntityZ(Curr173\obj), 3) + ")"
 				;Text x - 50, 410, "SCP - 173 Idle: " + Curr173\Idle
-				AAText x - 50, 450, "SCP - 173 State: " + Curr173\State
+				Text x - 50, 450, "SCP - 173 State: " + Curr173\State
 			EndIf
 			If Curr106 <> Null
-				AAText x - 50, 470, "SCP - 106 Position: (" + f2s(EntityX(Curr106\obj), 3) + ", " + f2s(EntityY(Curr106\obj), 3) + ", " + f2s(EntityZ(Curr106\obj), 3) + ")"
-				AAText x - 50, 490, "SCP - 106 Idle: " + Curr106\Idle
-				AAText x - 50, 510, "SCP - 106 State: " + Curr106\State
+				Text x - 50, 470, "SCP - 106 Position: (" + f2s(EntityX(Curr106\obj), 3) + ", " + f2s(EntityY(Curr106\obj), 3) + ", " + f2s(EntityZ(Curr106\obj), 3) + ")"
+				Text x - 50, 490, "SCP - 106 Idle: " + Curr106\Idle
+				Text x - 50, 510, "SCP - 106 State: " + Curr106\State
 			EndIf
 			offset% = 0
 			For npc.NPCs = Each NPCs
 				If npc\NPCtype = NPCtype096 Then
-					AAText x - 50, 530, "SCP - 096 Position: (" + f2s(EntityX(npc\obj), 3) + ", " + f2s(EntityY(npc\obj), 3) + ", " + f2s(EntityZ(npc\obj), 3) + ")"
-					AAText x - 50, 550, "SCP - 096 Idle: " + npc\Idle
-					AAText x - 50, 570, "SCP - 096 State: " + npc\State
-					AAText x - 50, 590, "SCP - 096 Speed: " + f2s(npc\currspeed, 5)
+					Text x - 50, 530, "SCP - 096 Position: (" + f2s(EntityX(npc\obj), 3) + ", " + f2s(EntityY(npc\obj), 3) + ", " + f2s(EntityZ(npc\obj), 3) + ")"
+					Text x - 50, 550, "SCP - 096 Idle: " + npc\Idle
+					Text x - 50, 570, "SCP - 096 State: " + npc\State
+					Text x - 50, 590, "SCP - 096 Speed: " + f2s(npc\currspeed, 5)
 				EndIf
 				If npc\NPCtype = NPCtypeMTF Then
-					AAText x - 50, 620 + 60 * offset, "MTF " + offset + " Position: (" + f2s(EntityX(npc\obj), 3) + ", " + f2s(EntityY(npc\obj), 3) + ", " + f2s(EntityZ(npc\obj), 3) + ")"
-					AAText x - 50, 640 + 60 * offset, "MTF " + offset + " State: " + npc\State
-					AAText x - 50, 660 + 60 * offset, "MTF " + offset + " LastSeen: " + npc\lastseen					
+					Text x - 50, 620 + 60 * offset, "MTF " + offset + " Position: (" + f2s(EntityX(npc\obj), 3) + ", " + f2s(EntityY(npc\obj), 3) + ", " + f2s(EntityZ(npc\obj), 3) + ")"
+					Text x - 50, 640 + 60 * offset, "MTF " + offset + " State: " + npc\State
+					Text x - 50, 660 + 60 * offset, "MTF " + offset + " LastSeen: " + npc\lastseen					
 					offset = offset + 1
 				EndIf
 			Next
 			If PlayerRoom\RoomTemplate\Name$ = "dimension1499"
-				AAText x + 350, 50, "Current Chunk X/Z: ("+(Int((EntityX(Collider)+20)/40))+", "+(Int((EntityZ(Collider)+20)/40))+")"
+				Text x + 350, 50, "Current Chunk X/Z: ("+(Int((EntityX(Collider)+20)/40))+", "+(Int((EntityZ(Collider)+20)/40))+")"
 				Local CH_Amount% = 0
 				For ch.Chunk = Each Chunk
 					CH_Amount = CH_Amount + 1
 				Next
-				AAText x + 350, 70, "Current Chunk Amount: "+CH_Amount
+				Text x + 350, 70, "Current Chunk Amount: "+CH_Amount
 			Else
-				AAText x + 350, 50, "Current Room Position: ("+PlayerRoom\x+", "+PlayerRoom\y+", "+PlayerRoom\z+")"
+				Text x + 350, 50, "Current Room Position: ("+PlayerRoom\x+", "+PlayerRoom\y+", "+PlayerRoom\z+")"
 			EndIf
-			GlobalMemoryStatus m.MEMORYSTATUS
-			AAText x + 350, 90, (m\dwAvailPhys%/1024/1024)+" MB/"+(m\dwTotalPhys%/1024/1024)+" MB ("+(m\dwAvailPhys%/1024)+" KB/"+(m\dwTotalPhys%/1024)+" KB)"
-			AAText x + 350, 110, "Triangles rendered: "+CurrTrisAmount
-			AAText x + 350, 130, "Active textures: "+ActiveTextures()
-			AAText x + 350, 150, "SCP-427 state (secs): "+Int(I_427\Timer/70.0)
-			AAText x + 350, 170, "SCP-008 infection: "+Infect
+			Text x + 350, 90, "Triangles rendered: "+CurrTrisAmount
+			Text x + 350, 110, "Active textures: "+ActiveTextures()
+			Text x + 350, 130, "SCP-427 state (secs): "+Int(I_427\Timer/70.0)
+			Text x + 350, 150, "SCP-008 infection: "+Infect
 			For i = 0 To 5
-				AAText x + 350, 190+(20*i), "SCP-1025 State "+i+": "+SCP1025state[i]
+				Text x + 350, 170+(20*i), "SCP-1025 State "+i+": "+SCP1025state[i]
 			Next
 			If SelectedMonitor <> Null Then
-				AAText x + 350, 310, "Current monitor: "+SelectedMonitor\ScrObj
+				Text x + 350, 310, "Current monitor: "+SelectedMonitor\ScrObj
 			Else
-				AAText x + 350, 310, "Current monitor: NULL"
+				Text x + 350, 310, "Current monitor: NULL"
 			EndIf
 			
-			AASetFont Font1
+			SetFont Font1
 		EndIf
 		
 	EndIf
@@ -4902,20 +4854,20 @@ Function DrawGUI()
 			x = GraphicWidth/2-ImageWidth(KeypadHUD)*scale/2
 			y = GraphicHeight/2-ImageHeight(KeypadHUD)*scale/2		
 			
-			AASetFont Font3
+			SetFont Font3
 			If KeypadMSG <> "" Then 
 				KeypadTimer = KeypadTimer-FPSfactor2
 				
-				If (KeypadTimer Mod 70) < 35 Then AAText GraphicWidth/2, y+124*scale, KeypadMSG, True,True
+				If (KeypadTimer Mod 70) < 35 Then Text GraphicWidth/2, y+124*scale, KeypadMSG, True,True
 				If KeypadTimer =<0 Then
 					KeypadMSG = ""
 					SelectedDoor = Null
 					MouseXSpeed() : MouseYSpeed() : MouseZSpeed() : mouse_x_speed_1#=0.0 : mouse_y_speed_1#=0.0
 				EndIf
 			Else
-				AAText GraphicWidth/2, y+70*scale, "ACCESS CODE: ",True,True	
-				AASetFont Font4
-				AAText GraphicWidth/2, y+124*scale, KeypadInput,True,True	
+				Text GraphicWidth/2, y+70*scale, "ACCESS CODE: ",True,True	
+				SetFont Font4
+				Text GraphicWidth/2, y+124*scale, KeypadInput,True,True	
 			EndIf
 			
 			x = x+44*scale
@@ -5095,7 +5047,7 @@ Function DrawGUI()
 			;drawimage(OtherOpen\SecondInv[n].InvIMG, x + width / 2 - 32, y + height / 2 - 32)
 				If isMouseOn Then
 					Color 255, 255, 255	
-					AAText(x + width / 2, y + height + spacing - 15, OtherOpen\SecondInv[n]\itemtemplate\name, True)				
+					Text(x + width / 2, y + height + spacing - 15, OtherOpen\SecondInv[n]\itemtemplate\name, True)				
 					If SelectedItem = Null Then
 						If MouseHit1 Then
 							SelectedItem = OtherOpen\SecondInv[n]
@@ -5356,11 +5308,11 @@ Function DrawGUI()
 							
 						EndIf
 						
-						AASetFont Font1
+						SetFont Font1
 						Color 0,0,0
-						AAText(x + width / 2 + 1, y + height + spacing - 15 + 1, Inventory(n)\name, True)							
+						Text(x + width / 2 + 1, y + height + spacing - 15 + 1, Inventory(n)\name, True)							
 						Color 255, 255, 255	
-						AAText(x + width / 2, y + height + spacing - 15, Inventory(n)\name, True)	
+						Text(x + width / 2, y + height + spacing - 15, Inventory(n)\name, True)	
 						
 					EndIf
 				EndIf
@@ -5944,7 +5896,7 @@ Function DrawGUI()
 								SelectedItem\itemtemplate\img = LoadImage_Strict("GFX\items\bn.it")
 								SetBuffer ImageBuffer(SelectedItem\itemtemplate\img)
 								Color 0,0,0
-								AAText 277, 469, AccessCode, True, True
+								Text 277, 469, AccessCode, True, True
 								Color 255,255,255
 								SetBuffer BackBuffer()
 							Case "Document SCP-372"
@@ -5953,10 +5905,10 @@ Function DrawGUI()
 								
 								SetBuffer ImageBuffer(SelectedItem\itemtemplate\img)
 								Color 37,45,137
-								AASetFont Font5
+								SetFont Font5
 								temp = ((Int(AccessCode)*3) Mod 10000)
 								If temp < 1000 Then temp = temp+1000
-								AAText 383*MenuScale, 734*MenuScale, temp, True, True
+								Text 383*MenuScale, 734*MenuScale, temp, True, True
 								Color 255,255,255
 								SetBuffer BackBuffer()
 							Case "Movie Ticket"
@@ -6369,8 +6321,8 @@ Function DrawGUI()
 								Next
 							EndIf	
 							
-							AASetFont Font3
-							AAText(x+60, y, "CHN")						
+							SetFont Font3
+							Text(x+60, y, "CHN")						
 							
 							If SelectedItem\itemtemplate\tempname = "veryfineradio" Then ;"KOODIKANAVA"
 								ResumeChannel(RadioCHN(0))
@@ -6396,8 +6348,8 @@ Function DrawGUI()
 									strtemp = strtemp + Chr(Rand(1,100))
 								Next
 								
-								AASetFont Font4
-								AAText(x+97, y+16, Rand(0,9),True,True)
+								SetFont Font4
+								Text(x+97, y+16, Rand(0,9),True,True)
 								
 							Else
 								For i = 2 To 6
@@ -6412,17 +6364,17 @@ Function DrawGUI()
 									EndIf
 								Next
 								
-								AASetFont Font4
-								AAText(x+97, y+16, Int(SelectedItem\state2+1),True,True)
+								SetFont Font4
+								Text(x+97, y+16, Int(SelectedItem\state2+1),True,True)
 							EndIf
 							
-							AASetFont Font3
+							SetFont Font3
 							If strtemp <> "" Then
-								strtemp = Right(Left(strtemp, (Int(MilliSecs2()/300) Mod Len(strtemp))),10)
-								AAText(x+32, y+33, strtemp)
+								strtemp = Right(Left(strtemp, (Int(MilliSecs()/300) Mod Len(strtemp))),10)
+								Text(x+32, y+33, strtemp)
 							EndIf
 							
-							AASetFont Font1
+							SetFont Font1
 							
 						EndIf
 						
@@ -6633,7 +6585,7 @@ Function DrawGUI()
 					
 					DrawImage(SelectedItem\itemtemplate\img, x - ImageWidth(SelectedItem\itemtemplate\img) / 2, y - ImageHeight(SelectedItem\itemtemplate\img) / 2 + 85)
 					
-					AASetFont Font3
+					SetFont Font3
 					
 					Local NavWorks% = True
 					If PlayerRoom\RoomTemplate\Name$ = "pocketdimension" Or PlayerRoom\RoomTemplate\Name$ = "dimension1499" Then
@@ -6650,10 +6602,10 @@ Function DrawGUI()
 					EndIf
 					
 					If (Not NavWorks) Then
-						If (MilliSecs2() Mod 1000) > 300 Then
+						If (MilliSecs() Mod 1000) > 300 Then
 							Color(200, 0, 0)
-							AAText(x, y + height / 2 - 80, "ERROR 06", True)
-							AAText(x, y + height / 2 - 60, "LOCATION UNKNOWN", True)						
+							Text(x, y + height / 2 - 80, "ERROR 06", True)
+							Text(x, y + height / 2 - 60, "LOCATION UNKNOWN", True)						
 						EndIf
 					Else
 						
@@ -6724,9 +6676,9 @@ Function DrawGUI()
 							Else
 								Color (30,30,30)
 							EndIf
-							If (MilliSecs2() Mod 1000) > 300 Then
+							If (MilliSecs() Mod 1000) > 300 Then
 								If SelectedItem\itemtemplate\name <> "S-NAV 310 Navigator" And SelectedItem\itemtemplate\name <> "S-NAV Navigator Ultimate" Then
-									AAText(x - width/2 + 10, y - height/2 + 10, "MAP DATABASE OFFLINE")
+									Text(x - width/2 + 10, y - height/2 + 10, "MAP DATABASE OFFLINE")
 								EndIf
 								
 								yawvalue = EntityYaw(Collider)-90
@@ -6740,14 +6692,14 @@ Function DrawGUI()
 							EndIf
 							
 							Local SCPs_found% = 0
-							If SelectedItem\itemtemplate\name = "S-NAV Navigator Ultimate" And (MilliSecs2() Mod 600) < 400 Then
+							If SelectedItem\itemtemplate\name = "S-NAV Navigator Ultimate" And (MilliSecs() Mod 600) < 400 Then
 								If Curr173<>Null Then
 									Local dist# = EntityDistance(Camera, Curr173\obj)
 									dist = Ceil(dist / 8.0) * 8.0
 									If dist < 8.0 * 4 Then
 										Color 100, 0, 0
 										Oval(x - dist * 3, y - 7 - dist * 3, dist * 3 * 2, dist * 3 * 2, False)
-										AAText(x - width / 2 + 10, y - height / 2 + 30, "SCP-173")
+										Text(x - width / 2 + 10, y - height / 2 + 30, "SCP-173")
 										SCPs_found% = SCPs_found% + 1
 									EndIf
 								EndIf
@@ -6756,7 +6708,7 @@ Function DrawGUI()
 									If dist < 8.0 * 4 Then
 										Color 100, 0, 0
 										Oval(x - dist * 1.5, y - 7 - dist * 1.5, dist * 3, dist * 3, False)
-										AAText(x - width / 2 + 10, y - height / 2 + 30 + (20*SCPs_found), "SCP-106")
+										Text(x - width / 2 + 10, y - height / 2 + 30 + (20*SCPs_found), "SCP-106")
 										SCPs_found% = SCPs_found% + 1
 									EndIf
 								EndIf
@@ -6765,7 +6717,7 @@ Function DrawGUI()
 									If dist < 8.0 * 4 Then
 										Color 100, 0, 0
 										Oval(x - dist * 1.5, y - 7 - dist * 1.5, dist * 3, dist * 3, False)
-										AAText(x - width / 2 + 10, y - height / 2 + 30 + (20*SCPs_found), "SCP-096")
+										Text(x - width / 2 + 10, y - height / 2 + 30 + (20*SCPs_found), "SCP-096")
 										SCPs_found% = SCPs_found% + 1
 									EndIf
 								EndIf
@@ -6776,7 +6728,7 @@ Function DrawGUI()
 											If (Not np\HideFromNVG) Then
 												Color 100, 0, 0
 												Oval(x - dist * 1.5, y - 7 - dist * 1.5, dist * 3, dist * 3, False)
-												AAText(x - width / 2 + 10, y - height / 2 + 30 + (20*SCPs_found), "SCP-049")
+												Text(x - width / 2 + 10, y - height / 2 + 30 + (20*SCPs_found), "SCP-049")
 												SCPs_found% = SCPs_found% + 1
 											EndIf
 										EndIf
@@ -6788,7 +6740,7 @@ Function DrawGUI()
 										dist = Rnd(4.0, 8.0)
 										Color 100, 0, 0
 										Oval(x - dist * 1.5, y - 7 - dist * 1.5, dist * 3, dist * 3, False)
-										AAText(x - width / 2 + 10, y - height / 2 + 30 + (20*SCPs_found), "SCP-895")
+										Text(x - width / 2 + 10, y - height / 2 + 30 + (20*SCPs_found), "SCP-895")
 									EndIf
 								EndIf
 							End If
@@ -6796,7 +6748,7 @@ Function DrawGUI()
 							Color (30,30,30)
 							If SelectedItem\itemtemplate\name = "S-NAV Navigator" Then Color(100, 0, 0)
 							If SelectedItem\state <= 100 Then
-								;AAText (x - width/2 + 10, y - height/2 + 10, "BATTERY")
+								;Text (x - width/2 + 10, y - height/2 + 10, "BATTERY")
 								;xtemp = x - width/2 + 10
 								;ytemp = y - height/2 + 30		
 								;Line xtemp, ytemp, xtemp+20, ytemp
@@ -6804,12 +6756,12 @@ Function DrawGUI()
 								;Line xtemp, ytemp, xtemp, ytemp+100
 								;Line xtemp+20, ytemp, xtemp+20, ytemp+100
 								;
-								;AASetFont Font4
+								;SetFont Font4
 								;For i = 1 To Ceil(SelectedItem\state / 10.0)
-								;	AAText (xtemp+11, ytemp+i*10-26, "-", True)
+								;	Text (xtemp+11, ytemp+i*10-26, "-", True)
 								;	;Rect(x - width/2, y+i*15, 40 - i * 6, 5, Ceil(SelectedItem\state / 20.0) > 4 - i)
 								;Next
-								;AASetFont Font3
+								;SetFont Font3
 								
 								xtemp = x - width/2 + 196
 								ytemp = y - height/2 + 10
@@ -6819,7 +6771,7 @@ Function DrawGUI()
 									DrawImage NavImages(4),xtemp+i*8-6,ytemp+4
 								Next
 								
-								AASetFont Font3
+								SetFont Font3
 						EndIf
 						EndIf
 						
@@ -7167,25 +7119,25 @@ Function DrawMenu()
 		EndIf
 		
 		If AchievementsMenu > 0 Then
-			AASetFont Font2
-			AAText(x, y-(122-45)*MenuScale, "ACHIEVEMENTS",False,True)
-			AASetFont Font1
+			SetFont Font2
+			Text(x, y-(122-45)*MenuScale, "ACHIEVEMENTS",False,True)
+			SetFont Font1
 		ElseIf OptionsMenu > 0 Then
-			AASetFont Font2
-			AAText(x, y-(122-45)*MenuScale, "OPTIONS",False,True)
-			AASetFont Font1
+			SetFont Font2
+			Text(x, y-(122-45)*MenuScale, "OPTIONS",False,True)
+			SetFont Font1
 		ElseIf QuitMSG > 0 Then
-			AASetFont Font2
-			AAText(x, y-(122-45)*MenuScale, "QUIT?",False,True)
-			AASetFont Font1
+			SetFont Font2
+			Text(x, y-(122-45)*MenuScale, "QUIT?",False,True)
+			SetFont Font1
 		ElseIf KillTimer >= 0 Then
-			AASetFont Font2
-			AAText(x, y-(122-45)*MenuScale, "PAUSED",False,True)
-			AASetFont Font1
+			SetFont Font2
+			Text(x, y-(122-45)*MenuScale, "PAUSED",False,True)
+			SetFont Font1
 		Else
-			AASetFont Font2
-			AAText(x, y-(122-45)*MenuScale, "YOU DIED",False,True)
-			AASetFont Font1
+			SetFont Font2
+			Text(x, y-(122-45)*MenuScale, "YOU DIED",False,True)
+			SetFont Font1
 		End If		
 		
 		Local AchvXIMG% = (x + (22*MenuScale))
@@ -7194,10 +7146,10 @@ Function DrawMenu()
 		Local imgsize% = 64
 		
 		If AchievementsMenu <= 0 And OptionsMenu <= 0 And QuitMSG <= 0
-			AASetFont Font1
-			AAText x, y, "Difficulty: "+SelectedDifficulty\name
-			AAText x, y+20*MenuScale, "Save: "+CurrSave
-			AAText x, y+40*MenuScale, "Map seed: "+RandomSeed
+			SetFont Font1
+			Text x, y, "Difficulty: "+SelectedDifficulty\name
+			Text x, y+20*MenuScale, "Save: "+CurrSave
+			Text x, y+40*MenuScale, "Map seed: "+RandomSeed
 		ElseIf AchievementsMenu <= 0 And OptionsMenu > 0 And QuitMSG <= 0 And KillTimer >= 0
 			If DrawButton(x + 101 * MenuScale, y + 390 * MenuScale, 230 * MenuScale, 60 * MenuScale, "Back") Then
 				AchievementsMenu = 0
@@ -7234,12 +7186,12 @@ Function DrawMenu()
 			Color 255,255,255
 			Select OptionsMenu
 				Case 1 ;Graphics
-					AASetFont Font1
+					SetFont Font1
 					;[Block]
 					y=y+50*MenuScale
 					
 					Color 100,100,100
-					AAText(x, y, "Enable bump mapping:")	
+					Text(x, y, "Enable bump mapping:")	
 					BumpEnabled = DrawTick(x + 270 * MenuScale, y + MenuScale, BumpEnabled, True)
 					If MouseOn(x + 270 * MenuScale, y + MenuScale, 20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"bump")
@@ -7248,7 +7200,7 @@ Function DrawMenu()
 					y=y+30*MenuScale
 					
 					Color 255,255,255
-					AAText(x, y, "VSync:")
+					Text(x, y, "VSync:")
 					Vsync% = DrawTick(x + 270 * MenuScale, y + MenuScale, Vsync%)
 					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"vsync")
@@ -7257,7 +7209,7 @@ Function DrawMenu()
 					y=y+30*MenuScale
 					
 					Color 255,255,255
-					AAText(x, y, "Anti-aliasing:")
+					Text(x, y, "Anti-aliasing:")
 					Opt_AntiAlias = DrawTick(x + 270 * MenuScale, y + MenuScale, Opt_AntiAlias%)
 					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"antialias")
@@ -7266,7 +7218,7 @@ Function DrawMenu()
 					y=y+30*MenuScale
 					
 					Color 255,255,255
-					AAText(x, y, "Enable room lights:")
+					Text(x, y, "Enable room lights:")
 					EnableRoomLights = DrawTick(x + 270 * MenuScale, y + MenuScale, EnableRoomLights)
 					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"roomlights")
@@ -7276,7 +7228,7 @@ Function DrawMenu()
 					
 					ScreenGamma = (SlideBar(x + 270*MenuScale, y+6*MenuScale, 100*MenuScale, ScreenGamma*50.0)/50.0)
 					Color 255,255,255
-					AAText(x, y, "Screen gamma")
+					Text(x, y, "Screen gamma")
 					If MouseOn(x+270*MenuScale,y+6*MenuScale,100*MenuScale+14,20) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"gamma",ScreenGamma)
 					EndIf
@@ -7286,7 +7238,7 @@ Function DrawMenu()
 					y=y+50*MenuScale
 					
 					Color 255,255,255
-					AAText(x, y, "Particle amount:")
+					Text(x, y, "Particle amount:")
 					ParticleAmount = Slider3(x+270*MenuScale,y+6*MenuScale,100*MenuScale,ParticleAmount,2,"MINIMAL","REDUCED","FULL")
 					If (MouseOn(x + 270 * MenuScale, y-6*MenuScale, 100*MenuScale+14, 20) And OnSliderID=0) Or OnSliderID=2
 						DrawOptionsTooltip(tx,ty,tw,th,"particleamount",ParticleAmount)
@@ -7295,7 +7247,7 @@ Function DrawMenu()
 					y=y+50*MenuScale
 					
 					Color 255,255,255
-					AAText(x, y, "Texture LOD Bias:")
+					Text(x, y, "Texture LOD Bias:")
 					TextureDetails = Slider5(x+270*MenuScale,y+6*MenuScale,100*MenuScale,TextureDetails,3,"0.8","0.4","0.0","-0.4","-0.8")
 					Select TextureDetails%
 						Case 0
@@ -7316,7 +7268,7 @@ Function DrawMenu()
 					
 					y=y+50*MenuScale
 					Color 100,100,100
-					AAText(x, y, "Save textures in the VRAM:")	
+					Text(x, y, "Save textures in the VRAM:")	
 					EnableVRam = DrawTick(x + 270 * MenuScale, y + MenuScale, EnableVRam, True)
 					If MouseOn(x + 270 * MenuScale, y + MenuScale, 20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"vram")
@@ -7324,13 +7276,13 @@ Function DrawMenu()
 					
 					;[End Block]
 				Case 2 ;Audio
-					AASetFont Font1
+					SetFont Font1
 					;[Block]
 					y = y + 50*MenuScale
 					
 					MusicVolume = (SlideBar(x + 250*MenuScale, y-4*MenuScale, 100*MenuScale, MusicVolume*100.0)/100.0)
 					Color 255,255,255
-					AAText(x, y, "Music volume:")
+					Text(x, y, "Music volume:")
 					If MouseOn(x+250*MenuScale,y-4*MenuScale,100*MenuScale+14,20)
 						DrawOptionsTooltip(tx,ty,tw,th,"musicvol",MusicVolume)
 					EndIf
@@ -7340,7 +7292,7 @@ Function DrawMenu()
 					PrevSFXVolume = (SlideBar(x + 250*MenuScale, y-4*MenuScale, 100*MenuScale, SFXVolume*100.0)/100.0)
 					If (Not DeafPlayer) Then SFXVolume# = PrevSFXVolume#
 					Color 255,255,255
-					AAText(x, y, "Sound volume:")
+					Text(x, y, "Sound volume:")
 					If MouseOn(x+250*MenuScale,y-4*MenuScale,100*MenuScale+14,20)
 						DrawOptionsTooltip(tx,ty,tw,th,"soundvol",PrevSFXVolume)
 					EndIf
@@ -7348,7 +7300,7 @@ Function DrawMenu()
 					y = y + 30*MenuScale
 					
 					Color 100,100,100
-					AAText x, y, "Sound auto-release:"
+					Text x, y, "Sound auto-release:"
 					EnableSFXRelease = DrawTick(x + 270 * MenuScale, y + MenuScale, EnableSFXRelease,True)
 					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
 						DrawOptionsTooltip(tx,ty,tw,th+220*MenuScale,"sfxautorelease")
@@ -7357,7 +7309,7 @@ Function DrawMenu()
 					y = y + 30*MenuScale
 					
 					Color 100,100,100
-					AAText x, y, "Enable user tracks:"
+					Text x, y, "Enable user tracks:"
 					EnableUserTracks = DrawTick(x + 270 * MenuScale, y + MenuScale, EnableUserTracks,True)
 					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
 						DrawOptionsTooltip(tx,ty,tw,th,"usertrack")
@@ -7366,12 +7318,12 @@ Function DrawMenu()
 					If EnableUserTracks
 						y = y + 30 * MenuScale
 						Color 255,255,255
-						AAText x, y, "User track mode:"
+						Text x, y, "User track mode:"
 						UserTrackMode = DrawTick(x + 270 * MenuScale, y + MenuScale, UserTrackMode)
 						If UserTrackMode
-							AAText x, y + 20 * MenuScale, "Repeat"
+							Text x, y + 20 * MenuScale, "Repeat"
 						Else
-							AAText x, y + 20 * MenuScale, "Random"
+							Text x, y + 20 * MenuScale, "Random"
 						EndIf
 						If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
 							DrawOptionsTooltip(tx,ty,tw,th,"usertrackmode")
@@ -7383,13 +7335,13 @@ Function DrawMenu()
 					EndIf
 					;[End Block]
 				Case 3 ;Controls
-					AASetFont Font1
+					SetFont Font1
 					;[Block]
 					y = y + 50*MenuScale
 					
 					MouseSens = (SlideBar(x + 270*MenuScale, y-4*MenuScale, 100*MenuScale, (MouseSens+0.5)*100.0)/100.0)-0.5
 					Color(255, 255, 255)
-					AAText(x, y, "Mouse sensitivity:")
+					Text(x, y, "Mouse sensitivity:")
 					If MouseOn(x+270*MenuScale,y-4*MenuScale,100*MenuScale+14,20)
 						DrawOptionsTooltip(tx,ty,tw,th,"mousesensitivity",MouseSens)
 					EndIf
@@ -7397,7 +7349,7 @@ Function DrawMenu()
 					y = y + 30*MenuScale
 					
 					Color(255, 255, 255)
-					AAText(x, y, "Invert mouse Y-axis:")
+					Text(x, y, "Invert mouse Y-axis:")
 					InvertMouse = DrawTick(x + 270 * MenuScale, y + MenuScale, InvertMouse)
 					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
 						DrawOptionsTooltip(tx,ty,tw,th,"mouseinvert")
@@ -7407,7 +7359,7 @@ Function DrawMenu()
 					
 					MouseSmooth = (SlideBar(x + 270*MenuScale, y-4*MenuScale, 100*MenuScale, (MouseSmooth)*50.0)/50.0)
 					Color(255, 255, 255)
-					AAText(x, y, "Mouse smoothing:")
+					Text(x, y, "Mouse smoothing:")
 					If MouseOn(x+270*MenuScale,y-4*MenuScale,100*MenuScale+14,20)
 						DrawOptionsTooltip(tx,ty,tw,th,"mousesmoothing",MouseSmooth)
 					EndIf
@@ -7415,29 +7367,29 @@ Function DrawMenu()
 					Color(255, 255, 255)
 					
 					y = y + 30*MenuScale
-					AAText(x, y, "Control configuration:")
+					Text(x, y, "Control configuration:")
 					y = y + 10*MenuScale
 					
-					AAText(x, y + 20 * MenuScale, "Move Forward")
+					Text(x, y + 20 * MenuScale, "Move Forward")
 					InputBox(x + 200 * MenuScale, y + 20 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_UP,210)),5)		
-					AAText(x, y + 40 * MenuScale, "Strafe Left")
+					Text(x, y + 40 * MenuScale, "Strafe Left")
 					InputBox(x + 200 * MenuScale, y + 40 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_LEFT,210)),3)	
-					AAText(x, y + 60 * MenuScale, "Move Backward")
+					Text(x, y + 60 * MenuScale, "Move Backward")
 					InputBox(x + 200 * MenuScale, y + 60 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_DOWN,210)),6)				
-					AAText(x, y + 80 * MenuScale, "Strafe Right")
+					Text(x, y + 80 * MenuScale, "Strafe Right")
 					InputBox(x + 200 * MenuScale, y + 80 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_RIGHT,210)),4)
 					
-					AAText(x, y + 100 * MenuScale, "Manual Blink")
+					Text(x, y + 100 * MenuScale, "Manual Blink")
 					InputBox(x + 200 * MenuScale, y + 100 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_BLINK,210)),7)				
-					AAText(x, y + 120 * MenuScale, "Sprint")
+					Text(x, y + 120 * MenuScale, "Sprint")
 					InputBox(x + 200 * MenuScale, y + 120 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_SPRINT,210)),8)
-					AAText(x, y + 140 * MenuScale, "Open/Close Inventory")
+					Text(x, y + 140 * MenuScale, "Open/Close Inventory")
 					InputBox(x + 200 * MenuScale, y + 140 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_INV,210)),9)
-					AAText(x, y + 160 * MenuScale, "Crouch")
+					Text(x, y + 160 * MenuScale, "Crouch")
 					InputBox(x + 200 * MenuScale, y + 160 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_CROUCH,210)),10)
-					AAText(x, y + 180 * MenuScale, "Quick Save")
+					Text(x, y + 180 * MenuScale, "Quick Save")
 					InputBox(x + 200 * MenuScale, y + 180 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_SAVE,210)),11)	
-					AAText(x, y + 200 * MenuScale, "Open/Close Console")
+					Text(x, y + 200 * MenuScale, "Open/Close Console")
 					InputBox(x + 200 * MenuScale, y + 200 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_CONSOLE,210)),12)
 					
 					If MouseOn(x,y,300*MenuScale,220*MenuScale)
@@ -7474,12 +7426,12 @@ Function DrawMenu()
 					EndIf
 					;[End Block]
 				Case 4 ;Advanced
-					AASetFont Font1
+					SetFont Font1
 					;[Block]
 					y = y + 50*MenuScale
 					
 					Color 255,255,255				
-					AAText(x, y, "Show HUD:")	
+					Text(x, y, "Show HUD:")	
 					HUDenabled = DrawTick(x + 270 * MenuScale, y + MenuScale, HUDenabled)
 					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
 						DrawOptionsTooltip(tx,ty,tw,th,"hud")
@@ -7488,7 +7440,7 @@ Function DrawMenu()
 					y = y + 30*MenuScale
 					
 					Color 255,255,255
-					AAText(x, y, "Enable console:")
+					Text(x, y, "Enable console:")
 					CanOpenConsole = DrawTick(x +270 * MenuScale, y + MenuScale, CanOpenConsole)
 					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
 						DrawOptionsTooltip(tx,ty,tw,th,"consoleenable")
@@ -7497,7 +7449,7 @@ Function DrawMenu()
 					y = y + 30*MenuScale
 					
 					Color 255,255,255
-					AAText(x, y, "Open console on error:")
+					Text(x, y, "Open console on error:")
 					ConsoleOpening = DrawTick(x + 270 * MenuScale, y + MenuScale, ConsoleOpening)
 					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
 						DrawOptionsTooltip(tx,ty,tw,th,"consoleerror")
@@ -7506,7 +7458,7 @@ Function DrawMenu()
 					y = y + 50*MenuScale
 					
 					Color 255,255,255
-					AAText(x, y, "Achievement popups:")
+					Text(x, y, "Achievement popups:")
 					AchvMSGenabled% = DrawTick(x + 270 * MenuScale, y, AchvMSGenabled%)
 					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
 						DrawOptionsTooltip(tx,ty,tw,th,"achpopup")
@@ -7515,7 +7467,7 @@ Function DrawMenu()
 					y = y + 50*MenuScale
 					
 					Color 255,255,255
-					AAText(x, y, "Show FPS:")
+					Text(x, y, "Show FPS:")
 					ShowFPS% = DrawTick(x + 270 * MenuScale, y, ShowFPS%)
 					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
 						DrawOptionsTooltip(tx,ty,tw,th,"showfps")
@@ -7524,7 +7476,7 @@ Function DrawMenu()
 					y = y + 30*MenuScale
 					
 					Color 255,255,255
-					AAText(x, y, "Framelimit:")
+					Text(x, y, "Framelimit:")
 					
 					Color 255,255,255
 					If DrawTick(x + 270 * MenuScale, y, CurrFrameLimit > 0.0) Then
@@ -7535,7 +7487,7 @@ Function DrawMenu()
 						CurrFrameLimit# = Max(CurrFrameLimit, 0.01)
 						Framelimit% = 19+(CurrFrameLimit*100.0)
 						Color 255,255,0
-						AAText(x + 5 * MenuScale, y + 25 * MenuScale, Framelimit%+" FPS")
+						Text(x + 5 * MenuScale, y + 25 * MenuScale, Framelimit%+" FPS")
 					Else
 						CurrFrameLimit# = 0.0
 						Framelimit = 0
@@ -7545,40 +7497,6 @@ Function DrawMenu()
 					EndIf
 					If MouseOn(x+150*MenuScale,y+30*MenuScale,100*MenuScale+14,20)
 						DrawOptionsTooltip(tx,ty,tw,th,"framelimit",Framelimit)
-					EndIf
-					
-					y = y + 80*MenuScale
-					
-					Color 255,255,255
-					AAText(x, y, "Antialiased text:")
-					AATextEnable% = DrawTick(x + 270 * MenuScale, y + MenuScale, AATextEnable%)
-					If AATextEnable_Prev% <> AATextEnable
-						For font.AAFont = Each AAFont
-							FreeFont font\lowResFont%
-							If (Not AATextEnable)
-								FreeTexture font\texture
-								FreeImage font\backup
-							EndIf
-							Delete font
-						Next
-						If (Not AATextEnable) Then
-							FreeEntity AATextCam
-							;For i%=0 To 149
-							;	FreeEntity AATextSprite[i]
-							;Next
-						EndIf
-						InitAAFont()
-						Font1% = AALoadFont("GFX\font\cour\Courier New.ttf", Int(18 * (GraphicHeight / 1024.0)), 0,0,0)
-						Font2% = AALoadFont("GFX\font\courbd\Courier New.ttf", Int(58 * (GraphicHeight / 1024.0)), 0,0,0)
-						Font3% = AALoadFont("GFX\font\DS-DIGI\DS-Digital.ttf", Int(22 * (GraphicHeight / 1024.0)), 0,0,0)
-						Font4% = AALoadFont("GFX\font\DS-DIGI\DS-Digital.ttf", Int(60 * (GraphicHeight / 1024.0)), 0,0,0)
-						Font5% = AALoadFont("GFX\font\Journal\Journal.ttf", Int(58 * (GraphicHeight / 1024.0)), 0,0,0)
-						ConsoleFont% = AALoadFont("Blitz", Int(22 * (GraphicHeight / 1024.0)), 0,0,0,1)
-						;ReloadAAFont()
-						AATextEnable_Prev% = AATextEnable
-					EndIf
-					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
-						DrawOptionsTooltip(tx,ty,tw,th,"antialiastext")
 					EndIf
 					;[End Block]
 			End Select
@@ -7685,7 +7603,7 @@ Function DrawMenu()
 							LoadGameQuick(SavePath + CurrSave + "\")
 							
 							MoveMouse viewport_center_x,viewport_center_y
-							AASetFont Font1
+							SetFont Font1
 							HidePointer ()
 							
 							FlushKeys()
@@ -7721,8 +7639,8 @@ Function DrawMenu()
 					Else
 						DrawFrame(x,y,390*MenuScale, 60*MenuScale)
 						Color (100, 100, 100)
-						AASetFont Font2
-						AAText(x + (390*MenuScale) / 2, y + (60*MenuScale) / 2, "Load Game", True, True)
+						SetFont Font2
+						Text(x + (390*MenuScale) / 2, y + (60*MenuScale) / 2, "Load Game", True, True)
 					EndIf
 					y = y + 75*MenuScale
 			EndIf
@@ -7741,7 +7659,7 @@ Function DrawMenu()
 						LoadGameQuick(SavePath + CurrSave + "\")
 						
 						MoveMouse viewport_center_x,viewport_center_y
-						AASetFont Font1
+						SetFont Font1
 						HidePointer ()
 						
 						FlushKeys()
@@ -7777,7 +7695,7 @@ Function DrawMenu()
 				Else
 					DrawButton(x, y, 390*MenuScale, 60*MenuScale, "")
 					Color 50,50,50
-					AAText(x + 185*MenuScale, y + 30*MenuScale, "Load Game", True, True)
+					Text(x + 185*MenuScale, y + 30*MenuScale, "Load Game", True, True)
 				EndIf
 				If DrawButton(x, y + 80*MenuScale, 390*MenuScale, 60*MenuScale, "Quit to Menu") Then
 					NullGame()
@@ -7796,7 +7714,7 @@ Function DrawMenu()
 				EndIf
 			EndIf
 			
-			AASetFont Font1
+			SetFont Font1
 			If KillTimer < 0 Then RowText(DeathMSG$, x, y + 80*MenuScale, 390*MenuScale, 600*MenuScale)
 		EndIf
 		
@@ -7804,7 +7722,7 @@ Function DrawMenu()
 		
 	End If
 	
-	AASetFont Font1
+	SetFont Font1
 	
 	CatchErrors("DrawMenu")
 End Function
@@ -8236,7 +8154,7 @@ Function LoadEntities()
 	
 	;NPCtypeD - different models with different textures (loaded using "CopyEntity") - ENDSHN
 	;[Block]
-	For i=1 To MaxDTextures
+	For i=1 To MaxDTextures-1
 		DTextures[i] = CopyEntity(ClassDObj)
 		HideEntity DTextures[i]
 	Next
@@ -8430,7 +8348,7 @@ Function InitNewGame()
 	Next	
 	
 	For r.Rooms = Each Rooms
-		For i = 0 To MaxRoomLights
+		For i = 0 To MaxRoomLights-1
 			If r\Lights[i]<>0 Then EntityParent(r\Lights[i],0)
 		Next
 		
@@ -8509,7 +8427,7 @@ Function InitNewGame()
 	
 	MoveMouse viewport_center_x,viewport_center_y;320, 240
 	
-	AASetFont Font1
+	SetFont Font1
 	
 	HidePointer()
 	
@@ -8570,7 +8488,7 @@ Function InitLoadGame()
 	
 	MoveMouse viewport_center_x,viewport_center_y
 	
-	AASetFont Font1
+	SetFont Font1
 	
 	HidePointer ()
 	
@@ -8906,7 +8824,6 @@ Function NullGame(playbuttonsfx%=True)
 	;DeInitExt
 	
 	ClearWorld
-	ReloadAAFont()
 	Camera = 0
 	ark_blur_cam = 0
 	Collider = 0
@@ -10042,7 +9959,7 @@ Function Use294()
 	temp = True
 	If PlayerRoom\SoundCHN<>0 Then temp = False
 	
-	AAText x+907, y+185, Input294, True,True
+	Text x+907, y+185, Input294, True,True
 	
 	If temp Then
 		If MouseHit1 Then
@@ -10436,7 +10353,7 @@ Function UpdateInfect()
 			HeartBeatRate = Max(HeartBeatRate, 100)
 			HeartBeatVolume = Max(HeartBeatVolume, Infect/120.0)
 			
-			EntityAlpha InfectOverlay, Min(((Infect*0.2)^2)/1000.0,0.5) * (Sin(MilliSecs2()/8.0)+2.0)
+			EntityAlpha InfectOverlay, Min(((Infect*0.2)^2)/1000.0,0.5) * (Sin(MilliSecs()/8.0)+2.0)
 			
 			For i = 0 To 6
 				If Infect>i*15+10 And temp =< i*15+10 Then
@@ -10488,7 +10405,7 @@ Function UpdateInfect()
 			
 			If teleportForInfect
 				If Infect < 94.7 Then
-					EntityAlpha InfectOverlay, 0.5 * (Sin(MilliSecs2()/8.0)+2.0)
+					EntityAlpha InfectOverlay, 0.5 * (Sin(MilliSecs()/8.0)+2.0)
 					BlurTimer = 900
 					
 					If Infect > 94.5 Then BlinkTimer = Max(Min(-50*(Infect-94.5),BlinkTimer),-10)
@@ -10503,7 +10420,7 @@ Function UpdateInfect()
 					Animate2(PlayerRoom\NPC[0]\obj, AnimTime(PlayerRoom\NPC[0]\obj), 357, 381, 0.3)
 				ElseIf Infect < 98.5
 					
-					EntityAlpha InfectOverlay, 0.5 * (Sin(MilliSecs2()/5.0)+2.0)
+					EntityAlpha InfectOverlay, 0.5 * (Sin(MilliSecs()/5.0)+2.0)
 					BlurTimer = 950
 					
 					ForceMove = 0.0
@@ -10547,9 +10464,9 @@ Function UpdateInfect()
 					EndIf
 					
 					PositionEntity Head, EntityX(PlayerRoom\NPC[0]\Collider,True), EntityY(PlayerRoom\NPC[0]\Collider,True)+0.65,EntityZ(PlayerRoom\NPC[0]\Collider,True),True
-					RotateEntity Head, (1.0+Sin(MilliSecs2()/5.0))*15, PlayerRoom\angle-180, 0, True
+					RotateEntity Head, (1.0+Sin(MilliSecs()/5.0))*15, PlayerRoom\angle-180, 0, True
 					MoveEntity Head, 0,0,-0.4
-					TurnEntity Head, 80+(Sin(MilliSecs2()/5.0))*30,(Sin(MilliSecs2()/5.0))*40,0
+					TurnEntity Head, 80+(Sin(MilliSecs()/5.0))*30,(Sin(MilliSecs()/5.0))*40,0
 				EndIf
 			Else
 				Kill()
@@ -10689,22 +10606,6 @@ Function CircleToLineSegIsect% (cx#, cy#, r#, l1x#, l1y#, l2x#, l2y#)
 	
 	;Jos päästään tänne saakka, ympyrä ja jana leikkaavat (tai ovat sisäkkäin)
 	Return True
-End Function
-
-Function Min#(a#, b#)
-	If a < b Then
-		Return a
-	Else
-		Return b
-	EndIf
-End Function
-
-Function Max#(a#, b#)
-	If a > b Then
-		Return a
-	Else
-		Return b
-	EndIf
 End Function
 
 Function point_direction#(x1#,z1#,x2#,z2#)
@@ -11149,7 +11050,6 @@ Function SaveOptionsINI()
 	PutINIValue(OptionFile, "options", "texture details", TextureDetails%)
 	PutINIValue(OptionFile, "console", "enabled", CanOpenConsole%)
 	PutINIValue(OptionFile, "console", "auto opening", ConsoleOpening%)
-	PutINIValue(OptionFile, "options", "antialiased text", AATextEnable)
 	PutINIValue(OptionFile, "options", "particle amount", ParticleAmount)
 	PutINIValue(OptionFile, "options", "enable vram", EnableVRam)
 	PutINIValue(OptionFile, "options", "mouse smoothing", MouseSmooth)
@@ -11342,15 +11242,15 @@ Function RenderWorld2()
 			
 			Color 255,255,255
 			
-			AASetFont Font3
+			SetFont Font3
 			
 			Local plusY% = 0
 			If hasBattery=1 Then plusY% = 40
 			
-			AAText GraphicWidth/2,(20+plusY)*MenuScale,"REFRESHING DATA IN",True,False
+			Text GraphicWidth/2,(20+plusY)*MenuScale,"REFRESHING DATA IN",True,False
 			
-			AAText GraphicWidth/2,(60+plusY)*MenuScale,Max(f2s(NVTimer/60.0,1),0.0),True,False
-			AAText GraphicWidth/2,(100+plusY)*MenuScale,"SECONDS",True,False
+			Text GraphicWidth/2,(60+plusY)*MenuScale,Max(f2s(NVTimer/60.0,1),0.0),True,False
+			Text GraphicWidth/2,(100+plusY)*MenuScale,"SECONDS",True,False
 			
 			temp% = CreatePivot() : temp2% = CreatePivot()
 			PositionEntity temp, EntityX(Collider), EntityY(Collider), EntityZ(Collider)
@@ -11383,8 +11283,8 @@ Function RenderWorld2()
 						EndIf
 						
 						If (Not IsNVGBlinking%)
-						AAText GraphicWidth / 2 + xvalue * (GraphicWidth / 2),GraphicHeight / 2 - yvalue * (GraphicHeight / 2),np\NVName,True,True
-						AAText GraphicWidth / 2 + xvalue * (GraphicWidth / 2),GraphicHeight / 2 - yvalue * (GraphicHeight / 2) + 30.0 * MenuScale,f2s(dist,1)+" m",True,True
+						Text GraphicWidth / 2 + xvalue * (GraphicWidth / 2),GraphicHeight / 2 - yvalue * (GraphicHeight / 2),np\NVName,True,True
+						Text GraphicWidth / 2 + xvalue * (GraphicWidth / 2),GraphicHeight / 2 - yvalue * (GraphicHeight / 2) + 30.0 * MenuScale,f2s(dist,1)+" m",True,True
 					EndIf
 				EndIf
 				EndIf
@@ -11421,13 +11321,13 @@ Function RenderWorld2()
 	CameraProjMode Camera,0
 	RenderWorld()
 	CameraProjMode ark_blur_cam,0
-	
+
 	If BlinkTimer < - 16 Or BlinkTimer > - 6
-		If (WearingNightVision=1 Or WearingNightVision=2) And (hasBattery=1) And ((MilliSecs2() Mod 800) < 400) Then
+		If (WearingNightVision=1 Or WearingNightVision=2) And (hasBattery=1) And ((MilliSecs() Mod 800) < 400) Then
 			Color 255,0,0
-			AASetFont Font3
+			SetFont Font3
 			
-			AAText GraphicWidth/2,20*MenuScale,"WARNING: LOW BATTERY",True,False
+			Text GraphicWidth/2,20*MenuScale,"WARNING: LOW BATTERY",True,False
 			Color 255,255,255
 		EndIf
 	EndIf
@@ -11686,49 +11586,49 @@ Function ScaledMouseY%()
 End Function
 
 Function CatchErrors(location$)
-	Local errStr$ = ErrorLog()
-	Local errF%
-	If Len(errStr)>0 Then
-		If FileType(ErrorFile)=0 Then
-			errF = WriteFile(ErrorFile)
-			WriteLine errF,"An error occured in SCP - Containment Breach!"
-			WriteLine errF,"Version: "+VersionNumber
-			WriteLine errF,"Save compatible version: "+CompatibleNumber
-			WriteLine errF,"Date and time: "+CurrentDate()+" at "+CurrentTime()
-			WriteLine errF,"Total video memory (MB): "+TotalVidMem()/1024/1024
-			WriteLine errF,"Available video memory (MB): "+AvailVidMem()/1024/1024
-			GlobalMemoryStatus m.MEMORYSTATUS
-			WriteLine errF,"Global memory status: "+(m\dwAvailPhys%/1024/1024)+" MB/"+(m\dwTotalPhys%/1024/1024)+" MB ("+(m\dwAvailPhys%/1024)+" KB/"+(m\dwTotalPhys%/1024)+" KB)"
-			WriteLine errF,"Triangles rendered: "+CurrTrisAmount
-			WriteLine errF,"Active textures: "+ActiveTextures()
-			WriteLine errF,""
-			WriteLine errF,"Error(s):"
-		Else
-			Local canwriteError% = True
-			errF = OpenFile(ErrorFile)
-			While (Not Eof(errF))
-				Local l$ = ReadLine(errF)
-				If Left(l,Len(location))=location
-					canwriteError = False
-					Exit
-				EndIf
-			Wend
-			If canwriteError
-				SeekFile errF,FileSize(ErrorFile)
-			EndIf
-		EndIf
-		If canwriteError
-			WriteLine errF,location+" ***************"
-			While Len(errStr)>0
-				WriteLine errF,errStr
-				DebugLog errStr
-				errStr = ErrorLog()
-			Wend
-		EndIf
-		Msg = "Blitz3D Error! Details in "+Chr(34)+ErrorFile+Chr(34)
-		MsgTimer = 20*70
-		CloseFile errF
-	EndIf
+	;Local errStr$ = ErrorLog()
+	;Local errF%
+	;If Len(errStr)>0 Then
+	;	If FileType(ErrorFile)=0 Then
+	;		errF = WriteFile(ErrorFile)
+	;		WriteLine errF,"An error occured in SCP - Containment Breach!"
+	;		WriteLine errF,"Version: "+VersionNumber
+	;		WriteLine errF,"Save compatible version: "+CompatibleNumber
+	;		WriteLine errF,"Date and time: "+CurrentDate()+" at "+CurrentTime()
+	;		WriteLine errF,"Total video memory (MB): "+TotalVidMem()/1024/1024
+	;		WriteLine errF,"Available video memory (MB): "+AvailVidMem()/1024/1024
+	;		GlobalMemoryStatus m.MEMORYSTATUS
+	;		WriteLine errF,"Global memory status: "+(m\dwAvailPhys%/1024/1024)+" MB/"+(m\dwTotalPhys%/1024/1024)+" MB ("+(m\dwAvailPhys%/1024)+" KB/"+(m\dwTotalPhys%/1024)+" KB)"
+	;		WriteLine errF,"Triangles rendered: "+CurrTrisAmount
+	;		WriteLine errF,"Active textures: "+ActiveTextures()
+	;		WriteLine errF,""
+	;		WriteLine errF,"Error(s):"
+	;	Else
+	;		Local canwriteError% = True
+	;		errF = OpenFile(ErrorFile)
+	;		While (Not Eof(errF))
+	;			Local l$ = ReadLine(errF)
+	;			If Left(l,Len(location))=location
+	;				canwriteError = False
+	;				Exit
+	;			EndIf
+	;		Wend
+	;		If canwriteError
+	;			SeekFile errF,FileSize(ErrorFile)
+	;		EndIf
+	;	EndIf
+	;	If canwriteError
+	;		WriteLine errF,location+" ***************"
+	;		While Len(errStr)>0
+	;			WriteLine errF,errStr
+	;			DebugLog errStr
+	;			errStr = ErrorLog()
+	;		Wend
+	;	EndIf
+	;	Msg = "Blitz3D Error! Details in "+Chr(34)+ErrorFile+Chr(34)
+	;	MsgTimer = 20*70
+	;	CloseFile errF
+	;EndIf
 End Function
 
 Function Create3DIcon(width%,height%,modelpath$,modelX#=0,modelY#=0,modelZ#=0,modelPitch#=0,modelYaw#=0,modelRoll#=0,modelscaleX#=1,modelscaleY#=1,modelscaleZ#=1,withfog%=False)
@@ -11848,20 +11748,8 @@ Function TeleportEntity(entity%,x#,y#,z#,customradius#=0.3,isglobal%=False,pickr
 	
 End Function
 
-Function PlayStartupVideos()
-	
-	If GetINIInt("options.ini","options","play startup video")=0 Then Return
-	
-	Local Cam = CreateCamera() 
-	CameraClsMode Cam, 0, 1
-	Local Quad = CreateQuad()
-	Local Texture = CreateTexture(2048, 2048, 256 Or 16 Or 32)
-	EntityTexture Quad, Texture
-	EntityFX Quad, 1
-	CameraRange Cam, 0.01, 100
-	TranslateEntity Cam, 1.0 / 2048 ,-1.0 / 2048 ,-1.0
-	EntityParent Quad, Cam, 1
-	
+Function PlayMovie(moviefile$)
+
 	Local ScaledGraphicHeight%
 	Local Ratio# = Float(RealGraphicWidth)/Float(RealGraphicHeight)
 	If Ratio>1.76 And Ratio<1.78
@@ -11871,54 +11759,33 @@ Function PlayStartupVideos()
 		ScaledGraphicHeight% = Float(RealGraphicWidth)/(16.0/9.0)
 		DebugLog "Scaled: "+ScaledGraphicHeight
 	EndIf
-	
-	Local moviefile$ = "GFX\menu\startup_Undertow"
-	BlitzMovie_Open(moviefile$+".avi") ;Get movie size
-	Local moview = BlitzMovie_GetWidth()
-	Local movieh = BlitzMovie_GetHeight()
-	BlitzMovie_Close()
-	Local image = CreateImage(moview, movieh)
-	Local SplashScreenVideo = BlitzMovie_OpenDecodeToImage(moviefile$+".avi", image, False)
-	SplashScreenVideo = BlitzMovie_Play()
+
+	Local SplashScreenVideo = OpenMovie(moviefile$+".avi")
+	If SplashScreenVideo = 0 Then Return
+
+	DebugLog(RealGraphicHeight)
+
 	Local SplashScreenAudio = StreamSound_Strict(moviefile$+".ogg",SFXVolume,0)
 	Repeat
 		Cls
-		ProjectImage(image, RealGraphicWidth, ScaledGraphicHeight, Quad, Texture)
+		DrawMovie(SplashScreenVideo, 0, (RealGraphicHeight/2-ScaledGraphicHeight/2), RealGraphicWidth, ScaledGraphicHeight)
 		Flip
 	Until (GetKey() Or (Not IsStreamPlaying_Strict(SplashScreenAudio)))
 	StopStream_Strict(SplashScreenAudio)
-	BlitzMovie_Stop()
-	BlitzMovie_Close()
-	FreeImage image
+	CloseMovie(SplashScreenVideo)
 	
 	Cls
 	Flip
-	
-	moviefile$ = "GFX\menu\startup_TSS"
-	BlitzMovie_Open(moviefile$+".avi") ;Get movie size
-	moview = BlitzMovie_GetWidth()
-	movieh = BlitzMovie_GetHeight()
-	BlitzMovie_Close()
-	image = CreateImage(moview, movieh)
-	SplashScreenVideo = BlitzMovie_OpenDecodeToImage(moviefile$+".avi", image, False)
-	SplashScreenVideo = BlitzMovie_Play()
-	SplashScreenAudio = StreamSound_Strict(moviefile$+".ogg",SFXVolume,0)
-	Repeat
-		Cls
-		ProjectImage(image, RealGraphicWidth, ScaledGraphicHeight, Quad, Texture)
-		Flip
-	Until (GetKey() Or (Not IsStreamPlaying_Strict(SplashScreenAudio)))
-	StopStream_Strict(SplashScreenAudio)
-	BlitzMovie_Stop()
-	BlitzMovie_Close()
-	
-	FreeTexture Texture
-	FreeEntity Quad
-	FreeEntity Cam
-	FreeImage image
-	Cls
-	Flip
-	
+
+End Function
+
+Function PlayStartupVideos()
+
+	If GetINIInt("options.ini","options","play startup video")=0 Then Return
+
+	PlayMovie("GFX\menu\startup_Undertow")
+	PlayMovie("GFX\menu\startup_TSS")
+
 End Function
 
 Function ProjectImage(img, w#, h#, Quad%, Texture%)

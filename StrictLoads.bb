@@ -39,13 +39,13 @@ Function AutoReleaseSounds()
 			If snd\channels[i] <> 0 Then
 				If ChannelPlaying(snd\channels[i]) Then
 					tryRelease = False
-					snd\releaseTime = MilliSecs2()+5000
+					snd\releaseTime = MilliSecs()+5000
 					Exit
 				EndIf
 			EndIf
 		Next
 		If tryRelease Then
-			If snd\releaseTime < MilliSecs2() Then
+			If snd\releaseTime < MilliSecs() Then
 				If snd\internalHandle <> 0 Then
 					FreeSound snd\internalHandle
 					snd\internalHandle = 0
@@ -84,7 +84,7 @@ Function PlaySound_Strict%(sndHandle%)
 						snd\channels[i] = PlaySound(snd\internalHandle)
 					EndIf
 					ChannelVolume snd\channels[i],SFXVolume#
-					snd\releaseTime = MilliSecs2()+5000 ;release after 5 seconds
+					snd\releaseTime = MilliSecs()+5000 ;release after 5 seconds
 					Return snd\channels[i]
 				EndIf
 			Else
@@ -111,7 +111,7 @@ Function PlaySound_Strict%(sndHandle%)
 					snd\channels[i] = PlaySound(snd\internalHandle)
 				EndIf
 				ChannelVolume snd\channels[i],SFXVolume#
-				snd\releaseTime = MilliSecs2()+5000 ;release after 5 seconds
+				snd\releaseTime = MilliSecs()+5000 ;release after 5 seconds
 				Return snd\channels[i]
 			EndIf
 		Next
@@ -146,11 +146,10 @@ Function FreeSound_Strict(sndHandle%)
 End Function
 
 Type Stream
-	Field sfx%
 	Field chn%
 End Type
 
-Function StreamSound_Strict(file$,volume#=1.0,custommode=Mode)
+Function StreamSound_Strict(file$,volume#=1.0,custommode=2)
 	If FileType(file$)<>1
 		CreateConsoleMsg("Sound " + Chr(34) + file$ + Chr(34) + " not found.")
 		If ConsoleOpening
@@ -160,17 +159,8 @@ Function StreamSound_Strict(file$,volume#=1.0,custommode=Mode)
 	EndIf
 	
 	Local st.Stream = New Stream
-	st\sfx = FSOUND_Stream_Open(file$,custommode,0)
 	
-	If st\sfx = 0
-		CreateConsoleMsg("Failed to stream Sound (returned 0): " + Chr(34) + file$ + Chr(34))
-		If ConsoleOpening
-			ConsoleOpen = True
-		EndIf
-		Return 0
-	EndIf
-	
-	st\chn = FSOUND_Stream_Play(FreeChannel,st\sfx)
+	st\chn = PlayMusic(file$,custommode)
 	
 	If st\chn = -1
 		CreateConsoleMsg("Failed to stream Sound (returned -1): " + Chr(34) + file$ + Chr(34))
@@ -179,10 +169,7 @@ Function StreamSound_Strict(file$,volume#=1.0,custommode=Mode)
 		EndIf
 		Return -1
 	EndIf
-	
-	FSOUND_SetVolume(st\chn,volume*255)
-	FSOUND_SetPaused(st\chn,False)
-	
+	ChannelVolume(st\chn,volume)
 	Return Handle(st)
 End Function
 
@@ -197,10 +184,7 @@ Function StopStream_Strict(streamHandle%)
 		CreateConsoleMsg("Failed to stop stream Sound: Return value "+st\chn)
 		Return
 	EndIf
-	
-	FSOUND_StopSound(st\chn)
-	FSOUND_Stream_Stop(st\sfx)
-	FSOUND_Stream_Close(st\sfx)
+	StopChannel(st\chn)
 	Delete st
 	
 End Function
@@ -217,8 +201,7 @@ Function SetStreamVolume_Strict(streamHandle%,volume#)
 		Return
 	EndIf
 	
-	FSOUND_SetVolume(st\chn,volume*255.0)
-	FSOUND_SetPaused(st\chn,False)
+	ChannelVolume(st\chn,volume)
 	
 End Function
 
@@ -234,7 +217,11 @@ Function SetStreamPaused_Strict(streamHandle%,paused%)
 		Return
 	EndIf
 	
-	FSOUND_SetPaused(st\chn,paused)
+	If paused Then
+		PauseChannel(st\chn)
+	Else
+		ResumeChannel(st\chn)
+	EndIf
 	
 End Function
 
@@ -250,7 +237,7 @@ Function IsStreamPlaying_Strict(streamHandle%)
 		Return
 	EndIf
 	
-	Return FSOUND_IsPlaying(st\chn)
+	Return ChannelPlaying(st\chn)
 	
 End Function
 
@@ -266,12 +253,10 @@ Function SetStreamPan_Strict(streamHandle%,pan#)
 		Return
 	EndIf
 	
-	;-1 = Left = 0
-	;0 = Middle = 127.5 (127)
-	;1 = Right = 255
-	Local fmod_pan% = 0
-	fmod_pan% = Int((255.0/2.0)+((255.0/2.0)*pan#))
-	FSOUND_SetPan(st\chn,fmod_pan%)
+	;-1 = Left
+	;0 = Middle
+	;1 = Right
+	ChannelPan(st\chn,pan)
 	
 End Function
 
@@ -303,7 +288,7 @@ Function LoadMesh_Strict(File$,parent=0)
 	tmp = LoadMesh(File$, parent)
 	If tmp = 0 Then RuntimeError "Failed to load 3D Mesh: " + File$ 
 	Return tmp  
-End Function   
+End Function
 
 Function LoadAnimMesh_Strict(File$,parent=0)
 	DebugLog File
@@ -311,15 +296,15 @@ Function LoadAnimMesh_Strict(File$,parent=0)
 	tmp = LoadAnimMesh(File$, parent)
 	If tmp = 0 Then RuntimeError "Failed to load 3D Animated Mesh: " + File$ 
 	Return tmp
-End Function   
+End Function
 
 ;don't use in LoadRMesh, as Reg does this manually there. If you wanna fuck around with the logic in that function, be my guest 
 Function LoadTexture_Strict(File$,flags=1)
 	If FileType(File$) <> 1 Then RuntimeError "Texture " + File$ + " not found."
 	tmp = LoadTexture(File$, flags+(256*(EnableVRam=True)))
-	If tmp = 0 Then RuntimeError "Failed to load Texture: " + File$ 
-	Return tmp 
-End Function   
+	If tmp = 0 Then RuntimeError "Failed to load Texture: " + File$
+	Return tmp
+End Function
 
 Function LoadBrush_Strict(file$,flags,u#=1.0,v#=1.0)
 	If FileType(file$)<>1 Then RuntimeError "Brush Texture " + file$ + "not found."
@@ -328,7 +313,7 @@ Function LoadBrush_Strict(file$,flags,u#=1.0,v#=1.0)
 	Return tmp 
 End Function 
 
-Function LoadFont_Strict(file$="Tahoma", height=13, bold=0, italic=0, underline=0)
+Function LoadFont_Strict(file$, height)
 	If FileType(file$)<>1 Then RuntimeError "Font " + file$ + " not found."
 	tmp = LoadFont(file, height, bold, italic, underline)  
 	If tmp = 0 Then RuntimeError "Failed to load Font: " + file$ 

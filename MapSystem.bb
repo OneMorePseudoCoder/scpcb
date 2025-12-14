@@ -826,8 +826,6 @@ Const max_deviation_distance% = 3
 Const return_chance% = 27
 Const center = 5 ;(gridsize-1) / 2
 
-Include "Drawportals.bb"
-
 Type Forest
 	Field TileMesh%[6]
 	Field DetailMesh%[6]
@@ -1069,26 +1067,26 @@ Function PlaceForest(fr.Forest,x#,y#,z#,r.Rooms)
 	
 	;load assets
 	
-	Local hmap[ROOM4], mask[ROOM4]
+	Local hmap[ROOM4 + 1], mask[ROOM4 + 1]
 	Local GroundTexture = LoadTexture_Strict("GFX\map\forest\forestfloor.jpg")
 	;TextureBlend GroundTexture, FE_ALPHACURRENT
 	Local PathTexture = LoadTexture_Strict("GFX\map\forest\forestpath.jpg")
 	;TextureBlend PathTexture, FE_ALPHACURRENT
 	
-	hmap[ROOM1]=LoadImage_Strict("GFX\map\forest\forest1h.png")
-	mask[ROOM1]=LoadTexture_Strict("GFX\map\forest\forest1h_mask.png",1+2)
+	hmap[ROOM1]=LoadTexture_Strict("GFX\map\forest\forest1h.png", 16385)
+	mask[ROOM1]=LoadTexture_Strict("GFX\map\forest\forest1h_mask.png",1+2+16385)
 	
-	hmap[ROOM2]=LoadImage_Strict("GFX\map\forest\forest2h.png")
-	mask[ROOM2]=LoadTexture_Strict("GFX\map\forest\forest2h_mask.png",1+2)
+	hmap[ROOM2]=LoadTexture_Strict("GFX\map\forest\forest2h.png", 16385)
+	mask[ROOM2]=LoadTexture_Strict("GFX\map\forest\forest2h_mask.png",1+2+16385)
 	
-	hmap[ROOM2C]=LoadImage_Strict("GFX\map\forest\forest2Ch.png")
-	mask[ROOM2C]=LoadTexture_Strict("GFX\map\forest\forest2Ch_mask.png",1+2)
+	hmap[ROOM2C]=LoadTexture_Strict("GFX\map\forest\forest2Ch.png", 16385)
+	mask[ROOM2C]=LoadTexture_Strict("GFX\map\forest\forest2Ch_mask.png",1+2+16385)
 	
-	hmap[ROOM3]=LoadImage_Strict("GFX\map\forest\forest3h.png")
-	mask[ROOM3]=LoadTexture_Strict("GFX\map\forest\forest3h_mask.png",1+2)
+	hmap[ROOM3]=LoadTexture_Strict("GFX\map\forest\forest3h.png", 16385)
+	mask[ROOM3]=LoadTexture_Strict("GFX\map\forest\forest3h_mask.png",1+2+16385)
 	
-	hmap[ROOM4]=LoadImage_Strict("GFX\map\forest\forest4h.png")
-	mask[ROOM4]=LoadTexture_Strict("GFX\map\forest\forest4h_mask.png",1+2)
+	hmap[ROOM4]=LoadTexture_Strict("GFX\map\forest\forest4h.png", 16385)
+	mask[ROOM4]=LoadTexture_Strict("GFX\map\forest\forest4h_mask.png",1+2+16385)
 	
 	For i = ROOM1 To ROOM4
 		;TextureBlend mask[i], FE_ALPHAMODULATE
@@ -1197,8 +1195,8 @@ Function PlaceForest(fr.Forest,x#,y#,z#,r.Rooms)
 					
 					;place trees and other details
 					;only placed on spots where the value of the heightmap is above 100
-					SetBuffer ImageBuffer(hmap[tile_type])
-					width = ImageWidth(hmap[tile_type])
+					SetBuffer TextureBuffer(hmap[tile_type])
+					width = TextureWidth(hmap[tile_type])
 					tempf4# = (tempf3/Float(width))
 					For lx = 3 To width-2
 						For ly = 3 To width-2
@@ -1338,7 +1336,7 @@ Function PlaceForest_MapCreator(fr.Forest,x#,y#,z#,r.Rooms)
 	
 	;load assets
 	
-	Local hmap[ROOM4], mask[ROOM4]
+	Local hmap[ROOM4 + 1], mask[ROOM4 + 1]
 	Local GroundTexture = LoadTexture_Strict("GFX\map\forest\forestfloor.jpg")
 	;TextureBlend GroundTexture, FE_ALPHACURRENT
 	Local PathTexture = LoadTexture_Strict("GFX\map\forest\forestpath.jpg")
@@ -1418,8 +1416,8 @@ Function PlaceForest_MapCreator(fr.Forest,x#,y#,z#,r.Rooms)
 					
 					;place trees and other details
 					;only placed on spots where the value of the heightmap is above 100
-					SetBuffer ImageBuffer(hmap[tile_type])
-					width = ImageWidth(hmap[tile_type])
+					SetBuffer TextureBuffer(hmap[tile_type])
+					width = TextureBuffer(hmap[tile_type])
 					tempf4# = (tempf3/Float(width))
 					For lx = 3 To width-2
 						For ly = 3 To width-2
@@ -1776,7 +1774,7 @@ Type Rooms
 	
 	Field SoundCHN%
 	
-	Field dp.DrawPortal, fr.Forest
+	Field fr.Forest
 	
 	Field SoundEmitter%[MaxRoomEmitters]
 	Field SoundEmitterObj%[MaxRoomEmitters]
@@ -1790,7 +1788,7 @@ Type Rooms
 	
 	Field Objects%[MaxRoomObjects]
 	Field Levers%[11]
-	Field RoomDoors.Doors[7]
+	Field RoomDoors.Doors[8]
 	Field NPC.NPCs[12]
 	Field grid.Grids
 	
@@ -1853,7 +1851,7 @@ End Function
 
 Function PlaceGrid_MapCreator(r.Rooms)
 	Local x,y,i
-	Local Meshes[6]
+	Local Meshes[7]
 	Local dr.Doors,it.Items
 	
 	For i=0 To 6
@@ -5983,7 +5981,7 @@ Function InitWayPoints(loadingstart=45)
 		Next
 	Next
 	
-	DebugLog "InitWaypoints() - "+(MilliSecs2()-temper)
+	DebugLog "InitWaypoints() - "+(MilliSecs()-temper)
 	
 End Function
 
@@ -6576,7 +6574,7 @@ Function UpdateSecurityCams()
 							EntityTexture(sc\ScrOverlay, OldAiPics(0))
 						End If
 						
-						If (MilliSecs2() Mod sc\PlayerState) >= Rand(600) Then
+						If (MilliSecs() Mod sc\PlayerState) >= Rand(600) Then
 							EntityTexture(sc\ScrOverlay, MonitorTexture)
 						Else
 							If sc\soundCHN = 0 Then
@@ -7814,7 +7812,7 @@ Function load_terrain(hmap,yscale#=0.7,t1%,t2%,mask%)
 	If hmap = 0 Then RuntimeError "Heightmap image "+hmap+" does not exist."
 	
 	; store heightmap dimensions
-	Local x = ImageWidth(hmap)-1, y = ImageHeight(hmap)-1
+	Local x = TextureWidth(hmap)-1, y = TextureWidth(hmap)-1
 	Local lx,ly,index
 	
 	; load texture and lightmaps
@@ -7854,22 +7852,24 @@ Function load_terrain(hmap,yscale#=0.7,t1%,t2%,mask%)
 	PositionMesh mesh2, -x/2.0,0.01,-y/2.0
 	
 	; alter vertice height to match the heightmap red channel
-	LockBuffer ImageBuffer(hmap)
-	LockBuffer TextureBuffer(mask)
+	HeightMapBuffer = TextureBuffer(hmap)
+	MaskBuffer = TextureBuffer(mask)
+	LockBuffer HeightMapBuffer
+	LockBuffer MaskBuffer
 	;SetBuffer 
 	For lx = 0 To x
 		For ly = 0 To y
 			;using vertex alpha and two meshes instead of FE_ALPHAWHATEVER
 			;it doesn't look perfect but it does the job
 			;you might get better results by downscaling the mask to the same size as the heightmap
-			Local maskX# = Min(lx*Float(TextureWidth(mask))/Float(ImageWidth(hmap)),TextureWidth(mask)-1)
-			Local maskY# = TextureHeight(mask)-Min(ly*Float(TextureHeight(mask))/Float(ImageHeight(hmap)),TextureHeight(mask)-1)
-			RGB1=ReadPixelFast(Min(lx,x-1),y-Min(ly,y-1),ImageBuffer(hmap))
+			Local maskX# = Min(lx*Float(TextureWidth(mask))/Float(TextureWidth(hmap)),TextureWidth(mask)-1)
+			Local maskY# = TextureHeight(mask)-Min(ly*Float(TextureHeight(mask))/Float(TextureHeight(hmap)),TextureHeight(mask)-1)
+			RGB1=ReadPixelFast(Min(lx,x-1),y-Min(ly,y-1),HeightMapBuffer)
 			r=(RGB1 And $FF0000)Shr 16 ;separate out the red
-			Local alpha#=(((ReadPixelFast(Max(maskX-5,5),Max(maskY-5,5),TextureBuffer(mask)) And $FF000000) Shr 24)/$FF)
-			alpha#=alpha+(((ReadPixelFast(Min(maskX+5,TextureWidth(mask)-5),Min(maskY+5,TextureHeight(mask)-5),TextureBuffer(mask)) And $FF000000) Shr 24)/$FF)
-			alpha#=alpha+(((ReadPixelFast(Max(maskX-5,5),Min(maskY+5,TextureHeight(mask)-5),TextureBuffer(mask)) And $FF000000) Shr 24)/$FF)
-			alpha#=alpha+(((ReadPixelFast(Min(maskX+5,TextureWidth(mask)-5),Max(maskY-5,5),TextureBuffer(mask)) And $FF000000) Shr 24)/$FF)
+			Local alpha#=(((ReadPixelFast(Max(maskX-5,5),Max(maskY-5,5),MaskBuffer) And $FF000000) Shr 24)/$FF)
+			alpha#=alpha+(((ReadPixelFast(Min(maskX+5,TextureWidth(mask)-5),Min(maskY+5,TextureHeight(mask)-5),MaskBuffer) And $FF000000) Shr 24)/$FF)
+			alpha#=alpha+(((ReadPixelFast(Max(maskX-5,5),Min(maskY+5,TextureHeight(mask)-5),MaskBuffer) And $FF000000) Shr 24)/$FF)
+			alpha#=alpha+(((ReadPixelFast(Min(maskX+5,TextureWidth(mask)-5),Max(maskY-5,5),MaskBuffer) And $FF000000) Shr 24)/$FF)
 			alpha#=alpha*0.25
 			alpha#=Sqr(alpha)
 			
@@ -7882,8 +7882,8 @@ Function load_terrain(hmap,yscale#=0.7,t1%,t2%,mask%)
 			VertexTexCoords surf2,index,lx,-ly 
 		Next
 	Next
-	UnlockBuffer TextureBuffer(mask)
-	UnlockBuffer ImageBuffer(hmap)
+	UnlockBuffer MaskBuffer
+	UnlockBuffer HeightMapBuffer
 	
 	UpdateNormals mesh
 	UpdateNormals mesh2
@@ -8200,7 +8200,7 @@ Function SetChunkDataValues()
 		Next
 	Next
 	
-	SeedRnd MilliSecs2()
+	SeedRnd MilliSecs()
 	
 End Function
 
@@ -8256,7 +8256,7 @@ Function CreateChunkParts(r.Rooms)
 		EndIf
 	Next
 	
-	SeedRnd MilliSecs2()
+	SeedRnd MilliSecs()
 	
 End Function
 
