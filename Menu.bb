@@ -380,10 +380,13 @@ Function UpdateMainMenu()
 					
 					SeedRnd GenerateSeedNumber(RandomSeed)
 					
-					Local SameFound% = False
+					Local SameFound% = 0
 					
-					For  i% = 1 To SaveGameAmount
-						If SaveGames(i - 1) = CurrSave Then SameFound = SameFound + 1
+					For i% = 1 To SaveGameAmount
+						If (SameFound = 0 And SaveGames(i - 1) = CurrSave) Or (SameFound > 0 And SaveGames(i - 1) = CurrSave + " (" + (SameFound + 1) + ")") Then
+							SameFound = SameFound + 1
+							i = 0
+						EndIf
 					Next
 						
 					If SameFound > 0 Then CurrSave = CurrSave + " (" + (SameFound + 1) + ")"
@@ -964,14 +967,14 @@ Function UpdateMainMenu()
 						Framelimit% = 19+(CurrFrameLimit*100.0)
 						Color 255,255,0
 						Text(x + 25 * MenuScale, y + 25 * MenuScale, Framelimit%+" FPS")
+						If MouseOn(x+150*MenuScale,y+30*MenuScale,100*MenuScale+14,20)
+							DrawOptionsTooltip(tx,ty,tw,th,"framelimit",Framelimit)
+						EndIf
 					Else
 						CurrFrameLimit# = 0.0
 						Framelimit = 0
 					EndIf
 					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
-						DrawOptionsTooltip(tx,ty,tw,th,"framelimit",Framelimit)
-					EndIf
-					If MouseOn(x+150*MenuScale,y+30*MenuScale,100*MenuScale+14,20)
 						DrawOptionsTooltip(tx,ty,tw,th,"framelimit",Framelimit)
 					EndIf
 					;[End Block]
@@ -1097,8 +1100,7 @@ Function UpdateLauncher()
 	MenuWhite = LoadImage_Strict("GFX\menu\menuwhite.jpg")
 	MenuBlack = LoadImage_Strict("GFX\menu\menublack.jpg")	
 	MaskImage MenuBlack, 255,255,0
-	LauncherIMG = LoadImage_Strict("GFX\menu\launcher.jpg")
-	ButtonSFX% = LoadSound_Strict("SFX\Interact\Button.ogg")
+	Local LauncherIMG% = LoadImage_Strict("GFX\menu\launcher.png")
 	Local i%	
 	
 	For i = 0 To 3
@@ -1123,6 +1125,8 @@ Function UpdateLauncher()
 	BlinkMeterIMG% = LoadImage_Strict("GFX\blinkmeter.jpg")
 	
 	AppTitle "SCP - Containment Breach Launcher"
+	
+	Local quit% = False
 	
 	Repeat
 		
@@ -1235,10 +1239,11 @@ Function UpdateLauncher()
 			GraphicHeight = GfxModeHeights(SelectedGFXMode)
 			RealGraphicWidth = GraphicWidth
 			RealGraphicHeight = GraphicHeight
+			SetGfxDriver(SelectedGFXDriver)
 			Exit
 		EndIf
 		
-		If DrawButton(LauncherWidth - 30 - 90, LauncherHeight - 50, 100, 30, "EXIT", False, False, False) Then End
+		If DrawButton(LauncherWidth - 30 - 90, LauncherHeight - 50, 100, 30, "EXIT", False, False, False) Then quit = True : Exit
 		Flip
 	Forever
 	
@@ -1271,6 +1276,9 @@ Function UpdateLauncher()
 		PutINIValue(OptionFile, "options", "check for updates", "false")
 	EndIf
 	
+	FreeImage(LauncherIMG) : LauncherIMG = 0
+	
+	If quit Then End
 End Function
 
 
@@ -1278,11 +1286,10 @@ Function DrawTiledImageRect(img%, srcX%, srcY%, srcwidth#, srcheight#, x%, y%, w
 	
 	Local x2% = x
 	While x2 < x+width
+		If x2 + srcwidth > x + width Then srcwidth = (x + width) - x2
 		Local y2% = y
 		While y2 < y+height
-			If x2 + srcwidth > x + width Then srcwidth = srcwidth - Max((x2 + srcwidth) - (x + width), 1)
-			If y2 + srcheight > y + height Then srcheight = srcheight - Max((y2 + srcheight) - (y + height), 1)
-			DrawImageRect(img, x2, y2, srcX, srcY, srcwidth, srcheight)
+			DrawImageRect(img, x2, y2, srcX, srcY, srcwidth, Min((y + height) - y2, srcheight))
 			y2 = y2 + srcheight
 		Wend
 		x2 = x2 + srcwidth
@@ -2080,8 +2087,6 @@ Function DrawOptionsTooltip(x%,y%,width%,height%,option$,value#=0,ingame%=False)
 				G = 255
 				txt2 = "Usually, 60 FPS or higher is preferred. If you are noticing excessive stuttering at this setting, try lowering it to make your framerate more consistent."
 			EndIf
-		Case "antialiastext"
-			txt = Chr(34)+"Antialiased text"+Chr(34)+" smooths out the text before displaying. Makes text easier to read at high resolutions."
 			;[End Block]
 	End Select
 	

@@ -220,6 +220,7 @@ Function CreateNPC.NPCs(NPCtype%, x#, y#, z#)
 			;[End Block]
 		Case NPCtype372
 			;[Block]
+			n\NVName = "SCP-372"
 			n\Collider = CreatePivot()
 			EntityRadius n\Collider, 0.2
 			n\obj = LoadAnimMesh_Strict("GFX\npcs\372.b3d")
@@ -391,7 +392,7 @@ Function CreateNPC.NPCs(NPCtype%, x#, y#, z#)
 			FreeTexture tex
 			
 			EntityFX(n\obj2, 1 + 8)
-			EntityBlend(n\obj2, BLEND_ADD)
+			EntityBlend(n\obj2, 3)
 			SpriteViewMode(n\obj2, 2)
 			
 			n\Speed = (GetINIFloat("DATA\NPCs.ini", "forestmonster", "speed") / 100.0)
@@ -638,28 +639,26 @@ Function RemoveNPC(n.NPCs)
 		n\obj4 = 0
 	EndIf
 	
-	If (Not n\SoundChn_IsStream)
-		If (n\SoundChn <> 0 And ChannelPlaying(n\SoundChn)) Then
+	If n\SoundChn <> 0 Then
+		If (Not n\SoundChn_IsStream)
 			StopChannel(n\SoundChn)
+		Else
+			StopStream_Strict(n\SoundChn) : n\SoundChn_IsStream = False
 		EndIf
-	Else
-		If (n\SoundChn <> 0)
-			StopStream_Strict(n\SoundChn)
-		EndIf
+		n\SoundChn = 0
 	EndIf
 	
-	If (Not n\SoundChn2_IsStream)
-		If (n\SoundChn2 <> 0 And ChannelPlaying(n\SoundChn2)) Then
+	If n\SoundChn2 <> 0 Then
+		If (Not n\SoundChn2_IsStream)
 			StopChannel(n\SoundChn2)
+		Else
+			StopStream_Strict(n\SoundChn2) : n\SoundChn2_IsStream = False
 		EndIf
-	Else
-		If (n\SoundChn2 <> 0)
-			StopStream_Strict(n\SoundChn2)
-		EndIf
+		n\SoundChn2 = 0
 	EndIf
 	
-	If n\Sound<>0 Then FreeSound_Strict n\Sound
-	If n\Sound2<>0 Then FreeSound_Strict n\Sound2
+	If n\Sound<>0 Then FreeSound_Strict n\Sound : n\Sound = 0
+	If n\Sound2<>0 Then FreeSound_Strict n\Sound2 : n\Sound2 = 0
 	
 	FreeEntity(n\obj) : n\obj = 0
 	FreeEntity(n\Collider) : n\Collider = 0	
@@ -1256,9 +1255,8 @@ Function UpdateNPCs()
 							If n\SoundChn = 0
 								n\SoundChn = StreamSound_Strict("SFX\Music\096.ogg",0)
 								n\SoundChn_IsStream = True
-							Else
-								UpdateStreamSoundOrigin(n\SoundChn,Camera,n\Collider,8.0,1.0)
 							EndIf
+							UpdateStreamSoundOrigin(n\SoundChn,Camera,n\Collider,8.0,1.0)
 							
 							If n\State3 = -1
 								AnimateNPC(n,936,1263,0.1,False)
@@ -1297,7 +1295,9 @@ Function UpdateNPCs()
 													
 													n\Frame = 194
 													;n\Frame = 307
-													StopStream_Strict(n\SoundChn) : n\SoundChn=0
+													If n\SoundChn <> 0 Then
+														StopStream_Strict(n\SoundChn) : n\SoundChn = 0 : n\SoundChn_IsStream = False
+													EndIf
 													n\Sound = 0
 													n\State = 1
 													n\State3 = 0
@@ -1323,9 +1323,8 @@ Function UpdateNPCs()
 							If n\SoundChn = 0
 								n\SoundChn = StreamSound_Strict("SFX\SCP\096\Scream.ogg",0)
 								n\SoundChn_IsStream = True
-							Else
-								UpdateStreamSoundOrigin(n\SoundChn,Camera,n\Collider,7.5,1.0)
 							EndIf
+							UpdateStreamSoundOrigin(n\SoundChn,Camera,n\Collider,7.5,1.0)
 							
 							;If n\Sound2 = 0 Then
 							;	n\Sound2 = LoadSound_Strict("SFX\Music\096Chase.ogg")
@@ -1339,7 +1338,7 @@ Function UpdateNPCs()
 							;EndIf
 							If n\SoundChn2 = 0
 								n\SoundChn2 = StreamSound_Strict("SFX\Music\096Chase.ogg",0)
-								n\SoundChn2_IsStream = 2
+								n\SoundChn2_IsStream = True
 							Else
 								SetStreamVolume_Strict(n\SoundChn2,Min(Max(8.0-dist,0.6),1.0)*SFXVolume#)
 							EndIf
@@ -1504,9 +1503,8 @@ Function UpdateNPCs()
 						If n\SoundChn = 0
 							n\SoundChn = StreamSound_Strict("SFX\Music\096Angered.ogg",0)
 							n\SoundChn_IsStream = True
-						Else
-							UpdateStreamSoundOrigin(n\SoundChn,Camera,n\Collider,10.0,1.0)
 						EndIf
+						UpdateStreamSoundOrigin(n\SoundChn,Camera,n\Collider,10.0,1.0)
 						
 						If n\State=1 Then ; get up
 							If n\Frame<312
@@ -1538,7 +1536,9 @@ Function UpdateNPCs()
 								;AnimateNPC(n, 973, 1001, 0.5, False)
 								If n\Frame>846.9 Then ;1000.9 
 									n\State = 4
-									StopStream_Strict(n\SoundChn) : n\SoundChn=0
+									If n\SoundChn <> 0 Then
+										StopStream_Strict(n\SoundChn) : n\SoundChn = 0 : n\SoundChn_IsStream = False
+									EndIf
 								EndIf
 							Else
 								AnimateNPC(n,737,822,0.3)
@@ -1562,9 +1562,8 @@ Function UpdateNPCs()
 							If n\SoundChn = 0
 								n\SoundChn = StreamSound_Strict("SFX\Music\096.ogg",0)
 								n\SoundChn_IsStream = True
-							Else
-								UpdateStreamSoundOrigin(n\SoundChn,Camera,n\Collider,14.0,1.0)
 							EndIf
+							UpdateStreamSoundOrigin(n\SoundChn,Camera,n\Collider,14.0,1.0)
 							
 							If n\Frame>=422
 								n\State2=n\State2+FPSfactor
@@ -1639,7 +1638,9 @@ Function UpdateNPCs()
 													If n\Frame >= 422
 														n\Frame = 677 ;833
 													EndIf
-													StopStream_Strict(n\SoundChn) : n\SoundChn=0
+													If n\SoundChn <> 0 Then
+														StopStream_Strict(n\SoundChn) : n\SoundChn = 0 : n\SoundChn_IsStream = False
+													EndIf
 													n\Sound = 0
 													n\State = 2
 												EndIf
@@ -1678,7 +1679,7 @@ Function UpdateNPCs()
 					If ChannelPlaying(n\SoundChn) Then StopChannel(n\SoundChn)
 					If ChannelPlaying(n\SoundChn2) Then StopChannel(n\SoundChn2)
 					PositionEntity n\Collider,0,-500,0
-					PositionEntity n\obj,0,-500,0
+					ResetEntity n\Collider
 				Else
 					If n\Idle = 0.1 Then
 						If PlayerInReachableRoom() Then
@@ -1686,8 +1687,10 @@ Function UpdateNPCs()
 								If PlayerRoom\Adjacent[i]<>Null Then
 									For j = 0 To 3
 										If PlayerRoom\Adjacent[i]\Adjacent[j]<>Null Then
-											TeleportEntity(n\Collider,PlayerRoom\Adjacent[i]\Adjacent[j]\x,0.5,PlayerRoom\Adjacent[i]\Adjacent[j]\z,n\CollRadius,True)
-											Exit
+											If PlayerRoom\Adjacent[i]\Adjacent[j]<>PlayerRoom Then
+												TeleportEntity(n\Collider,PlayerRoom\Adjacent[i]\Adjacent[j]\x,0.5,PlayerRoom\Adjacent[i]\Adjacent[j]\z,n\CollRadius,True)
+												Exit
+											EndIf
 										EndIf
 									Next
 									Exit
@@ -1784,7 +1787,7 @@ Function UpdateNPCs()
 													Next
 												Else
 													DeathMSG = "An active instance of SCP-049-2 was discovered in [REDACTED]. Terminated by Nine-Tailed Fox."
-													Kill()
+													Kill() : KillAnim = 0
 												EndIf
 												PlaySound_Strict HorrorSFX(13)
 												If n\Sound2 <> 0 Then FreeSound_Strict(n\Sound2)
@@ -1995,9 +1998,7 @@ Function UpdateNPCs()
 									EndIf
 								EndIf
 								
-								If ChannelPlaying(n\SoundChn2)
-									UpdateSoundOrigin(n\SoundChn2,Camera,n\obj)
-								EndIf
+								UpdateSoundOrigin(n\SoundChn2,Camera,n\obj)
 							ElseIf (Not n\Idle)
 								If ChannelPlaying(n\SoundChn) Then
 									StopChannel(n\SoundChn)
@@ -2135,9 +2136,7 @@ Function UpdateNPCs()
 								EndIf
 							EndIf
 							
-							If ChannelPlaying(n\SoundChn2)
-								UpdateSoundOrigin(n\SoundChn2,Camera,n\obj)
-							EndIf
+							UpdateSoundOrigin(n\SoundChn2,Camera,n\obj)
 							;[End Block]
 					End Select
 				EndIf
@@ -2474,7 +2473,7 @@ Function UpdateNPCs()
 						If dist < 15.0 Then
 							
 							If WrapAngle(EntityYaw(n\Collider)-DeltaYaw(n\Collider, Collider))<90 Then
-								If EntityVisible(pvt,Collider) Then n\State = 1
+								If EntityVisible(n\Collider,Collider) Then n\State = 1
 							EndIf
 							
 						EndIf
@@ -2742,6 +2741,9 @@ Function UpdateNPCs()
 				If n\Frame > 286.5 And n\Frame < 288.5
 					n\IsDead = True
 				EndIf
+				If AnimTime(n\obj) > 286.5 And AnimTime(n\obj) < 288.5 Then
+					n\IsDead = True
+				EndIf
 				
 				n\Reload = Max(0, n\Reload - FPSfactor)
 				;RotateEntity(n\Collider, 0, EntityYaw(n\Collider), 0, True)
@@ -3000,16 +3002,18 @@ Function UpdateNPCs()
 							n\Idle = False
 							n\State = Rand(20, 60)
 							
-							If Rand(300)=1 Then PlaySound2(RustleSFX(Rand(0,2)),Camera, n\obj, 8, Rnd(0.0,0.2))
+							If Rand(300)=1 Then PlaySound2(RustleSFX(Rand(0,2)),Camera, n\Collider, 8, Rnd(0.0,0.2))
 						End If
-					Else
+					EndIf
+					
+					If (Not n\Idle) Then
 						PositionEntity(n\obj, EntityX(n\Collider) + Rnd(-0.005, 0.005), EntityY(n\Collider)+0.3+0.1*Sin(MilliSecs()/2), EntityZ(n\Collider) + Rnd(-0.005, 0.005))
 						RotateEntity n\obj, 0, EntityYaw(n\Collider), ((MilliSecs()/5) Mod 360)
 						
 						AnimateNPC(n, 32, 113, 0.4)
 						;Animate2(n\obj, AnimTime(n\obj), 32, 113, 0.4)
 						
-						If EntityInView(n\obj, Camera) Then
+						If EntityInView(n\obj, Camera) And (BlinkTimer < - 16 Or BlinkTimer > - 6) Then
 							GiveAchievement(Achv372)
 							
 							If Rand(30)=1 Then 
@@ -3037,7 +3041,10 @@ Function UpdateNPCs()
 							n\State = n\State-FPSfactor
 						EndIf
 						n\State=n\State-(FPSfactor/80.0)
-						If n\State <= 0 Then n\Idle = True	
+						If n\State <= 0 Then
+							n\Idle = True
+							PositionEntity(n\Collider, 0, 500, 0)
+						EndIf	
 					End If
 					
 				EndIf
@@ -3333,6 +3340,17 @@ Function UpdateNPCs()
 									HideEntity ForestNPC
 								EndIf
 							EndIf
+							If ForestNPCData[1]=0.0
+								If Rand(200)=1
+									ForestNPCData[1]=FPSfactor
+									EntityTexture ForestNPC,ForestNPCTex,ForestNPCData[0]+1
+								EndIf
+							ElseIf ForestNPCData[1]>0.0 And ForestNPCData[1]<5.0
+								ForestNPCData[1]=Min(ForestNPCData[1]+FPSfactor,5.0)
+							Else
+								ForestNPCData[1]=0
+								EntityTexture ForestNPC,ForestNPCTex,ForestNPCData[0]
+							EndIf
 						Else
 							HideEntity ForestNPC
 						EndIf
@@ -3366,14 +3384,14 @@ Function UpdateNPCs()
 											;spawn the monster between the empty cell and the cell the player is in
 											TFormPoint(((x2+x)/2)*12.0,0,((z2+z)/2)*12.0,fr\Forest_Pivot,0)
 											
+											PositionEntity n\Collider, TFormedX(), EntityY(fr\Forest_Pivot,True)+2.3, TFormedZ()
+											
 											;in view -> nope, keep searching for a more suitable cell
 											If EntityInView(n\Collider, Camera) Then
 												PositionEntity n\Collider, 0, -110, 0
 												DebugLog("spawned monster in view -> hide")
 											Else ; not in view -> all good
 												DebugLog("spawned monster successfully")
-												
-												PositionEntity n\Collider, TFormedX(), EntityY(fr\Forest_Pivot,True)+2.3, TFormedZ()
 												
 												x2 = gridsize
 												Exit												
@@ -3444,18 +3462,6 @@ Function UpdateNPCs()
 											EntityTexture ForestNPC,ForestNPCTex,ForestNPCData[0]
 										Else
 											ForestNPCData[2]=2
-										EndIf
-									ElseIf ForestNPCData[2]=1
-										If ForestNPCData[1]=0.0
-											If Rand(200)=1
-												ForestNPCData[1]=FPSfactor
-												EntityTexture ForestNPC,ForestNPCTex,ForestNPCData[0]+1
-											EndIf
-										ElseIf ForestNPCData[1]>0.0 And ForestNPCData[1]<5.0
-											ForestNPCData[1]=Min(ForestNPCData[1]+FPSfactor,5.0)
-										Else
-											ForestNPCData[1]=0
-											EntityTexture ForestNPC,ForestNPCTex,ForestNPCData[0]
 										EndIf
 									EndIf
 								EndIf
@@ -3913,7 +3919,9 @@ Function UpdateNPCs()
 						
 						If Rand(700)=1 Then PlaySound2(LoadTempSound("SFX\SCP\066\Eric"+Rand(1,3)+".ogg"),Camera, n\Collider, 8.0)
 						
-						If dist < 1.0+n\LastDist Then n\State = Rand(2,3)
+						If dist < 1.0+n\LastDist Then
+							n\State = Rand(2,3)
+						EndIf
 					Case 2 ;roll towards the player and make a sound, and then escape	
 						If n\Frame < 647 Then 
 							angle = CurveAngle(0, (AnimTime(n\obj)-2.0)/1.2445, 5.0)
@@ -4039,9 +4047,9 @@ Function UpdateNPCs()
 				EndIf
 				
 				If ChannelPlaying(n\SoundChn2)
-					UpdateSoundOrigin2(n\SoundChn2,Camera,n\Collider,20)
 					BlurTimer = Max((5.0-dist)*300,0)
 				EndIf
+				UpdateSoundOrigin2(n\SoundChn2,Camera,n\Collider,20)
 				
 				PositionEntity(n\obj, EntityX(n\Collider), EntityY(n\Collider) - 0.2, EntityZ(n\Collider))
 				
@@ -4072,7 +4080,7 @@ Function UpdateNPCs()
 					
 					If (WearingNightVision=0) Then
 						HideEntity n\obj
-						If dist<1 And n\Reload <= 0 And MsgTimer <= 0 Then
+						If dist<1 And n\Reload <= 0 Then
 							Select Rand(6)
 								Case 1
 									Msg="You feel something breathing right next to you."
@@ -4176,13 +4184,7 @@ Function UpdateNPCs()
 								If (WearingNightVision>0) Then GiveAchievement(Achv966)
 								
 								If (Not Wearing714) And (WearingGasMask<3) And (WearingHazmat<3) And dist<16 Then
-									BlinkEffect = Max(BlinkEffect, 1.5)
-									BlinkEffectTimer = 1000
-									
-									StaminaEffect = 2.0
-									StaminaEffectTimer = 1000
-									
-									If MsgTimer<=0 And StaminaEffect<1.5 Then
+									If StaminaEffect<1.5 Then
 										Select Rand(4)
 											Case 1
 												Msg = "You feel exhausted."
@@ -4196,6 +4198,12 @@ Function UpdateNPCs()
 										
 										MsgTimer = 7*70
 									EndIf
+									
+									BlinkEffect = Max(BlinkEffect, 1.5)
+									BlinkEffectTimer = 1000
+									
+									StaminaEffect = 2.0
+									StaminaEffectTimer = 1000
 								EndIf							
 							EndIf
 							
@@ -4218,7 +4226,7 @@ Function UpdateNPCs()
 							EndIf
 							
 							;If n\Frame>1393.0 And prevFrame<=1393.0 Or n\Frame>1589.0 And prevFrame<=1589.0 Or n\Frame>2000.0 And prevFrame<=2000.0 Then
-							If n\Frame>271.0 And prevFrame<=271.0 Or n\Frame>354 Or n\Frame>314.0 And prevFrame<=314.0 Or n\Frame>301.0 And prevFrame<=301.0
+							If (n\Frame>271.0 And prevFrame<=271.0) Or (n\Frame>314.0 And prevFrame<=314.0) Or (n\Frame>301.0 And prevFrame<=301.0)
 								PlaySound2(LoadTempSound("SFX\SCP\966\Idle"+Rand(1,3)+".ogg"), Camera, n\Collider)
 							EndIf
 							
@@ -4226,16 +4234,12 @@ Function UpdateNPCs()
 							RotateEntity n\Collider,0.0,CurveAngle(angle,EntityYaw(n\Collider),20.0),0.0
 						Case 5,6,8 ;walking or chasing
 							;If n\Frame<2343.0 Then
-							If n\Frame<580.0 And n\Frame>214.0 ;start walking
+							If n\Frame>213.0 And n\Frame<580.0 ;start walking
 								;AnimateNPC(n, 2319, 2343, 0.5, False)
 								AnimateNPC(n, 556, 580, 0.25, False)
 							Else
 								;AnimateNPC(n, 2343, 2391, n\CurrSpeed*25.0)
-								If n\CurrSpeed >= 0.005 Then
-									AnimateNPC(n, 580, 628, n\CurrSpeed*25.0)
-								Else
-									AnimateNPC(n, 2, 214, 0.25)
-								EndIf
+								AnimateNPC(n, 580, 628, n\CurrSpeed*25.0)
 								
 								;chasing the player
 								If n\State = 8 And dist<32 Then
@@ -4331,7 +4335,7 @@ Function UpdateNPCs()
 							EndIf
 							
 							;If n\Frame>2300.0 Then
-							If n\Frame>557.0
+							If n\Frame>556.0
 								;AnimateNPC(n, 2391, 2416, 1.0, False
 								AnimateNPC(n, 628, 652, 0.25, False)
 								;If n\Frame>2415.0 Then
@@ -4375,7 +4379,7 @@ Function UpdateNPCs()
 							
 							If dist<1.0 Then
 								;If n\Frame>2173.0 And prevFrame<=2173.0 Or n\Frame>2203.0 And prevFrame<=2203.0 Or n\Frame>2227.0 And prevFrame<=2227.0 Then
-								If n\Frame>470.0 And prevFrame<=470.0 Or n\Frame>500.0 And prevFrame<=500.0 Or n\Frame>527.0 And prevFrame<=527.0
+								If (n\Frame>470.0 And prevFrame<=470.0) Or (n\Frame>500.0 And prevFrame<=500.0) Or (n\Frame>527.0 And prevFrame<=527.0)
 									PlaySound2(LoadTempSound("SFX\General\Slash"+Rand(1,2)+".ogg"), Camera, n\Collider)
 									Injuries = Injuries + Rnd(0.5,1.0)								
 								EndIf	
@@ -4784,9 +4788,7 @@ Function UpdateNPCs()
 							;[End Block]
 					End Select
 					
-					If n\SoundChn <> 0 And ChannelPlaying(n\SoundChn) Then
-						UpdateSoundOrigin(n\SoundChn,Camera,n\Collider,20.0)
-					EndIf
+					UpdateSoundOrigin(n\SoundChn,Camera,n\Collider,20.0)
 					
 					MoveEntity n\Collider,0,0,n\CurrSpeed*FPSfactor
 					
@@ -6684,7 +6686,7 @@ Function UpdateMTFUnit(n.NPCs)
 							Else
 								If (Not n\Target\IsDead)
 									If n\Sound <> 0 Then FreeSound_Strict n\Sound : n\Sound = 0
-									If n\NPCtype = NPCtypeZombie
+									If n\Target\NPCtype = NPCtypeZombie
 										n\Sound = LoadSound_Strict("SFX\Character\MTF\049\Player0492_2.ogg")
 										PlayMTFSound(n\Sound, n)
 									Else
@@ -7453,9 +7455,6 @@ End Function
 
 
 ;~IDEal Editor Parameters:
-;~F#0#A#4F#6B#85#95#C5#D5#DE#EC#FB#10F#12F#159#16D#18A#1CB#1E2#203#226
-;~F#230#248#25C#27C#2AC#3A0#49B#5FE#803#89E#9FB#A00#A37#AD9#B15#BA8#C14#D28#DF7#EAE
-;~F#F61#107F#1088#1248#126F#127A#12A2#12B5#12B6#1313#1472#15BE#1640#169F#171F#174F#1775#178E#180E#18BC
-;~F#1946#1957#1971#1982#198C#19AD#1A18#1A99#1AB2#1ACB#1AD9#1AF5#1B07#1B2B#1B4E#1B5C
+;~F#0
 ;~B#197#12A9#1343#13DC#1590#169B#185C#18B8
 ;~C#Blitz3D

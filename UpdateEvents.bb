@@ -1504,6 +1504,7 @@ Function UpdateEvents()
 									e\room\RoomDoors[1]\locked = True
 								EndIf
 							EndIf
+							Exit
 						EndIf
 					Next
 				Else
@@ -1522,6 +1523,7 @@ Function UpdateEvents()
 									e\room\RoomDoors[1]\locked = True
 								EndIf
 							EndIf
+							Exit
 						EndIf
 					Next
 				EndIf
@@ -1534,12 +1536,8 @@ Function UpdateEvents()
 				
 				e\EventState = e\room\RoomDoors[0]\open
 				
-				If ChannelPlaying(e\SoundCHN)
-					UpdateSoundOrigin(e\SoundCHN,Camera,e\room\RoomDoors[0]\obj)
-				EndIf
-				If ChannelPlaying(e\SoundCHN2)
-					UpdateSoundOrigin(e\SoundCHN2,Camera,e\room\RoomDoors[1]\obj)
-				EndIf
+				UpdateSoundOrigin(e\SoundCHN,Camera,e\room\RoomDoors[0]\obj)
+				UpdateSoundOrigin(e\SoundCHN2,Camera,e\room\RoomDoors[1]\obj)
 				;[End Block]
 			Case "coffin", "coffin106"
 				;[Block]
@@ -1738,6 +1736,7 @@ Function UpdateEvents()
 									If (Inventory(i) <> Null) Then
 										If (WearingNightVision = 1 And Inventory(i)\itemtemplate\tempname = "nvgoggles") Or (WearingNightVision = 2 And Inventory(i)\itemtemplate\tempname = "supernv") Or (WearingNightVision = 3 And Inventory(i)\itemtemplate\tempname = "finenvgoggles") Then
 											Inventory(i)\state2 = 0
+											Exit
 										EndIf
 									EndIf
 								Next
@@ -2921,7 +2920,7 @@ Function UpdateEvents()
 							HideEntity e\room\Objects[4]
 						EndIf
 						
-						If Curr106\State < -10 And e\EventState = 0 Then 
+						If Curr106\State <= -10 And e\EventState = 0 Then 
 							For i = 0 To 2
 								If Distance(EntityX(Curr106\Collider),EntityZ(Curr106\Collider),EntityX(e\room\Objects[i],True),EntityZ(e\room\Objects[i],True)) < 300.0*RoomScale Then
 									;play the activation sound
@@ -2970,7 +2969,7 @@ Function UpdateEvents()
 									e\room\NPC[0]\State = 3
 								EndIf
 								
-								If Curr106\State < -10 Then
+								If Curr106\State <= -10 Then
 									For i = 0 To 2
 										If Distance(EntityX(Curr106\Collider),EntityZ(Curr106\Collider),EntityX(e\room\Objects[i],True),EntityZ(e\room\Objects[i],True)) < 250.0*RoomScale Then
 											ShowEntity Light
@@ -3354,7 +3353,7 @@ Function UpdateEvents()
 											If e\room\grid\grid[(ix+1)+((iy)*gridsz)]>0 And e\room\grid\grid[(ix-1)+((iy)*gridsz)]>0 Then ;horizontal
 												tempInt%=CopyEntity(Meshes[e\room\grid\grid[ix+(iy*gridsz)]-1])
 												
-												AddLight%(Null, e\room\x+ix*2.0, 8.0+(368.0*RoomScale), e\room\z+iy*2.0, 2, 500.0 * RoomScale, 255, 255, 255)
+												AddLight%(Null, e\room\x+ix*2.0, 8.0+(372.0*RoomScale), e\room\z+iy*2.0, 2, 500.0 * RoomScale, 255, 255, 255)
 												
 												tempInt2=Rand(0,1)
 												RotateEntity tempInt,0.0,tempInt2*180.0+90,0.0
@@ -3363,7 +3362,7 @@ Function UpdateEvents()
 											ElseIf e\room\grid\grid[(ix)+((iy+1)*gridsz)]>0 And e\room\grid\grid[(ix)+((iy-1)*gridsz)]>0 Then ;vertical
 												tempInt%=CopyEntity(Meshes[e\room\grid\grid[ix+(iy*gridsz)]-1])
 												
-												AddLight%(Null, e\room\x+ix*2.0, 8.0+(368.0*RoomScale), e\room\z+iy*2.0, 2, 500.0 * RoomScale, 255, 255, 255)
+												AddLight%(Null, e\room\x+ix*2.0, 8.0+(372.0*RoomScale), e\room\z+iy*2.0, 2, 500.0 * RoomScale, 255, 255, 255)
 												
 												tempInt2=Rand(0,1)
 												RotateEntity tempInt,0.0,tempInt2*180.0,0.0
@@ -3371,7 +3370,7 @@ Function UpdateEvents()
 											Else
 												tempInt%=CopyEntity(Meshes[e\room\grid\grid[ix+(iy*gridsz)]])
 												
-												AddLight%(Null, e\room\x+ix*2.0, 8.0+(412.0*RoomScale), e\room\z+iy*2.0, 2, 500.0 * RoomScale, 255, 255, 255)
+												AddLight%(Null, e\room\x+ix*2.0, 8.0+(416.0*RoomScale), e\room\z+iy*2.0, 2, 500.0 * RoomScale, 255, 255, 255)
 												
 												ia=e\room\grid\grid[(ix)+((iy+1)*gridsz)]
 												ib=e\room\grid\grid[(ix)+((iy-1)*gridsz)]
@@ -3431,9 +3430,9 @@ Function UpdateEvents()
 									
 									Select e\room\grid\grid[ix+(iy*gridsz)]
 										Case 1;,5,6
-											AddLight%(Null, e\room\x+ix*2.0, 8.0+(368.0*RoomScale), e\room\z+iy*2.0, 2, 500.0 * RoomScale, 255, 255, 255)
+											AddLight%(Null, e\room\x+ix*2.0, 8.0+(372.0*RoomScale), e\room\z+iy*2.0, 2, 500.0 * RoomScale, 255, 255, 255)
 										Case 3,4
-											AddLight%(Null, e\room\x+ix*2.0, 8.0+(412.0*RoomScale), e\room\z+iy*2.0, 2, 500.0 * RoomScale, 255, 255, 255)
+											AddLight%(Null, e\room\x+ix*2.0, 8.0+(416.0*RoomScale), e\room\z+iy*2.0, 2, 500.0 * RoomScale, 255, 255, 255)
 										Case 7
 											AddLight%(Null, e\room\x+ix*2.0-(Sin(EntityYaw(tempInt,True))*504.0*RoomScale)+(Cos(EntityYaw(tempInt,True))*16.0*RoomScale), 8.0+(396.0*RoomScale), e\room\z+iy*2.0+(Cos(EntityYaw(tempInt,True))*504.0*RoomScale)+(Sin(EntityYaw(tempInt,True))*16.0*RoomScale), 2, 500.0 * RoomScale, 255, 200, 200)
 											it = CreateItem("SCP-500-01","scp500",e\room\x+ix*2.0+(Cos(EntityYaw(tempInt,True))*(-208.0)*RoomScale)-(Sin(EntityYaw(tempInt,True))*1226.0*RoomScale),8.0+(80.0*RoomScale),e\room\z+iy*2.0+(Sin(EntityYaw(tempInt,True))*(-208.0)*RoomScale)+(Cos(EntityYaw(tempInt,True))*1226.0*RoomScale))
@@ -3645,13 +3644,13 @@ Function UpdateEvents()
 										Case 2
 											If e\room\grid\grid[(ix+1)+((iy)*gridsz)]>0 And e\room\grid\grid[(ix-1)+((iy)*gridsz)]>0 Then ;horizontal
 												tempInt%=CopyEntity(Meshes[e\room\grid\grid[ix+(iy*gridsz)]-1])
-												AddLight%(Null, e\room\x+ix*2.0, 8.0+(368.0*RoomScale), e\room\z+iy*2.0, 2, 500.0 * RoomScale, 255, 255, 255)
+												AddLight%(Null, e\room\x+ix*2.0, 8.0+(372.0*RoomScale), e\room\z+iy*2.0, 2, 500.0 * RoomScale, 255, 255, 255)
 											ElseIf e\room\grid\grid[(ix)+((iy+1)*gridsz)]>0 And e\room\grid\grid[(ix)+((iy-1)*gridsz)]>0 Then ;vertical
 												tempInt%=CopyEntity(Meshes[e\room\grid\grid[ix+(iy*gridsz)]-1])
-												AddLight%(Null, e\room\x+ix*2.0, 8.0+(368.0*RoomScale), e\room\z+iy*2.0, 2, 500.0 * RoomScale, 255, 255, 255)
+												AddLight%(Null, e\room\x+ix*2.0, 8.0+(372.0*RoomScale), e\room\z+iy*2.0, 2, 500.0 * RoomScale, 255, 255, 255)
 											Else
 												tempInt%=CopyEntity(Meshes[e\room\grid\grid[ix+(iy*gridsz)]])
-												AddLight%(Null, e\room\x+ix*2.0, 8.0+(412.0*RoomScale), e\room\z+iy*2.0, 2, 500.0 * RoomScale, 255, 255, 255)
+												AddLight%(Null, e\room\x+ix*2.0, 8.0+(416.0*RoomScale), e\room\z+iy*2.0, 2, 500.0 * RoomScale, 255, 255, 255)
 											EndIf
 										Case 3,4
 											tempInt%=CopyEntity(Meshes[e\room\grid\grid[ix+(iy*gridsz)]])
@@ -3666,9 +3665,9 @@ Function UpdateEvents()
 									
 									Select e\room\grid\grid[ix+(iy*gridsz)]
 										Case 1,5,6
-											AddLight%(Null, e\room\x+ix*2.0, 8.0+(368.0*RoomScale), e\room\z+iy*2.0, 2, 500.0 * RoomScale, 255, 255, 255)
+											AddLight%(Null, e\room\x+ix*2.0, 8.0+(372.0*RoomScale), e\room\z+iy*2.0, 2, 500.0 * RoomScale, 255, 255, 255)
 										Case 3,4
-											AddLight%(Null, e\room\x+ix*2.0, 8.0+(412.0*RoomScale), e\room\z+iy*2.0, 2, 500.0 * RoomScale, 255, 255, 255)
+											AddLight%(Null, e\room\x+ix*2.0, 8.0+(416.0*RoomScale), e\room\z+iy*2.0, 2, 500.0 * RoomScale, 255, 255, 255)
 										Case 7
 											AddLight%(Null, e\room\x+ix*2.0-(Sin(EntityYaw(tempInt,True))*504.0*RoomScale)+(Cos(EntityYaw(tempInt,True))*16.0*RoomScale), 8.0+(396.0*RoomScale), e\room\z+iy*2.0+(Cos(EntityYaw(tempInt,True))*504.0*RoomScale)+(Sin(EntityYaw(tempInt,True))*16.0*RoomScale), 2, 500.0 * RoomScale, 255, 200, 200)
 									End Select
@@ -3900,6 +3899,8 @@ Function UpdateEvents()
 							Next
 						Next
 					EndIf ;entityy(collider) >4
+					
+					UpdateGrid(e\room\grid)
 					
 					e\EventState2 = UpdateElevators(e\EventState2, e\room\RoomDoors[0], e\room\RoomDoors[1],e\room\Objects[2],e\room\Objects[3], e, False)
 					e\EventState3 = UpdateElevators(e\EventState3, e\room\RoomDoors[2], e\room\RoomDoors[3],e\room\Objects[4],e\room\Objects[5], e, False)
@@ -4388,8 +4389,9 @@ Function UpdateEvents()
 							ScaleSprite(de\obj, de\Size,de\Size)
 							
 							Curr096\State=5
-							StopStream_Strict(Curr096\SoundChn)
-							Curr096\SoundChn=0
+							If Curr096\SoundChn <> 0 Then
+								StopStream_Strict(Curr096\SoundChn) : Curr096\SoundChn=0 : Curr096\SoundChn_isStream = False
+							EndIf
 							
 							RemoveNPC(e\room\NPC[0])
 							e\room\NPC[0]=Null
@@ -4585,7 +4587,7 @@ Function UpdateEvents()
 						
 						Select e\EventState 
 							Case 2
-								i = Rand(MaxItemAmount)
+								i = Rand(0,MaxItemAmount-1)
 								If Inventory(i)<>Null Then RemoveItem(Inventory(i))								
 							Case 5
 								Injuries = Injuries + 0.3
@@ -4987,9 +4989,7 @@ Function UpdateEvents()
 									e\room\NPC[2]\IgnorePlayer = True
 							End Select
 							
-							If ChannelPlaying(e\SoundCHN2)
-								UpdateSoundOrigin(e\SoundCHN2,Camera,e\room\RoomDoors[4]\obj,400)
-							EndIf
+							UpdateSoundOrigin(e\SoundCHN2,Camera,e\room\RoomDoors[4]\obj,400)
 							
 							PlayerFallingPickDistance = 0.0
 							
@@ -5924,28 +5924,33 @@ Function UpdateEvents()
 								;e\Sound = LoadSound_Strict("SFX\SCP\079\Speech.ogg")
 								;LoadEventSound(e,"SFX\SCP\079\Speech.ogg")
 								;e\SoundCHN = PlaySound_Strict (e\Sound)
+								If e\SoundCHN<>0
+									StopStream_Strict(e\SoundCHN) : e\SoundCHN=0 : e\SoundCHN_isStream = False
+								EndIf
 								e\SoundCHN = StreamSound_Strict("SFX\SCP\079\Speech.ogg",SFXVolume,0)
 								e\SoundCHN_isStream = True
 							EndIf							
 						;ElseIf e\EventState = 3
-						ElseIf e\EventState < 2000 Then ;3500
+						ElseIf e\EventState < 6000 Then ;3500
 							;If ChannelPlaying(e\SoundCHN) Then
-							If IsStreamPlaying_Strict(e\SoundCHN)
-								If Rand(3) = 1 Then
-									EntityTexture(e\room\Objects[1], OldAiPics(0))
+							If e\SoundCHN <> 0 Then
+								If IsStreamPlaying_Strict(e\SoundCHN)
+									If Rand(3) = 1 Then
+										EntityTexture(e\room\Objects[1], OldAiPics(0))
+										ShowEntity (e\room\Objects[1])
+									ElseIf Rand(10) = 1 
+										HideEntity (e\room\Objects[1])							
+									EndIf							
+								Else
+									;If e\Sound <> 0 Then FreeSound_Strict e\Sound : e\Sound = 0
+									If e\SoundCHN<>0
+										StopStream_Strict(e\SoundCHN) : e\SoundCHN=0 : e\SoundCHN_isStream = False
+									EndIf
+									EntityTexture(e\room\Objects[1], OldAiPics(1))
 									ShowEntity (e\room\Objects[1])
-								ElseIf Rand(10) = 1 
-									HideEntity (e\room\Objects[1])							
-								EndIf							
-							Else
-								;If e\Sound <> 0 Then FreeSound_Strict e\Sound : e\Sound = 0
-								If e\SoundCHN<>0
-									StopStream_Strict(e\SoundCHN) : e\SoundCHN=0
 								EndIf
-								EntityTexture(e\room\Objects[1], OldAiPics(1))
-								ShowEntity (e\room\Objects[1])
-								e\EventState = e\EventState + FPSfactor
 							EndIf
+							e\EventState = e\EventState + FPSfactor
 						Else
 							If EntityDistance(e\room\Objects[0], Collider)<2.5 Then 
 								e\EventState = 10001
@@ -5953,9 +5958,10 @@ Function UpdateEvents()
 								;LoadEventSound(e,"SFX\SCP\079\Refuse.ogg")
 								;e\SoundCHN = PlaySound_Strict (e\Sound)
 								If e\SoundCHN<>0
-									StopStream_Strict(e\SoundCHN) : e\SoundCHN=0
+									StopStream_Strict(e\SoundCHN) : e\SoundCHN=0 : e\SoundCHN_isStream = False
 								EndIf
 								e\SoundCHN = StreamSound_Strict("SFX\SCP\079\Refuse.ogg",SFXVolume,0)
+								e\SoundCHN_isStream = True
 								;EntityTexture(e\room\Objects[1], OldAiPics(1))
 								;ShowEntity (e\room\Objects[1])
 							EndIf
@@ -5963,7 +5969,9 @@ Function UpdateEvents()
 					Else
 						If e\SoundCHN<>0
 							If (Not IsStreamPlaying_Strict(e\SoundCHN))
-								e\SoundCHN = 0
+								If e\SoundCHN<>0
+									StopStream_Strict(e\SoundCHN) : e\SoundCHN=0 : e\SoundCHN_isStream = False
+								EndIf
 								EntityTexture(e\room\Objects[1], OldAiPics(1))
 								ShowEntity (e\room\Objects[1])
 							Else
@@ -5985,7 +5993,7 @@ Function UpdateEvents()
 						;LoadEventSound(e,"SFX\SCP\079\GateB.ogg")
 						;e\SoundCHN = PlaySound_Strict (e\Sound)
 						If e\SoundCHN<>0
-							StopStream_Strict(e\SoundCHN) : e\SoundCHN=0
+							StopStream_Strict(e\SoundCHN) : e\SoundCHN=0 : e\SoundCHN_isStream = False
 						EndIf
 						e\SoundCHN = StreamSound_Strict("SFX\SCP\079\GateB.ogg",SFXVolume,0)
 						e\SoundCHN_isStream = True
@@ -6206,7 +6214,7 @@ Function UpdateEvents()
 			Case "room205"
 				;[Block]
 				If PlayerRoom = e\room Then
-					If e\EventState=0 Or e\room\Objects[0]=0 Then
+					If e\EventState=0 Or e\EventStr <> "loaddone" Then
 						If e\EventStr = "" And QuickLoadPercent = -1
 							QuickLoadPercent = 0
 							QuickLoad_CurrEvent = e
@@ -6425,7 +6433,7 @@ Function UpdateEvents()
 						;ShowEntity fr\DetailEntities[0]
 						;ShowEntity fr\DetailEntities[1]
 						
-						UpdateForest(fr,Collider)
+						UpdateForest(fr)
 						
 						If e\EventStr = "" And QuickLoadPercent = -1
 							QuickLoadPercent = 0
@@ -6452,9 +6460,9 @@ Function UpdateEvents()
 						EndIf
 						
 						If e\room\NPC[0]<>Null
-							If e\room\NPC[0]\State = 0 Or EntityDistance(Collider, e\room\NPC[0]\Collider)>20.0 Then
+							If e\room\NPC[0]\State = 0 Or EntityDistance(Collider, e\room\NPC[0]\Collider)>HideDistance Then
 								e\EventState3 = e\EventState3 + (1+CurrSpeed)* FPSfactor
-								If (e\EventState3 Mod 500) < 10.0 And ((e\EventState3-FPSfactor) Mod 500) > 490.0 Then
+								If (e\EventState3 Mod 500) < 10.0 And ((e\EventState3-(1+CurrSpeed)*FPSfactor) Mod 500) > 490.0 Then
 									;If e\EventState3 > 3500 And Rnd(10000)<e\EventState3 Then
 									If e\EventState3 > 3000-(500*SelectedDifficulty\aggressiveNPCs) And Rnd(10000+(500*SelectedDifficulty\aggressiveNPCs)) < e\EventState3
 										e\room\NPC[0]\State=2
@@ -6478,7 +6486,7 @@ Function UpdateEvents()
 						;EndIf
 						
 						For i = 0 To 1
-							If EntityDistance(fr\Door[i], Collider)<0.5 Then
+							If EntityDistance(fr\Door[i], Collider)<0.8 Then
 								If EntityInView(fr\Door[i], Camera) Then
 									DrawHandIcon = True
 									If MouseHit1 Then
@@ -7460,6 +7468,7 @@ Function UpdateEvents()
 							ElseIf EntityDistance(e\room\Objects[i], Camera) > 1.0
 								GrabbedEntity = 0
 							End If
+							Exit
 						End If
 					Next
 					
@@ -7735,9 +7744,8 @@ Function UpdateEvents()
 							If (Not ChannelPlaying(e\SoundCHN))
 								e\EventState = 2.0
 								e\room\RoomDoors[0]\locked = False
-							Else
-								UpdateSoundOrigin(e\SoundCHN,Camera,e\room\Objects[0],100,1.0)
 							EndIf
+							UpdateSoundOrigin(e\SoundCHN,Camera,e\room\Objects[0],100,1.0)
 						EndIf
 					Else
 						DebugLog "Removed 'room2scps2' event"
@@ -7828,17 +7836,15 @@ Function UpdateEvents()
 											itemName = "Old Badge"
 									End Select
 									
-									Local itemExists% = False
 									For it.Items = Each Items
 										If (it\name = itemName) Then
-											itemExists = True
 											e\EventState3 = 1.0
 											e\EventState = 0.0
 											Exit
 										EndIf
 									Next
 									
-									If ((Not itemExists) And (Not isSlotEmpty)) Exit
+									If (Not isSlotEmpty) Then Exit
 								Else
 									If isSlotEmpty Then
 										e\EventState3 = 2.0
@@ -8094,13 +8100,9 @@ Function UpdateEvents()
 					EndIf
 					
 					If brokendoor
-						If ChannelPlaying(e\SoundCHN2)
-							UpdateSoundOrigin(e\SoundCHN2,Camera,e\room\Objects[1],5)
-						EndIf
+						UpdateSoundOrigin(e\SoundCHN2,Camera,e\room\Objects[1],5)
 					EndIf
-					If ChannelPlaying(e\SoundCHN)
-						UpdateSoundOrigin(e\SoundCHN,Camera,e\room\Objects[0],5)
-					EndIf
+					UpdateSoundOrigin(e\SoundCHN,Camera,e\room\Objects[0],5)
 				Else
 					e\EventState3 = 0.0
 				EndIf
@@ -8431,6 +8433,7 @@ Function UpdateEvents()
 						Else
 							EntityTexture e\room\Objects[21],e\room\Textures[1],6
 						EndIf
+						Exit
 					EndIf
 				Next
 				;[End Block]
@@ -8615,10 +8618,10 @@ Function UpdateEvents()
 				EndIf
 				If e\EventState = 2.0
 					If e\SoundCHN<>0 Then
-						StopStream_Strict(e\SoundCHN)
-						StopChannel(e\SoundCHN2)
-						e\SoundCHN = 0
-						e\SoundCHN2 = 0
+						StopStream_Strict(e\SoundCHN) : e\SoundCHN = 0 : e\SoundCHN_isStream = False
+					EndIf
+					If e\SoundCHN2<>0 Then
+						StopChannel(e\SoundCHN2) : e\SoundCHN2 = 0
 					EndIf
 					HideEntity NTF_1499Sky
 					HideChunks()
@@ -9100,10 +9103,10 @@ Function UpdateDimension1499()
 						Else
 							ShouldPlay = 19
 							If e\SoundCHN<>0 Then
-								StopStream_Strict(e\SoundCHN)
-								StopChannel(e\SoundCHN2)
-								e\SoundCHN = 0
-								e\SoundCHN2 = 0
+								StopStream_Strict(e\SoundCHN) : e\SoundCHN = 0 : e\SoundCHN_isStream = False
+							EndIf
+							If e\SoundCHN2<>0 Then
+								StopChannel(e\SoundCHN2) : e\SoundCHN2 = 0
 							EndIf
 							If e\Sound2 <> 0 Then
 								FreeSound_Strict e\Sound2
@@ -9129,10 +9132,10 @@ Function UpdateDimension1499()
 			Else
 				If e\EventState = 2.0
 					If e\SoundCHN<>0 Then
-						StopStream_Strict(e\SoundCHN)
-						StopChannel(e\SoundCHN2)
-						e\SoundCHN = 0
-						e\SoundCHN2 = 0
+						StopStream_Strict(e\SoundCHN) : e\SoundCHN = 0 : e\SoundCHN_isStream = False
+					EndIf
+					If e\SoundCHN2<>0 Then
+						StopChannel(e\SoundCHN2) : e\SoundCHN2 = 0
 					EndIf
 					HideEntity NTF_1499Sky
 					HideChunks()
@@ -9346,8 +9349,12 @@ Function UpdateEndings()
 									If SelectedEnding = "" Then
 									    ShouldPlay = 66
 										
-										StopStream_Strict(e\SoundCHN)
-										StopStream_Strict(e\SoundCHN2)
+										If e\SoundCHN <> 0 Then
+											StopStream_Strict(e\SoundCHN) : e\SoundCHN = 0 : e\SoundCHN_isStream = False
+										EndIf
+										If e\SoundCHN2 <> 0 Then
+											StopStream_Strict(e\SoundCHN2) : e\SoundCHN2 = 0 : e\SoundCHN2_isStream = False
+										EndIf
 										
 										temp = True
 										For e2.Events = Each Events
@@ -9720,7 +9727,7 @@ Function UpdateEndings()
 						;240,220,200
 						CameraFogColor (Camera,200+(angle*40),200+(angle*20),200)
 						CameraClsColor (Camera,200+(angle*40),200+(angle*20),200)		
-						CameraRange(Camera, 0.05, 30)
+						CameraRange(Camera, 0.05, 60)
 						
 						AmbientLight (140, 140, 140)
 						
@@ -10174,9 +10181,6 @@ End Function
 
 
 ;~IDEal Editor Parameters:
-;~F#1#14#29#13B#343#535#545#5B1#630#68D#6B4#6C2#6CC#6D9#8CA#8EB#93F#976#983#9BD
-;~F#9CE#9EE#9F7#A01#A10#B0B#B2D#DE2#E29#E3F#E4B#E68#EB9#ED2#FA1#10A3#1123#113C#115B#11C6
-;~F#11D3#11EC#1284#1439#152D#1581#1633#16D4#1796#17A9#187A#18A7#18C4#18EB#191B#1941#1969#19BB#19F8#1A29
-;~F#1A3C#1AFD#1B6A#1B7D#1B8B#1BCF#1BF0#1CDE#1D53#1E50#1ED1#1F1F#1F24#1F73#1F79#213E
-;~B#10D3#1DD1
+;~F#A13
+;~B#10D6#1DD5
 ;~C#Blitz3D

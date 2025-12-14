@@ -780,7 +780,7 @@ Function LoadGame(file$)
 						EndIf
 					Next
 				Next
-				For x=0 To 5
+				For x=0 To 6
 					If r\grid\Meshes[x]<>0 Then
 						FreeEntity r\grid\Meshes[x]
 						r\grid\Meshes[x]=0
@@ -1042,6 +1042,10 @@ Function LoadGame(file$)
 							RemoveNPC(n)
 						EndIf
 					EndIf
+				Next
+				Local du.Dummy1499
+				For du.Dummy1499 = Each Dummy1499
+					Delete du
 				Next
 				DebugLog "Reset Eventstate in "+e\EventName
 			EndIf
@@ -1614,7 +1618,7 @@ Function LoadGameQuick(file$)
 						EndIf
 					Next
 				Next
-				For x=0 To 5
+				For x=0 To 6
 					If r\grid\Meshes[x]<>0 Then
 						FreeEntity r\grid\Meshes[x]
 						r\grid\Meshes[x]=0
