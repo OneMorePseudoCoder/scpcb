@@ -3146,7 +3146,7 @@ Repeat
 						;Save_MSG = Save_MSG + " (game is loading)"
 					EndIf
 				Else
-					SaveGame(SavePath + CurrSave + "\")
+					SaveGame(SavePath + CurrSave)
 				EndIf
 			ElseIf SelectedDifficulty\saveType = SAVEONSCREENS
 				If SelectedScreen=Null And SelectedMonitor=Null Then
@@ -3173,7 +3173,7 @@ Repeat
 							Playable = True
 							DropSpeed = 0
 						EndIf
-						SaveGame(SavePath + CurrSave + "\")
+						SaveGame(SavePath + CurrSave)
 					EndIf
 				EndIf
 			Else
@@ -3642,8 +3642,7 @@ Function Kill()
 		KillAnim = Rand(0,1)
 		PlaySound_Strict(DamageSFX(0))
 		If SelectedDifficulty\permaDeath Then
-			DeleteFile(CurrentDir() + SavePath + CurrSave+"\save.txt") 
-			DeleteDir(SavePath + CurrSave)
+			DeleteFile(CurrentDir() + SavePath + CurrSave+".cbsav")
 			LoadSaveGames()
 		End If
 		
@@ -7544,7 +7543,7 @@ Function DrawMenu()
 					QuitButton = 140
 					If DrawButton(x, y + 60*MenuScale, 390*MenuScale, 60*MenuScale, "Save & Quit") Then
 						DropSpeed = 0
-						SaveGame(SavePath + CurrSave + "\")
+						SaveGame(SavePath + CurrSave)
 						NullGame()
 						MenuOpen = False
 						MainMenuOpen = True
@@ -7633,7 +7632,7 @@ Function DrawMenu()
 							DrawLoading(0)
 							
 							MenuOpen = False
-							LoadGameQuick(SavePath + CurrSave + "\")
+							LoadGameQuick(SavePath + CurrSave)
 							
 							MoveMouse viewport_center_x,viewport_center_y
 							SetFont Font1
@@ -7689,7 +7688,7 @@ Function DrawMenu()
 						DrawLoading(0)
 						
 						MenuOpen = False
-						LoadGameQuick(SavePath + CurrSave + "\")
+						LoadGameQuick(SavePath + CurrSave)
 						
 						MoveMouse viewport_center_x,viewport_center_y
 						SetFont Font1
