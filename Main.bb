@@ -163,6 +163,7 @@ Global ScreenGamma# = GetINIFloat(OptionFile, "options", "screengamma")
 ;If Fullscreen Then UpdateScreenGamma()
 
 Global FOV% = GetINIInt(OptionFile, "options", "fov")
+Const DEFAULT_FOV% = 59
 
 Const HIT_MAP% = 1, HIT_PLAYER% = 2, HIT_ITEM% = 3, HIT_APACHE% = 4, HIT_178% = 5, HIT_DEAD% = 6
 SeedRnd MilliSecs()
@@ -1483,7 +1484,7 @@ CreateConsoleMsg("  - disable173/enable173")
 CreateConsoleMsg("  - disable106/enable106")
 CreateConsoleMsg("  - 173state/106state/096state")
 CreateConsoleMsg("  - spawn [npc type]")
-CreateConsoleMsg("  - fov [x] (default = 74)")
+CreateConsoleMsg("  - fov [x] (default = "+Str(DEFAULT_FOV)+")")
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -4310,13 +4311,17 @@ Function MovePlayer()
 	CatchErrors("MovePlayer")
 End Function
 
+Function ZoomCamera(fov%)
+	CameraZoom(Camera, Min(1.0+(CurrCameraZoom/400.0),1.1) / Tan((ATan(Tan(fov%/2.0)*RealGraphicWidth/RealGraphicHeight))))
+End Function
+
 Function MouseLook()
 	Local i%
 	
 	CameraShake = Max(CameraShake - (FPSfactor / 10), 0)
 	
 	;CameraZoomTemp = CurveValue(CurrCameraZoom,CameraZoomTemp, 5.0)
-	CameraZoom(Camera, Min(1.0+(CurrCameraZoom/400.0),1.1) / Tan((ATan(Tan(FOV/2.0)*RealGraphicWidth/RealGraphicHeight))))
+	ZoomCamera(FOV)
 	CurrCameraZoom = Max(CurrCameraZoom - FPSfactor, 0)
 	
 	If KillTimer >= 0 And FallTimer >=0 Then
@@ -4827,6 +4832,7 @@ Function DrawGUI()
 		SelectedItem = Null
 		
 		If shouldDrawHUD Then
+			ZoomCamera(DEFAULT_FOV)
 			pvt = CreatePivot()
 			PositionEntity pvt, EntityX(ClosestButton,True),EntityY(ClosestButton,True),EntityZ(ClosestButton,True)
 			RotateEntity pvt, 0, EntityYaw(ClosestButton,True)-180,0
@@ -7282,7 +7288,7 @@ Function DrawMenu()
 					If MouseOn(x+270*MenuScale,y+6*MenuScale,100*MenuScale+14,20)
 						DrawOptionsTooltip(tx,ty,tw,th,"fov")
 					EndIf
-					CameraZoom(Camera, Min(1.0+(CurrCameraZoom/400.0),1.1) / Tan((ATan(Tan(FOV/2.0)*RealGraphicWidth/RealGraphicHeight))))
+					ZoomCamera(FOV)
 					;[End Block]
 				Case 2 ;Audio
 					SetFont Font1
@@ -7865,7 +7871,7 @@ Function LoadEntities()
 	Cls
 	SetBuffer BackBuffer()
 	
-	Dark = CreateSprite(Camera)
+	Dark = CreateSprite(ark_blur_cam)
 	ScaleSprite(Dark, 1.0, Float(GraphicHeight) / Float(GraphicWidth))
 	EntityTexture(Dark, DarkTexture)
 	EntityBlend (Dark, 1)
@@ -7882,7 +7888,7 @@ Function LoadEntities()
 	
 	TeslaTexture = LoadTexture_Strict("GFX\map\tesla.jpg", 1+2)
 	
-	Light = CreateSprite(Camera)
+	Light = CreateSprite(ark_blur_cam)
 	ScaleSprite(Light, 1.0, Float(GraphicHeight) / Float(GraphicWidth))
 	EntityTexture(Light, LightTexture)
 	EntityBlend (Light, 1)

@@ -2032,7 +2032,7 @@ Function DrawOptionsTooltip(x%,y%,width%,height%,option$,value#=0,ingame%=False)
 			R = 255
 			G = 255
 			B = 255
-			txt2 = "Current value: "+FOV+" (default is 74)"
+			txt2 = "Current value: "+FOV+" (default is "+Str(DEFAULT_FOV)+")"
 			;[End Block]
 		;Sound options
 			;[Block]
