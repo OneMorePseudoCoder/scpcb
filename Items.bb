@@ -112,7 +112,9 @@ Function CreateItemTemplate.ItemTemplates(name$, tempname$, objpath$, invimgpath
 	
 End Function
 
-Function InitItemTemplates()
+Function InitItemTemplatesFromFile(file$)
+	If FileType(file) <> 1 Then Return
+
 	Local name$, tempname$
 	Local model$, textureoverride$, textureflags%, anim%
 	Local invicon$, invicon2$
@@ -120,7 +122,7 @@ Function InitItemTemplates()
 	Local sound%, scale#
 	Local hasCustomColor%, r%, g%, b%
 
-	Local f% = OpenFile("Data\items.ini")
+	Local f% = OpenFile(file)
 	While Not Eof(f)
 		Local l$ = Trim(ReadLine(f))
 		If l <> "" And Instr(l, "#") <> 1 Then
@@ -193,6 +195,18 @@ Function InitItemTemplates()
 		EndIf
 		itt\sound = sound
 	EndIf
+
+End Function
+
+Function InitItemTemplates()
+	Local itemsDataPath$ = "Data\items.ini"
+
+	For m.Mods = Each Mods
+		DebugLog(m\Path + itemsDataPath)
+		InitItemTemplatesFromFile(m\Path + itemsDataPath)
+	Next
+
+	InitItemTemplatesFromFile(itemsDataPath)
 
 	Local it.ItemTemplates,it2.ItemTemplates
 	For it = Each ItemTemplates

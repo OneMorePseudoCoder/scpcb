@@ -10,7 +10,7 @@ Function ReloadMods()
     Repeat
         f$=NextFile(d)
         If f$="" Then Exit
-        If FileType("Mods\"+f) = 2 Then
+        If f$<>"." And f$<>".." And FileType("Mods\"+f) = 2 Then
             m.Mods = new Mods
             m\Name = file
             m\Path = "Mods\"+f+"\"
