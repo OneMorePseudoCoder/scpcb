@@ -131,7 +131,7 @@ Function UpdateMainMenu()
 	EndIf
 	
 	If MainMenuTab = 0 Then
-		For i% = 0 To 3
+		For i% = 0 To 4
 			temp = False
 			x = 159 * MenuScale
 			y = (286 + 100 * i) * MenuScale
@@ -197,9 +197,12 @@ Function UpdateMainMenu()
 						MainMenuTab = 2
 					EndIf
 				Case 2
+					txt = "MODS"
+					If temp Then MainMenuTab = 8
+				Case 3
 					txt = "OPTIONS"
 					If temp Then MainMenuTab = 3
-				Case 3
+				Case 4
 					txt = "QUIT"
 					If temp Then
 						StopChannel(CurrMusicStream)
@@ -244,6 +247,10 @@ Function UpdateMainMenu()
 					MainMenuTab = 1
 					CurrLoadGamePage = 0
 					MouseHit1 = False
+				Case 8
+					MainMenuTab = 0
+					SerializeMods()
+					UpdateActiveMods()
 				Default
 					MainMenuTab = 0
 			End Select
@@ -1099,6 +1106,91 @@ Function UpdateMainMenu()
 					Next
 				EndIf
 				;[End Block]
+			Case 8 ;Mods
+
+				y = y + height + 20 * MenuScale
+				width = 580 * MenuScale
+				height = 510 * MenuScale
+				
+				DrawFrame(x, y, width, height)
+				
+				x = 159 * MenuScale
+				y = 286 * MenuScale
+				
+				width = 400 * MenuScale
+				height = 70 * MenuScale
+				
+				Color(255, 255, 255)
+				SetFont Font2
+				Text(x + width / 2, y + height / 2, "MODS", True, True)
+				
+				x = 160 * MenuScale
+				y = y + height + 20 * MenuScale
+				width = 580 * MenuScale
+				height = 296 * MenuScale
+				
+				SetFont Font2
+
+				If CurrLoadGamePage < Ceil(Float(ModCount)/6.0)-1 And SaveMSG = "" Then 
+					If DrawButton(x+530*MenuScale, y + 510*MenuScale, 50*MenuScale, 55*MenuScale, ">") Then
+						CurrLoadGamePage = CurrLoadGamePage+1
+					EndIf
+				Else
+					DrawFrame(x+530*MenuScale, y + 510*MenuScale, 50*MenuScale, 55*MenuScale)
+					Color(100, 100, 100)
+					Text(x+555*MenuScale, y + 537.5*MenuScale, ">", True, True)
+				EndIf
+				If CurrLoadGamePage > 0 And SaveMSG = "" Then
+					If DrawButton(x, y + 510*MenuScale, 50*MenuScale, 55*MenuScale, "<") Then
+						CurrLoadGamePage = CurrLoadGamePage-1
+					EndIf
+				Else
+					DrawFrame(x, y + 510*MenuScale, 50*MenuScale, 55*MenuScale)
+					Color(100, 100, 100)
+					Text(x+25*MenuScale, y + 537.5*MenuScale, "<", True, True)
+				EndIf
+				
+				DrawFrame(x+50*MenuScale,y+510*MenuScale,width-100*MenuScale,55*MenuScale)
+				
+				Text(x+(width/2.0),y+536*MenuScale,"Page "+Int(Max((CurrLoadGamePage+1),1))+"/"+Int(Max((Int(Ceil(Float(ModCount)/6.0))),1)),True,True)
+				
+				SetFont Font1
+				
+				If CurrLoadGamePage > Ceil(Float(ModCount)/6.0)-1 Then
+					CurrLoadGamePage = CurrLoadGamePage - 1
+				EndIf
+				
+				If ModCount = 0 Then
+					Text (x + 20 * MenuScale, y + 20 * MenuScale, "No mods.")
+				Else
+					x = x + 20 * MenuScale
+					y = y + 20 * MenuScale
+					
+					i% = 1
+					Local drawn% = 0
+					For m.Mods = Each Mods
+						If i => (1+(6*CurrLoadGamePage)) Then
+							DrawFrame(x,y,540* MenuScale, 70 * MenuScale)
+							Text(x + 20 * MenuScale, y + 10 * MenuScale, m\Name)
+							Text(x + 20 * MenuScale, y + (10+18) * MenuScale, m\Description)
+							m\IsActive = DrawTick(x + 375 * MenuScale, y + 25 * MenuScale, m\IsActive)
+
+							If DrawButton(x + 500 * MenuScale, y + 10 * MenuScale, 30 * MenuScale, 20 * MenuScale, "▲", False, False, i = 1) Then
+								Insert m Before Before m
+							EndIf
+							
+							If DrawButton(x + 500 * MenuScale, y + (70 - 30) * MenuScale, 30 * MenuScale, 20 * MenuScale, "▼", False, False, i = ModCount) Then
+								Insert m After After m
+							EndIf
+
+							y = y + 80 * MenuScale
+							drawn = drawn + 1
+							If drawn => 6 Then Exit
+						EndIf
+						i = i + 1
+					Next
+				EndIf
+
 		End Select
 		
 	End If
@@ -1259,17 +1351,17 @@ Function UpdateLauncher()
 			EndIf
 		EndIf
 
-		If DrawButton(LauncherWidth - 30 - 90 - 130 - 15, LauncherHeight - 50 - 55, 130, 30, "MAP CREATOR", False, False, False) Then
+		If DrawButton(LauncherWidth - 30 - 90 - 130 - 15, LauncherHeight - 50 - 55, 130, 30, "MAP CREATOR", False, False) Then
 			ExecFile(Chr(34)+"Map Creator\StartMapCreator.bat"+Chr(34))
 			quit = True
 			Exit
 		EndIf
 
-		If DrawButton(LauncherWidth - 30 - 90 - 130 - 15, LauncherHeight - 50, 130, 30, "DISCORD", False, False, False) Then
+		If DrawButton(LauncherWidth - 30 - 90 - 130 - 15, LauncherHeight - 50, 130, 30, "DISCORD", False, False) Then
 			ExecFile("https://discord.gg/guqwRtQPdq")
 		EndIf
 		
-		If DrawButton(LauncherWidth - 30 - 90, LauncherHeight - 50 - 55, 100, 30, "LAUNCH", False, False, False) Then
+		If DrawButton(LauncherWidth - 30 - 90, LauncherHeight - 50 - 55, 100, 30, "LAUNCH", False, False) Then
 			GraphicWidth = GfxModeWidths(SelectedGFXMode)
 			GraphicHeight = GfxModeHeights(SelectedGFXMode)
 			RealGraphicWidth = GraphicWidth
@@ -1277,7 +1369,7 @@ Function UpdateLauncher()
 			Exit
 		EndIf
 		
-		If DrawButton(LauncherWidth - 30 - 90, LauncherHeight - 50, 100, 30, "EXIT", False, False, False) Then quit = True : Exit
+		If DrawButton(LauncherWidth - 30 - 90, LauncherHeight - 50, 100, 30, "EXIT", False, False) Then quit = True : Exit
 		Flip
 	Forever
 	
@@ -1645,29 +1737,26 @@ Function DrawFrame(x%, y%, width%, height%, xoffset%=0, yoffset%=0)
 	DrawTiledImageRect(MenuBlack, yoffset, (y Mod 256), 512, 512, x+3*MenuScale, y+3*MenuScale, width-6*MenuScale, height-6*MenuScale)	
 End Function
 
-Function DrawButton%(x%, y%, width%, height%, txt$, bigfont% = True, waitForMouseUp%=False, usingAA%=True)
+Function DrawButton%(x%, y%, width%, height%, txt$, bigfont% = True, waitForMouseUp%=False, disabled%=False)
 	Local clicked% = False
 	
 	DrawFrame (x, y, width, height)
-	If MouseOn(x, y, width, height) Then
+	If (Not disabled) And MouseOn(x, y, width, height) Then
 		Color(30, 30, 30)
 		If (MouseHit1 And (Not waitForMouseUp)) Or (MouseUp1 And waitForMouseUp) Then 
 			clicked = True
 			PlaySound_Strict(ButtonSFX)
 		EndIf
-		Rect(x + 4, y + 4, width - 8, height - 8)	
-	Else
-		Color(0, 0, 0)
+		Rect(x + 4, y + 4, width - 8, height - 8)
 	EndIf
 	
-	Color (255, 255, 255)
-	If usingAA Then
-		If bigfont Then SetFont Font2 Else SetFont Font1
-		Text(x + width / 2, y + height / 2, txt, True, True)
+	If disabled Then
+		Color(100, 100, 100)
 	Else
-		If bigfont Then SetFont Font2 Else SetFont Font1
-		Text(x + width / 2, y + height / 2, txt, True, True)
+		Color (255, 255, 255)
 	EndIf
+	If bigfont Then SetFont Font2 Else SetFont Font1
+	Text(x + width / 2, y + height / 2, txt, True, True)
 	
 	Return clicked
 End Function

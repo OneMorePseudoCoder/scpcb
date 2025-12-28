@@ -201,8 +201,7 @@ End Function
 Function InitItemTemplates()
 	Local itemsDataPath$ = "Data\items.ini"
 
-	For m.Mods = Each Mods
-		DebugLog(m\Path + itemsDataPath)
+	For m.ActiveMods = Each ActiveMods
 		InitItemTemplatesFromFile(m\Path + itemsDataPath)
 	Next
 

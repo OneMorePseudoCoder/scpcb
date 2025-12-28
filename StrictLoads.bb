@@ -26,7 +26,7 @@ Function LoadImage_Strict(file$)
 	Local fileNoExt$ = Left(file, Len(file) - Len(ext))
 	Local tmp%
 
-	For m.Mods = Each Mods
+	For m.ActiveMods = Each ActiveMods
 		For i = 0 To ImageExtensionCount
 			Local usedExtension$
 			If i = ImageExtensionCount Then
@@ -324,7 +324,7 @@ Function LoadMesh_Strict(File$,parent=0)
 	Local fileNoExt$ = Left(File, Len(File) - Len(ext))
 	Local tmp%
 
-	For m.Mods = Each Mods
+	For m.ActiveMods = Each ActiveMods
 		For i = 0 To ModelExtensionCount
 			Local usedExtension$
 			If i = ModelExtensionCount Then
@@ -355,7 +355,7 @@ Function LoadAnimMesh_Strict(File$,parent=0)
 	Local fileNoExt$ = Left(File, Len(File) - Len(ext))
 	Local tmp%
 
-	For m.Mods = Each Mods
+	For m.ActiveMods = Each ActiveMods
 		For i = 0 To ModelExtensionCount
 			Local usedExtension$
 			If i = ModelExtensionCount Then

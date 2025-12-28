@@ -14,9 +14,6 @@ If Len(InitErrorStr)>0 Then
 	RuntimeError "The following DLLs were not found in the game directory:"+Chr(13)+Chr(10)+Chr(13)+Chr(10)+InitErrorStr
 EndIf
 
-Include "ModManager.bb"
-ReloadMods()
-
 Include "StrictLoads.bb"
 Include "KeyName.bb"
 
@@ -32,6 +29,9 @@ While FileType(ErrorFile+Str(ErrorFileInd)+".txt")<>0
 	ErrorFileInd = ErrorFileInd+1
 Wend
 ErrorFile = ErrorFile+Str(ErrorFileInd)+".txt"
+
+Include "ModManager.bb"
+ReloadMods()
 
 Global UpdaterFont%
 Global Font1%, Font2%, Font3%, Font4%, Font5%
@@ -5945,7 +5945,7 @@ Function DrawGUI()
 
 						Local iniStr$ = "DATA\SCP-294.ini"
 						Local loc% = -1
-						For m.Mods = Each Mods
+						For m.ActiveMods = Each ActiveMods
 							Local modIniStr$ = m\Path + iniStr
 							If FileType(modIniStr) = 1 Then
 								Local sectionLocation = GetINISectionLocation(modIniStr, strtemp)
@@ -10119,7 +10119,7 @@ Function Use294()
 				Local iniStr$ = "DATA\SCP-294.ini"
 				Local loc% = -1
 				If Input294<>""
-					For m.Mods = Each Mods
+					For m.ActiveMods = Each ActiveMods
 						Local modIniStr$ = m\Path + iniStr
 						If FileType(modIniStr) = 1 Then
 							Local sectionLocation = GetINISectionLocation(modIniStr, Input294)
@@ -10913,15 +10913,20 @@ Function GetINIString$(file$, section$, parameter$, defaultvalue$="")
 	Return defaultvalue
 End Function
 
-Function GetINIInt%(file$, section$, parameter$, defaultvalue% = 0)
-	Local txt$ = GetINIString(file$, section$, parameter$, defaultvalue)
-	If Lower(txt) = "true" Then
+Function ParseIniInt%(txt$)
+	txt = Lower(Trim(txt))
+	If txt = "true" Then
 		Return 1
-	ElseIf Lower(txt) = "false"
+	ElseIf txt = "false"
 		Return 0
 	Else
 		Return Int(txt)
 	EndIf
+End Function
+
+Function GetINIInt%(file$, section$, parameter$, defaultvalue% = 0)
+	Local txt$ = GetINIString(file$, section$, parameter$, defaultvalue)
+	Return ParseIniInt(txt)
 End Function
 
 Function GetINIFloat#(file$, section$, parameter$, defaultvalue# = 0.0)
