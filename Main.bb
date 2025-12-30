@@ -7841,7 +7841,7 @@ Function LoadEntities()
 	
 	DrawLoading(5)
 	
-	DarkTexture = CreateTexture(1024, 1024, 1 + 2)
+	DarkTexture = CreateTexture(1, 1, 1 + 2)
 	SetBuffer TextureBuffer(DarkTexture)
 	Cls
 	SetBuffer BackBuffer()
@@ -7854,7 +7854,7 @@ Function LoadEntities()
 	MoveEntity(Dark, -0.0005, 0.0005, 1.0)
 	EntityAlpha Dark, 0.0
 	
-	LightTexture = CreateTexture(1024, 1024, 1 + 2+256)
+	LightTexture = CreateTexture(1, 1, 1 + 2+256)
 	SetBuffer TextureBuffer(LightTexture)
 	ClsColor 255, 255, 255
 	Cls
