@@ -5885,6 +5885,8 @@ Function DrawGUI()
 						Select SelectedItem\itemtemplate\name
 							Case "Burnt Note" 
 								SelectedItem\itemtemplate\img = LoadImage_Strict("GFX\items\bn.it")
+								ScaleImage(SelectedItem\itemtemplate\img, MenuScale, MenuScale)
+								
 								SetBuffer ImageBuffer(SelectedItem\itemtemplate\img)
 								Color 0,0,0
 								SetFont Font1
@@ -5906,6 +5908,7 @@ Function DrawGUI()
 							Case "Movie Ticket"
 								;don't resize because it messes up the masking
 								SelectedItem\itemtemplate\img=LoadImage_Strict(SelectedItem\itemtemplate\imgpath)
+								ScaleImage(SelectedItem\itemtemplate\img, MenuScale, MenuScale)
 								
 								If (SelectedItem\state = 0) Then
 									Msg = Chr(34)+"Hey, I remember this movie!"+Chr(34)
@@ -5913,9 +5916,6 @@ Function DrawGUI()
 									PlaySound_Strict LoadTempSound("SFX\SCP\1162\NostalgiaCancer"+Rand(1,5)+".ogg")
 									SelectedItem\state = 1
 								EndIf
-							Case "Leaflet"
-								;don't resize because it messes up the masking
-								SelectedItem\itemtemplate\img=LoadImage_Strict(SelectedItem\itemtemplate\imgpath)
 							Default 
 								SelectedItem\itemtemplate\img=LoadImage_Strict(SelectedItem\itemtemplate\imgpath)
 								ScaleImage(SelectedItem\itemtemplate\img, MenuScale, MenuScale)
