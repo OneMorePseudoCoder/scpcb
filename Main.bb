@@ -14,9 +14,6 @@ If Len(InitErrorStr)>0 Then
 	RuntimeError "The following DLLs were not found in the game directory:"+Chr(13)+Chr(10)+Chr(13)+Chr(10)+InitErrorStr
 EndIf
 
-Global SteamActive = Steam_Init() = 0
-If SteamActive <> 1 Then RuntimeError("Steam failed to initialize")
-
 Include "StrictLoads.bb"
 Include "KeyName.bb"
 
@@ -32,6 +29,9 @@ While FileType(ErrorFile+Str(ErrorFileInd)+".txt")<>0
 	ErrorFileInd = ErrorFileInd+1
 Wend
 ErrorFile = ErrorFile+Str(ErrorFileInd)+".txt"
+
+Global SteamActive = Steam_Init() = 0
+If SteamActive <> 1 Then RuntimeError("Steam failed to initialize")
 
 Include "ModManager.bb"
 ReloadMods()
@@ -3266,7 +3266,7 @@ Repeat
 			;everyone uses landscape so it's probably a non-issue
 		EndIf
 	EndIf
-	
+
 	;not by any means a perfect solution
 	;Not even proper gamma correction but it's a nice looking alternative that works in windowed mode
 	If ScreenGamma>1.0 Then

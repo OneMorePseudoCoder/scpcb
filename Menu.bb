@@ -54,6 +54,11 @@ LoadSaveGames()
 
 Global CurrLoadGamePage% = 0
 
+; 0 is idle; 1 is upload confirmation; 2 is update confirmation 
+Global ModUIState%
+Global ModChangelog$
+Global SelectedMod.Mods
+
 Function UpdateMainMenu()
 	Local x%, y%, width%, height%, temp%
 	
@@ -1166,6 +1171,8 @@ Function UpdateMainMenu()
 					x = x + 20 * MenuScale
 					y = y + 20 * MenuScale
 					
+					UpdateUpdatingMod()
+
 					i% = 1
 					Local drawn% = 0
 					For m.Mods = Each Mods
@@ -1173,7 +1180,7 @@ Function UpdateMainMenu()
 							DrawFrame(x,y,540* MenuScale, 70 * MenuScale)
 							Text(x + 20 * MenuScale, y + 10 * MenuScale, m\Name)
 							Text(x + 20 * MenuScale, y + (10+18) * MenuScale, m\Description)
-							m\IsActive = DrawTick(x + 375 * MenuScale, y + 25 * MenuScale, m\IsActive)
+							m\IsActive = DrawTick(x + 370 * MenuScale, y + 25 * MenuScale, m\IsActive)
 
 							If DrawButton(x + 500 * MenuScale, y + 10 * MenuScale, 30 * MenuScale, 20 * MenuScale, "▲", False, False, i = 1) Then
 								Insert m Before Before m
@@ -1183,12 +1190,92 @@ Function UpdateMainMenu()
 								Insert m After After m
 							EndIf
 
+							If UpdatingMod = m Then
+								Local strr$ = ""
+								Local slice% = (MilliSecs() Mod 1200) / 200
+								Select slice
+									Case 0
+										strr = "   "
+									Case 1
+										strr = ".  "
+									Case 2
+										strr = ".. "
+									Case 3
+										strr = "..."
+									Case 4
+										strr = " .."
+									Case 5
+										strr = "  ."
+								End Select
+								DrawButton(x + 395 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, strr, False, False, True)
+							Else
+								Local buttonsInactive% = UpdateModErrorCode <> 0 Or ModUIState <> 0 Or UpdatingMod <> Null Or (Not SteamActive)
+								If m\SteamWorkshopId = "" Then
+									If DrawButton(x + 395 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, "Upload", False, False, buttonsInactive) Then
+										ModUIState = 1
+										SelectedMod = m
+									EndIf
+								Else
+									If m\IsUserOwner Then
+										If DrawButton(x + 395 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, "Update", False, False, buttonsInactive) Then
+											ModUIState = 2
+											SelectedMod = m
+										EndIf
+									Else
+										If DrawButton(x + 395 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, "Visit", False, False, buttonsInactive) Then
+											VisitModPage(m)
+										EndIf
+									EndIf
+								EndIf
+							EndIf
+
 							y = y + 80 * MenuScale
 							drawn = drawn + 1
 							If drawn => 6 Then Exit
 						EndIf
 						i = i + 1
 					Next
+
+					x = 740 * MenuScale
+					y = 376 * MenuScale
+					If UpdateModErrorCode <> 0
+						DrawFrame(x, y, 420 * MenuScale, 200 * MenuScale)
+						Color(255, 0, 0)
+						RowText("Failed to update mod (" + GetWorkshopErrorCodeStr(UpdateModErrorCode) + ")", x + 20 * MenuScale, y + 15 * MenuScale, 400 * MenuScale, 200 * MenuScale)
+						If DrawButton(x + 150 * MenuScale, y + 150 * MenuScale, 100 * MenuScale, 30 * MenuScale, "Ok", False) Then
+							UpdateModErrorCode = 0
+						EndIf
+					Else If ModUIState = 1 Then
+						DrawFrame(x, y, 420 * MenuScale, 200 * MenuScale)
+						RowText("By submitting this item, you agree to the Steam workshop terms of service. Are you sure you want to upload it?", x + 20 * MenuScale, y + 15 * MenuScale, 400 * MenuScale, 200 * MenuScale)
+						If DrawButton(x + 25 * MenuScale, y + 150 * MenuScale, 100 * MenuScale, 30 * MenuScale, "Yes", False) Then
+							UploadMod(SelectedMod)
+							ModUIState = 0
+							SelectedMod = Null
+						EndIf
+						If DrawButton(x + 150 * MenuScale, y + 150 * MenuScale, 125 * MenuScale, 30 * MenuScale, "View terms", False) Then
+							ExecFile("https://steamcommunity.com/sharedfiles/workshoplegalagreement")
+						EndIf
+						If DrawButton(x + 300 * MenuScale, y + 150 * MenuScale, 100 * MenuScale, 30 * MenuScale, "No", False) Then
+							ModUIState = 0
+							SelectedMod = Null
+						EndIf
+					Else If ModUIState = 2 Then
+						DrawFrame(x, y, 420 * MenuScale, 200 * MenuScale)
+						RowText("Are you sure you want to update this item? If so, you can enter a list of changes below:", x + 20 * MenuScale, y + 15 * MenuScale, 400 * MenuScale, 200 * MenuScale)
+						ModChangelog = InputBox(x + 20 * MenuScale, y + 80 * MenuScale, 380 * MenuScale, 30 * MenuScale, ModChangelog, 99)
+						If DrawButton(x + 50 * MenuScale, y + 150 * MenuScale, 100 * MenuScale, 30 * MenuScale, "Yes", False) Then
+							UpdateMod(SelectedMod, ModChangelog)
+							ModChangelog = ""
+							ModUIState = 0
+							SelectedMod = Null
+						EndIf
+						If DrawButton(x + 250 * MenuScale, y + 150 * MenuScale, 100 * MenuScale, 30 * MenuScale, "No", False) Then
+							ModChangelog = ""
+							ModUIState = 0
+							SelectedMod = Null
+						EndIf
+					EndIf
 				EndIf
 
 		End Select

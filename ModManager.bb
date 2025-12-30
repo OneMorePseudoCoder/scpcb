@@ -2,22 +2,24 @@ Type ActiveMods
     Field Path$
 End Type
 
-Const MOD_STATUS_LOCAL = 0
-Const MOD_STATUS_REMOTE = 1
-Const MOD_STATUS_REMOTE_OWNED = 2
-
 Type Mods
     Field Id$
     Field Path$
     Field Name$
     Field Description$
     Field IsActive%
-    Field Status%
+    Field SteamWorkshopId$
+    Field IsUserOwner%
 End Type
 
 Global ModCount%
 
+Const STEAM_ITEM_ID_FILENAME$ = "steam_itemid.txt"
+
 Function ReloadMods()
+    For m.Mods = Each Mods
+        If Icon <> 0 Then FreeImage(Icon)
+    Next
     Delete Each Mods
     ModCount = 0
     d% = ReadDir("Mods")
@@ -52,6 +54,13 @@ Function ReloadMods()
             For m2.Mods = Each Mods
                 If m2 <> m And m2\Id = m\Id Then RuntimeError("Mod at " + Chr(34) + m\Path + Chr(34) + " and mod at " + Chr(34) + m\Path + Chr(34) + " share a mod ID.")
             Next
+
+            If FileType(m\Path + STEAM_ITEM_ID_FILENAME) = 1 Then
+                Local idFile% = OpenFile(m\Path + STEAM_ITEM_ID_FILENAME)
+                m\SteamWorkshopId = ReadLine(idFile)
+                m\IsUserOwner = True
+                CloseFile(idFile)
+            EndIf
 
             ModCount = ModCount + 1
         EndIf
@@ -134,4 +143,72 @@ Function DetermineModdedPath$(f$)
         If FileType(modPath) = 1 Then Return modPath
     Next
     Return f
+End Function
+
+Function DetermineIcon$(m.Mods)
+    If FileType(m\Path + "icon.png") = 1 Then Return m\Path + "icon.png"
+    If FileType(m\Path + "icon.jpg") = 1 Then Return m\Path + "icon.jpg"
+    If FileType(m\Path + "icon.gif") = 1 Then Return m\Path + "icon.gif"
+    Return ""
+End Function
+
+Global UpdatingMod.Mods
+Global UpdateModErrorCode%
+Function UploadMod(m.Mods)
+    If UpdatingMod <> Null Then Return
+    UpdatingMod = m
+    Steam_PublishItem(m\Name, m\Description, m\Path, DetermineIcon(m))
+End Function
+
+Function UpdateMod(m.Mods, changelog$)
+    If UpdatingMod <> Null Then Return
+    UpdatingMod = m
+    Steam_UpdateItem(m\SteamworkshopId, m\Name, m\Description, m\Path, DetermineIcon(m), changelog)
+End Function
+
+Function UpdateUpdatingMod()
+    If UpdatingMod = Null Then Return
+
+    Local status% = Steam_QueryUpdateItemStatus()
+    If status = 3 Then
+        UpdatingMod\SteamWorkshopId = Steam_GetPublishedItemID()
+        UpdatingMod\IsUserOwner = True
+        Local f% = WriteFile(UpdatingMod\Path + STEAM_ITEM_ID_FILENAME)
+        WriteLine(f, UpdatingMod\SteamWorkshopId)
+        CloseFile(f)
+        VisitModPage(UpdatingMod)
+        UpdatingMod = Null
+    EndIf
+    If status => 100 Then
+        UpdateModErrorCode = status
+        UpdatingMod = Null
+    EndIf
+End Function
+
+Function VisitModPage(m.Mods)
+    If m\SteamWorkshopId = "" Then Return
+
+    ExecFile("https://steamcommunity.com/sharedfiles/filedetails/?id=" + m\SteamworkshopId)
+End Function
+
+Function GetWorkshopErrorCodeStr$(err%)
+    Local txt$ = ""
+    Select err Mod 1000
+        Case 24 txt = "You are restricted from uploading content. Please contact Steam support."
+        Case 17 txt = "You are currently VAC or game banned."
+        Case 16 txt = "The operation timed out. Please try again."
+        Case 21 txt = "You are not currently logged into Steam."
+        Case 20 txt = "The workshop server is currently unavailable. Please try again later."
+        Case 8 txt = "One of the submissions data fields is invalid."
+        Case 15 txt = "Access denied."
+        Case 25 txt = "The preview image is too large, it must be less than 1 MB or you have exceeded your Steam Cloud quota."
+        Case 9 txt = "An uploaded file could not be found."
+        Case 14 txt = "You already have a workshop item with that name."
+        Case 44 txt = "Due to a recent password or email change you are not currently allowed to upload new content."
+    End Select
+    If txt <> "" Then
+        Return "Code " + Str(err) + ": " + txt
+    Else
+        Return "Code " + Str(err)
+    EndIf
 End Function
