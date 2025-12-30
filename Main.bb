@@ -70,9 +70,6 @@ Global Depth% = 0, Fullscreen% = GetINIInt(OptionFile, "options", "fullscreen")
 Global SelectedGFXMode%
 Global SelectedGFXDriver% = Min(Max(GetINIInt(OptionFile, "options", "gfx driver"), 1), CountGfxDrivers())
 
-Global fresize_image%, fresize_texture%, fresize_texture2%
-Global fresize_cam%
-
 Global ShowFPS = GetINIInt(OptionFile, "options", "show FPS")
 
 Global WireframeState
@@ -2670,6 +2667,13 @@ DrawLoading(90, True)
 
 ;----------------------------------- meshes and textures ----------------------------------------------------------------
 
+Global ResizeTexture%
+
+Function InitFastResize()
+	If ResizeTexture <> 0 Then FreeTexture(ResizeTexture) : ResizeTexture = 0
+	ResizeTexture = CreateTexture(SMALLEST_POWER_TWO, SMALLEST_POWER_TWO, 1 + 2 + 256 + 1024)
+End Function
+
 Global FogTexture%, Fog%
 Global GasMaskTexture%, GasMaskOverlay%
 Global InfectTexture%, InfectOverlay%
@@ -3252,51 +3256,7 @@ Repeat
 		;UpdateSaveMSG()
 	End If
 	
-	If BorderlessWindowed Then
-		If (RealGraphicWidth<>GraphicWidth) Or (RealGraphicHeight<>GraphicHeight) Then
-			SetBuffer TextureBuffer(fresize_texture)
-			ClsColor 0,0,0 : Cls
-			CopyRect 0,0,GraphicWidth,GraphicHeight,1024-GraphicWidth/2,1024-GraphicHeight/2,BackBuffer(),TextureBuffer(fresize_texture)
-			SetBuffer BackBuffer()
-			ClsColor 0,0,0 : Cls
-			ScaleRender(0,0,2050.0 / Float(GraphicWidth) * AspectRatioRatio, 2050.0 / Float(GraphicWidth) * AspectRatioRatio)
-			;might want to replace Float(GraphicWidth) with Max(GraphicWidth,GraphicHeight) if portrait sizes cause issues
-			;everyone uses landscape so it's probably a non-issue
-		EndIf
-	EndIf
-
-	;not by any means a perfect solution
-	;Not even proper gamma correction but it's a nice looking alternative that works in windowed mode
-	If ScreenGamma>1.0 Then
-		CopyRect 0,0,RealGraphicWidth,RealGraphicHeight,1024-RealGraphicWidth/2,1024-RealGraphicHeight/2,BackBuffer(),TextureBuffer(fresize_texture)
-		EntityBlend fresize_image,1
-		ClsColor 0,0,0 : Cls
-		ScaleRender(-1.0/Float(RealGraphicWidth),1.0/Float(RealGraphicWidth),2048.0 / Float(RealGraphicWidth),2048.0 / Float(RealGraphicWidth))
-		EntityFX fresize_image,1+32
-		EntityBlend fresize_image,3
-		EntityAlpha fresize_image,ScreenGamma-1.0
-		ScaleRender(-1.0/Float(RealGraphicWidth),1.0/Float(RealGraphicWidth),2048.0 / Float(RealGraphicWidth),2048.0 / Float(RealGraphicWidth))
-	ElseIf ScreenGamma<1.0 Then ;todo: maybe optimize this if it's too slow, alternatively give players the option to disable gamma
-		CopyRect 0,0,RealGraphicWidth,RealGraphicHeight,1024-RealGraphicWidth/2,1024-RealGraphicHeight/2,BackBuffer(),TextureBuffer(fresize_texture)
-		EntityBlend fresize_image,1
-		ClsColor 0,0,0 : Cls
-		ScaleRender(-1.0/Float(RealGraphicWidth),1.0/Float(RealGraphicWidth),2048.0 / Float(RealGraphicWidth),2048.0 / Float(RealGraphicWidth))
-		EntityFX fresize_image,1+32
-		EntityBlend fresize_image,2
-		EntityAlpha fresize_image,1.0
-		SetBuffer TextureBuffer(fresize_texture2)
-		ClsColor 255*ScreenGamma,255*ScreenGamma,255*ScreenGamma
-		Cls
-		SetBuffer BackBuffer()
-		ScaleRender(-1.0/Float(RealGraphicWidth),1.0/Float(RealGraphicWidth),2048.0 / Float(RealGraphicWidth),2048.0 / Float(RealGraphicWidth))
-		SetBuffer(TextureBuffer(fresize_texture2))
-		ClsColor 0,0,0
-		Cls
-		SetBuffer(BackBuffer())
-	EndIf
-	EntityFX fresize_image,1
-	EntityBlend fresize_image,1
-	EntityAlpha fresize_image,1.0
+	ApplyBorderlessResizing()
 	
 	CatchErrors("Main loop / uncaught")
 
@@ -5882,43 +5842,37 @@ Function DrawGUI()
 				Case "paper", "ticket"
 					;[Block]
 					If SelectedItem\itemtemplate\img = 0 Then
+						SelectedItem\itemtemplate\img = LoadImage_Strict(SelectedItem\itemtemplate\imgpath)
+						ScaleImage(SelectedItem\itemtemplate\img, MenuScale, MenuScale)
+						Local buf%
 						Select SelectedItem\itemtemplate\name
 							Case "Burnt Note" 
-								SelectedItem\itemtemplate\img = LoadImage_Strict("GFX\items\bn.it")
-								ScaleImage(SelectedItem\itemtemplate\img, MenuScale, MenuScale)
-								
-								SetBuffer ImageBuffer(SelectedItem\itemtemplate\img)
-								Color 0,0,0
+								SetBuffer(TextureBuffer(ResizeTexture))
+								DrawImage(SelectedItem\itemtemplate\img, 0, 0)
+								Color(0, 0, 0)
 								SetFont Font1
-								Text 277, 469, AccessCode, True, True
-								Color 255,255,255
+								Text 277 * MenuScale, 469 * MenuScale, AccessCode, True, True
 								SetBuffer BackBuffer()
+								buf = ImageBuffer(SelectedItem\itemtemplate\img)
+								CopyRectStretch(0, 0, ImageWidth(SelectedItem\itemtemplate\img), ImageHeight(SelectedItem\itemtemplate\img), 0, 0, BufferWidth(buf), BufferHeight(buf), TextureBuffer(ResizeTexture), buf)
 							Case "Document SCP-372"
-								SelectedItem\itemtemplate\img = LoadImage_Strict(SelectedItem\itemtemplate\imgpath)
-								ScaleImage(SelectedItem\itemtemplate\img, MenuScale, MenuScale)
-								
-								SetBuffer ImageBuffer(SelectedItem\itemtemplate\img)
-								Color 37,45,137
+								SetBuffer(TextureBuffer(ResizeTexture))
+								DrawImage(SelectedItem\itemtemplate\img, 0, 0)
+								Color(37,45,137)
 								SetFont Font5
 								temp = ((Int(AccessCode)*3) Mod 10000)
 								If temp < 1000 Then temp = temp+1000
 								Text 383*MenuScale, 734*MenuScale, temp, True, True
-								Color 255,255,255
 								SetBuffer BackBuffer()
+								buf = ImageBuffer(SelectedItem\itemtemplate\img)
+								CopyRectStretch(0, 0, ImageWidth(SelectedItem\itemtemplate\img), ImageHeight(SelectedItem\itemtemplate\img), 0, 0, BufferWidth(buf), BufferHeight(buf), TextureBuffer(ResizeTexture), buf)
 							Case "Movie Ticket"
-								;don't resize because it messes up the masking
-								SelectedItem\itemtemplate\img=LoadImage_Strict(SelectedItem\itemtemplate\imgpath)
-								ScaleImage(SelectedItem\itemtemplate\img, MenuScale, MenuScale)
-								
 								If (SelectedItem\state = 0) Then
 									Msg = Chr(34)+"Hey, I remember this movie!"+Chr(34)
 									MsgTimer = 70*10
 									PlaySound_Strict LoadTempSound("SFX\SCP\1162\NostalgiaCancer"+Rand(1,5)+".ogg")
 									SelectedItem\state = 1
 								EndIf
-							Default 
-								SelectedItem\itemtemplate\img=LoadImage_Strict(SelectedItem\itemtemplate\imgpath)
-								ScaleImage(SelectedItem\itemtemplate\img, MenuScale, MenuScale)
 						End Select
 					EndIf
 					
@@ -11217,13 +11171,24 @@ Function EntityScaleZ#(entity%, globl% = False)
 	Return Sqr(TFormedX() * TFormedX() + TFormedY() * TFormedY() + TFormedZ() * TFormedZ())
 End Function 
 
+Global SMALLEST_POWER_TWO#
+
 Function Graphics3DExt%(width%,height%,depth%=32,mode%=2)
-	;If FE_InitExtFlag = 1 Then DeInitExt() ;prevent FastExt from breaking itself
 	Graphics3D width,height,depth,mode
+	SMALLEST_POWER_TWO = 512.0
+	While SMALLEST_POWER_TWO < Width Lor SMALLEST_POWER_TWO < Height
+		SMALLEST_POWER_TWO = SMALLEST_POWER_TWO * 2.0
+	Wend
 	InitFastResize()
-	;InitExt()
 	AntiAlias GetINIInt(OptionFile,"options","antialias")
 	;TextureAnisotropy% (GetINIInt(OptionFile,"options","anisotropy"),-1)
+End Function
+
+Function ApplyBorderlessResizing()
+	If BorderlessWindowed And (RealGraphicWidth<>GraphicWidth) Or (RealGraphicHeight<>GraphicHeight) Then
+		CopyRectStretch(0, 0, GraphicWidth, GraphicHeight, 0, 0, RealGraphicWidth, RealGraphicHeight, BackBuffer(), TextureBuffer(ResizeTexture))
+		CopyRectStretch(0, 0, RealGraphicWidth, RealGraphicHeight, 0, 0, RealGraphicWidth, RealGraphicHeight, TextureBuffer(ResizeTexture), BackBuffer())
+	EndIf
 End Function
 
 
@@ -11391,65 +11356,6 @@ Function RenderWorld2()
 	EndIf
 End Function
 
-
-Function ScaleRender(x#,y#,hscale#=1.0,vscale#=1.0)
-	If Camera<>0 Then HideEntity Camera
-	WireFrame 0
-	ShowEntity fresize_image
-	ScaleEntity fresize_image,hscale,vscale,1.0
-	PositionEntity fresize_image, x, y, 1.0001
-	ShowEntity fresize_cam
-	RenderWorld()
-	HideEntity fresize_cam
-	HideEntity fresize_image
-	WireFrame WireframeState
-	If Camera<>0 Then ShowEntity Camera
-End Function
-
-Function InitFastResize()
-    ;Create Camera
-	Local cam% = CreateCamera()
-	CameraProjMode cam, 2
-	CameraZoom cam, 0.1
-	CameraClsMode cam, 0, 0
-	CameraRange cam, 0.1, 1.5
-	MoveEntity cam, 0, 0, -10000
-	
-	fresize_cam = cam
-	
-    ;ark_sw = GraphicsWidth()
-    ;ark_sh = GraphicsHeight()
-	
-    ;Create sprite
-	Local spr% = CreateMesh(cam)
-	Local sf% = CreateSurface(spr)
-	AddVertex sf, -1, 1, 0, 0, 0
-	AddVertex sf, 1, 1, 0, 1, 0
-	AddVertex sf, -1, -1, 0, 0, 1
-	AddVertex sf, 1, -1, 0, 1, 1
-	AddTriangle sf, 0, 1, 2
-	AddTriangle sf, 3, 2, 1
-	EntityFX spr, 17
-	ScaleEntity spr, 2048.0 / Float(RealGraphicWidth), 2048.0 / Float(RealGraphicHeight), 1
-	PositionEntity spr, 0, 0, 1.0001
-	EntityOrder spr, -100001
-	EntityBlend spr, 1
-	fresize_image = spr
-	
-    ;Create texture
-	fresize_texture = CreateTexture(2048, 2048, 1+256)
-	fresize_texture2 = CreateTexture(2048, 2048, 1+256)
-	TextureBlend fresize_texture2,3
-	SetBuffer(TextureBuffer(fresize_texture2))
-	ClsColor 0,0,0
-	Cls
-	SetBuffer(BackBuffer())
-	;TextureAnisotropy(fresize_texture)
-	EntityTexture spr, fresize_texture,0,0
-	EntityTexture spr, fresize_texture2,0,1
-	
-	HideEntity fresize_cam
-End Function
 
 ;--------------------------------------- Some new 1.3 -functions -------------------------------------------------------
 
