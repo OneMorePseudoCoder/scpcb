@@ -7,6 +7,9 @@ Type Mods
     Field Path$
     Field Name$
     Field Description$
+    Field Author$
+    Field IconPath$
+    Field Icon%
     Field IsActive%
     Field SteamWorkshopId$
     Field IsUserOwner%
@@ -34,6 +37,8 @@ Function InstantiateMod.Mods(id$, path$)
                     m\Name = value
                 Case "desc"
                     m\Description = value
+                Case "author"
+                    m\Author = value
             End Select
         EndIf
     Wend
@@ -43,6 +48,8 @@ Function InstantiateMod.Mods(id$, path$)
         ; ID collisions should be impossible.
         If m2 <> m And m2\Id = m\Id Then RuntimeError("Mod at " + Chr(34) + m\Path + Chr(34) + " and mod at " + Chr(34) + m\Path + Chr(34) + " share a mod ID.")
     Next
+
+    m\IconPath = DetermineIcon(m, False)
 
     ModCount = ModCount + 1
     Return m
@@ -163,10 +170,10 @@ Function DetermineModdedPath$(f$)
     Return f
 End Function
 
-Function DetermineIcon$(m.Mods)
+Function DetermineIcon$(m.Mods, allowGif% = True)
+    If allowGif And FileType(m\Path + "icon.gif") = 1 Then Return m\Path + "icon.gif"
     If FileType(m\Path + "icon.png") = 1 Then Return m\Path + "icon.png"
     If FileType(m\Path + "icon.jpg") = 1 Then Return m\Path + "icon.jpg"
-    If FileType(m\Path + "icon.gif") = 1 Then Return m\Path + "icon.gif"
     Return ""
 End Function
 

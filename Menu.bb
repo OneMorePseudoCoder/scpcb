@@ -1178,8 +1178,18 @@ Function UpdateMainMenu()
 					For m.Mods = Each Mods
 						If i => (1+(6*CurrLoadGamePage)) Then
 							DrawFrame(x,y,540* MenuScale, 70 * MenuScale)
-							Text(x + 20 * MenuScale, y + 10 * MenuScale, m\Name)
-							Text(x + 20 * MenuScale, y + (10+18) * MenuScale, m\Description)
+							If m\Icon = 0 And m\Iconpath <> "" Then
+								m\Icon = LoadImage_Strict(m\IconPath)
+								ResizeImage(m\Icon, 64 * MenuScale, 64 * MenuScale)
+							EndIf
+
+							If m\Icon <> 0 Then
+								DrawImage(m\Icon, x + 3 * MenuScale, y + 3 * MenuScale)
+							EndIf
+
+							Text(x + 85 * MenuScale, y + 10 * MenuScale, m\Name)
+							Text(x + 85 * MenuScale, y + (10+18) * MenuScale, m\Description)
+							Text(x + 85 * MenuScale, y + (10+18*2) * MenuScale, m\Author)
 							m\IsActive = DrawTick(x + 370 * MenuScale, y + 25 * MenuScale, m\IsActive)
 
 							If DrawButton(x + 500 * MenuScale, y + 10 * MenuScale, 30 * MenuScale, 20 * MenuScale, "▲", False, False, i = 1) Then
