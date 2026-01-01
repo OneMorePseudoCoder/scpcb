@@ -1491,6 +1491,7 @@ Type RoomTemplates
 	
 	Field Shape%, Name$
 	Field Commonness%, Large%
+	Field SetRoom#
 	Field DisableDecals%
 	
 	Field TempTriggerboxAmount
@@ -1579,6 +1580,7 @@ Function LoadRoomTemplates(file$)
 			
 			rt\Commonness = Max(Min(GetINIInt(file, TemporaryString, "commonness"), 100), 0)
 			rt\Large = GetINIInt(file, TemporaryString, "large")
+			rt\SetRoom = GetINIFloat(file, TemporaryString, "set room", -1)
 			rt\DisableDecals = GetINIInt(file, TemporaryString, "disabledecals")
 			rt\UseLightCones = GetINIInt(file, TemporaryString, "usevolumelighting")
 			rt\DisableOverlapCheck = GetINIInt(file, TemporaryString, "disableoverlapcheck")
@@ -6197,6 +6199,11 @@ Dim MapName$(MapWidth, MapHeight)
 Dim MapRoomID%(ROOM4 + 1)
 Dim MapRoom$(ROOM4 + 1, 0)
 
+; TODO: Replace the individual Room1Amount etc with this
+Dim RoomAmounts(ROOM4 + 1, ZONEAMOUNT)
+Dim MinPositions(ROOM4 + 1, 0)
+Dim MaxPositions(ROOM4 + 1, 0)
+
 ;-------------------------------------------------------------------------------------------------------
 
 
@@ -7035,7 +7042,6 @@ Function CreateMap()
 	Until y < 2
 	
 	
-	Local ZoneAmount=3
 	Local Room1Amount%[3], Room2Amount%[3],Room2CAmount%[3],Room3Amount%[3],Room4Amount%[3]
 	
 	;count the amount of rooms
@@ -7285,88 +7291,58 @@ Function CreateMap()
 	MaxRooms=Max(MaxRooms,Room4Amount[0]+Room4Amount[1]+Room4Amount[2]+1)
 	Dim MapRoom$(ROOM4 + 1, MaxRooms)
 	
-	
+	For z = 1 To ZONEAMOUNT
+		RoomAmounts(ROOM1, z) = Room1Amount[z-1]
+		RoomAmounts(ROOM2, z) = Room2Amount[z-1]
+		RoomAmounts(ROOM2C, z) = Room2CAmount[z-1]
+		RoomAmounts(ROOM3, z) = Room3Amount[z-1]
+		RoomAmounts(ROOM4, z) = Room4Amount[z-1]
+	Next
+
+	Dim MinPositions%(ROOM4 + 1, ZONEAMOUNT)
+	Dim MaxPositions%(ROOM4 + 1, ZONEAMOUNT)
+	For rs = ROOM1 To ROOM4
+		For z = 1 To ZONEAMOUNT
+			MinPositions(rs, z) = 0
+			MaxPositions(rs, z) = RoomAmounts(rs, 1)-1
+			If z > 1 Then
+				MinPositions(rs, z) = MinPositions(rs, z) + RoomAmounts(rs, 1)
+				MaxPositions(rs, z) = MaxPositions(rs, z) + RoomAmounts(rs, 2)
+			EndIf
+			If z > 2 Then
+				MinPositions(rs, z) = MinPositions(rs, z) + RoomAmounts(rs, 2)
+				MaxPositions(rs, z) = MaxPositions(rs, z) + RoomAmounts(rs, 3)
+			EndIf
+		Next
+	Next
+
 	;zone 1 --------------------------------------------------------------------------------------------------
 	
-	Local min_pos = 1, max_pos = Room1Amount[0]-1
-	
 	MapRoom(ROOM1, 0) = "start"	
-	SetRoom("roompj", ROOM1, Floor(0.1*Float(Room1Amount[0])),min_pos,max_pos)
-	SetRoom("914", ROOM1, Floor(0.3*Float(Room1Amount[0])),min_pos,max_pos)
-	SetRoom("room1archive",ROOM1,Floor(0.5*Float(Room1Amount[0])),min_pos,max_pos)
-	SetRoom("room205", ROOM1, Floor(0.6*Float(Room1Amount[0])),min_pos,max_pos)
-	
-	MapRoom(ROOM2C, 0) = "lockroom"
-	
-	min_pos = 1
-	max_pos = Room2Amount[0]-1
-	
+
 	MapRoom(ROOM2, 0) = "room2closets"
-	SetRoom("room2testroom2", ROOM2, Floor(0.1*Float(Room2Amount[0])),min_pos,max_pos)
-	SetRoom("room2scps", ROOM2, Floor(0.2*Float(Room2Amount[0])),min_pos,max_pos)
-	SetRoom("room2storage", ROOM2, Floor(0.3*Float(Room2Amount[0])),min_pos,max_pos)
-	SetRoom("room2gw_b", ROOM2, Floor(0.4*Float(Room2Amount[0])),min_pos,max_pos)
-	SetRoom("room2sl", ROOM2, Floor(0.5*Float(Room2Amount[0])),min_pos,max_pos)
-	SetRoom("room012", ROOM2, Floor(0.55*Float(Room2Amount[0])),min_pos,max_pos)
-	SetRoom("room2scps2",ROOM2,Floor(0.6*Float(Room2Amount[0])),min_pos,max_pos)
-	SetRoom("room1123",ROOM2,Floor(0.7*Float(Room2Amount[0])),min_pos,max_pos)
-	SetRoom("room2elevator",ROOM2,Floor(0.85*Float(Room2Amount[0])),min_pos,max_pos)
-	
-	
-	MapRoom(ROOM3, Floor(Rnd(0.2,0.8)*Float(Room3Amount[0]))) = "room3storage"
-	
+	MapRoom(ROOM2C, 0) = "lockroom"
 	MapRoom(ROOM2C, Floor(0.5*Float(Room2CAmount[0]))) = "room1162"
 	
+	MapRoom(ROOM3, Floor(Rnd(0.2,0.8)*Float(Room3Amount[0]))) = "room3storage"
+
 	MapRoom(ROOM4, Floor(0.3*Float(Room4Amount[0]))) = "room4info"
 	
 	;zone 2 --------------------------------------------------------------------------------------------------
-	
-	min_pos = Room1Amount[0]
-	max_pos = Room1Amount[0]+Room1Amount[1]-1
-	
-	SetRoom("room079", ROOM1, Room1Amount[0]+Floor(0.15*Float(Room1Amount[1])),min_pos,max_pos)
-    SetRoom("room106", ROOM1, Room1Amount[0]+Floor(0.3*Float(Room1Amount[1])),min_pos,max_pos)
-    SetRoom("008", ROOM1, Room1Amount[0]+Floor(0.4*Float(Room1Amount[1])),min_pos,max_pos)
-    SetRoom("room035", ROOM1, Room1Amount[0]+Floor(0.5*Float(Room1Amount[1])),min_pos,max_pos)
-    SetRoom("coffin", ROOM1, Room1Amount[0]+Floor(0.7*Float(Room1Amount[1])),min_pos,max_pos)
-	
-	min_pos = Room2Amount[0]
-	max_pos = Room2Amount[0]+Room2Amount[1]-1
-	
+
 	MapRoom(ROOM2, Room2Amount[0]+Floor(0.1*Float(Room2Amount[1]))) = "room2nuke"
-	SetRoom("room2tunnel", ROOM2, Room2Amount[0]+Floor(0.25*Float(Room2Amount[1])),min_pos,max_pos)
-	SetRoom("room049", ROOM2, Room2Amount[0]+Floor(0.4*Float(Room2Amount[1])),min_pos,max_pos)
-	SetRoom("room2shaft",ROOM2,Room2Amount[0]+Floor(0.6*Float(Room2Amount[1])),min_pos,max_pos)
-	SetRoom("testroom", ROOM2, Room2Amount[0]+Floor(0.7*Float(Room2Amount[1])),min_pos,max_pos)
-	SetRoom("room2servers", ROOM2, Room2Amount[0]+Floor(0.9*Room2Amount[1]),min_pos,max_pos)
-	
+	MapRoom(ROOM2C, Room2CAmount[0]+Floor(0.5*Float(Room2CAmount[1]))) = "room2cpit"
+
 	MapRoom(ROOM3, Room3Amount[0]+Floor(0.3*Float(Room3Amount[1]))) = "room513"
 	MapRoom(ROOM3, Room3Amount[0]+Floor(0.6*Float(Room3Amount[1]))) = "room966"
 	
-	MapRoom(ROOM2C, Room2CAmount[0]+Floor(0.5*Float(Room2CAmount[1]))) = "room2cpit"
-	
-	
 	;zone 3  --------------------------------------------------------------------------------------------------
 	
-	MapRoom(ROOM1, Room1Amount[0]+Room1Amount[1]+Room1Amount[2]-2) = "exit1"
-	MapRoom(ROOM1, Room1Amount[0]+Room1Amount[1]+Room1Amount[2]-1) = "gateaentrance"
-	MapRoom(ROOM1, Room1Amount[0]+Room1Amount[1]) = "room1lifts"
+	MapRoom(ROOM1, MaxPositions(ROOM1, 3)-1) = "exit1"
+	MapRoom(ROOM1, MaxPositions(ROOM1, 3)) = "gateaentrance"
+	MapRoom(ROOM1, MinPositions(ROOM1, 3)) = "room1lifts"
 	
-	min_pos = Room2Amount[0]+Room2Amount[1]
-	max_pos = Room2Amount[0]+Room2Amount[1]+Room2Amount[2]-1		
-	
-	MapRoom(ROOM2, min_pos+Floor(0.1*Float(Room2Amount[2]))) = "room2poffices"
-	SetRoom("room2cafeteria", ROOM2, min_pos+Floor(0.2*Float(Room2Amount[2])),min_pos,max_pos)
-	SetRoom("room2toilets", ROOM2, min_pos+Floor(0.25*Float(Room2Amount[2])),min_pos,max_pos)
-	SetRoom("room2sroom", ROOM2, min_pos+Floor(0.3*Float(Room2Amount[2])),min_pos,max_pos)
-	SetRoom("room2servers2", ROOM2, min_pos+Floor(0.4*Room2Amount[2]),min_pos,max_pos)	
-	SetRoom("room2offices", ROOM2, min_pos+Floor(0.45*Room2Amount[2]),min_pos,max_pos)
-	SetRoom("room2offices4", ROOM2, min_pos+Floor(0.5*Room2Amount[2]),min_pos,max_pos)	
-	SetRoom("room860", ROOM2, min_pos+Floor(0.6*Room2Amount[2]),min_pos,max_pos)
-	SetRoom("medibay", ROOM2, min_pos+Floor(0.7*Float(Room2Amount[2])),min_pos,max_pos)
-	SetRoom("room2poffices2", ROOM2, min_pos+Floor(0.8*Room2Amount[2]),min_pos,max_pos)
-	SetRoom("room2offices2", ROOM2, min_pos+Floor(0.9*Float(Room2Amount[2])),min_pos,max_pos)
-	
+	MapRoom(ROOM2, MinPositions(ROOM2, 3)+Floor(0.1*Float(Room2Amount[2]))) = "room2poffices"
 	MapRoom(ROOM2C, Room2CAmount[0]+Room2CAmount[1]) = "room2ccont"	
 	MapRoom(ROOM2C, Room2CAmount[0]+Room2CAmount[1]+1) = "lockroom2"		
 	
@@ -7375,6 +7351,12 @@ Function CreateMap()
 	;MapRoom(ROOM3, Room3Amount[0]+Room3Amount[1]) = "room3gw"
 	MapRoom(ROOM3, Room3Amount[0]+Room3Amount[1]+Floor(0.5*Float(Room3Amount[2]))) = "room3offices"
 	
+	For rt.RoomTemplates = Each RoomTemplates
+		If rt\SetRoom <> -1 Then
+			SetRoom(rt\Name, rt\Shape, Floor(rt\SetRoom*Float(RoomAmounts(rt\Shape, rt\zone[0]))),MinPositions(rt\Shape, rt\zone[0]),MaxPositions(rt\Shape, rt\zone[0]))
+		EndIf
+	Next
+
 	;----------------------- luodaan kartta --------------------------------
 	
 	temp = 0
