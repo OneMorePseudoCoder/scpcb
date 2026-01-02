@@ -283,7 +283,7 @@ Global PlayerZone%, PlayerRoom.Rooms
 Global GrabbedEntity%
 
 Global InvertMouse% = GetINIInt(OptionFile, "options", "invert mouse y")
-Global MouseHit1%, MouseDown1%, MouseHit2%, DoubleClick%, LastMouseHit1%, MouseUp1%
+Global MouseHit1%, MouseDown1%, MouseHit2%, DoubleClick%, LastMouseHit1%, LastMouseHit1X%, LastMouseHit1Y%, MouseUp1%
 
 Global GodMode%, NoClip%, NoClipSpeed# = 2.0
 
@@ -2788,8 +2788,10 @@ Repeat
 		DoubleClick = False
 		MouseHit1 = MouseHit(1)
 		If MouseHit1 Then
-			If MilliSecs() - LastMouseHit1 < 800 Then DoubleClick = True
+			If MilliSecs() - LastMouseHit1 < 800 And Abs(MouseX() - LastMouseHit1X) < 4 And Abs(MouseY() - LastMouseHit1Y) < 4 Then DoubleClick = True
 			LastMouseHit1 = MilliSecs()
+			LastMouseHit1X = MouseX()
+			LastMouseHit1Y = MouseY()
 		EndIf
 		
 		Local prevmousedown1 = MouseDown1
