@@ -540,6 +540,7 @@ Function UpdateConsole()
 		ConsoleInput = Left(ConsoleInput, 100)
 		
 		If KeyHit(28) And ConsoleInput <> "" Then
+			UsedConsole = True
 			ConsoleReissue = Null
 			ConsoleScroll = 0
 			CreateConsoleMsg(ConsoleInput,255,255,0,True)
@@ -3181,7 +3182,6 @@ Repeat
 		If KeyHit(KEY_CONSOLE) Then
 			If CanOpenConsole
 				If ConsoleOpen Then
-					UsedConsole = True
 					ResumeSounds()
 					MouseXSpeed() : MouseYSpeed() : MouseZSpeed() : mouse_x_speed_1#=0.0 : mouse_y_speed_1#=0.0
 				Else
