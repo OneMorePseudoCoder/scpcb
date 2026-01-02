@@ -16,7 +16,10 @@ For i = 0 To 3
 	HandleImage(ArrowIMG(i), 0, 0)
 Next
 
-Global RandomSeed$
+Global RandomSeed$, RandomSeedNumeric%, HasNumericSeed%
+Function GetRandomSeed%()
+	If HasNumericSeed Then Return RandomSeedNumeric Else Return GenerateSeedNumber(RandomSeed)
+End Function
 
 Dim MenuBlinkTimer%(2), MenuBlinkDuration%(2)
 MenuBlinkTimer%(0) = 1
@@ -57,6 +60,11 @@ Global CurrLoadGamePage% = 0
 Global ModUIState%
 Global ModChangelog$
 Global SelectedMod.Mods
+
+Function EllipsisLeft$(txt$, maxLen%)
+	If Len(txt) > maxLen Then Return Left(txt, maxLen-3) + "…"
+	Return txt
+End Function
 
 Function UpdateMainMenu()
 	Local x%, y%, width%, height%, temp%
@@ -149,49 +157,53 @@ Function UpdateMainMenu()
 			Select i
 				Case 0
 					txt = "NEW GAME"
-					RandomSeed = ""
-					If temp Then 
-						If Rand(15)=1 Then 
-							Select Rand(13)
-								Case 1 
-									RandomSeed = "NIL"
-								Case 2
-									RandomSeed = "NO"
-								Case 3
-									RandomSeed = "d9341"
-								Case 4
-									RandomSeed = "5CP_I73"
-								Case 5
-									RandomSeed = "DONTBLINK"
-								Case 6
-									RandomSeed = "CRUNCH"
-								Case 7
-									RandomSeed = "die"
-								Case 8
-									RandomSeed = "HTAED"
-								Case 9
-									RandomSeed = "rustledjim"
-								Case 10
-									RandomSeed = "larry"
-								Case 11
-									RandomSeed = "JORGE"
-								Case 12
-									RandomSeed = "dirtymetal"
-								Case 13
-									RandomSeed = "whatpumpkin"
-							End Select
+					If temp Then
+						HasNumericSeed = UseNumericSeeds
+						If HasNumericSeed Then
+							RandomSeedNumeric = MilliSecs()
 						Else
-							n = Rand(4,8)
-							For i = 1 To n
-								If Rand(3)=1 Then
-									RandomSeed = RandomSeed + Rand(0,9)
-								Else
-									RandomSeed = RandomSeed + Chr(Rand(97,122))
-								EndIf
-							Next							
+							RandomSeed = ""
+							If Rand(15)=1 Then 
+								Select Rand(13)
+									Case 1 
+										RandomSeed = "NIL"
+									Case 2
+										RandomSeed = "NO"
+									Case 3
+										RandomSeed = "d9341"
+									Case 4
+										RandomSeed = "5CP_I73"
+									Case 5
+										RandomSeed = "DONTBLINK"
+									Case 6
+										RandomSeed = "CRUNCH"
+									Case 7
+										RandomSeed = "die"
+									Case 8
+										RandomSeed = "HTAED"
+									Case 9
+										RandomSeed = "rustledjim"
+									Case 10
+										RandomSeed = "larry"
+									Case 11
+										RandomSeed = "JORGE"
+									Case 12
+										RandomSeed = "dirtymetal"
+									Case 13
+										RandomSeed = "whatpumpkin"
+								End Select
+							Else
+								n = Rand(4,8)
+								For i = 1 To n
+									If Rand(3)=1 Then
+										RandomSeed = RandomSeed + Rand(0,9)
+									Else
+										RandomSeed = RandomSeed + Chr(Rand(97,122))
+									EndIf
+								Next							
+							EndIf
 						EndIf
 						
-						;RandomSeed = MilliSecs()
 						MainMenuTab = 1
 					EndIf
 				Case 1
@@ -300,7 +312,16 @@ Function UpdateMainMenu()
 				Color 255,255,255
 				If SelectedMap = "" Then
 					Text (x + 20 * MenuScale, y + 60 * MenuScale, "Map seed:")
-					RandomSeed = Left(InputBox(x+150*MenuScale, y+55*MenuScale, 200*MenuScale, 30*MenuScale, RandomSeed, 3),15)	
+					If HasNumericSeed Then
+						Local inputBoxSeed$ = InputBox(x+150*MenuScale, y+55*MenuScale, 200*MenuScale, 30*MenuScale, Str(RandomSeedNumeric), 3)
+						If Instr(inputBoxSeed, "-", 2) <> 0 Then
+							RandomSeedNumeric = -RandomSeedNumeric
+						Else
+							RandomSeedNumeric = Int(inputBoxSeed)
+						EndIf
+					Else
+						RandomSeed = Left(InputBox(x+150*MenuScale, y+55*MenuScale, 200*MenuScale, 30*MenuScale, RandomSeed, 3),15)
+					EndIf
 				Else
 					Text (x + 20 * MenuScale, y + 60 * MenuScale, "Selected map:")
 					Color (255, 255, 255)
@@ -396,11 +417,11 @@ Function UpdateMainMenu()
 						EndIf
 					Next
 					
-					If RandomSeed = "" Then
+					If (Not HasNumericSeed) And RandomSeed = "" Then
 						RandomSeed = Abs(MilliSecs())
 					EndIf
 					
-					SeedRnd GenerateSeedNumber(RandomSeed)
+					SeedRnd GetRandomSeed()
 
 					LoadEntities()
 					LoadAllSounds()
@@ -482,7 +503,7 @@ Function UpdateMainMenu()
 						If i <= SaveGameAmount Then
 							DrawFrame(x,y,540* MenuScale, 70* MenuScale)
 							
-							If SaveGameVersion(i - 1) <> CompatibleNumber And SaveGameVersion(i - 1) <> "1.3.10" Then
+							If SaveGameVersion(i - 1) <> CompatibleNumber Then
 								Color 255,0,0
 							Else
 								Color 255,255,255
@@ -494,7 +515,7 @@ Function UpdateMainMenu()
 							Text(x + 20 * MenuScale, y + (10+36) * MenuScale, SaveGameVersion(i - 1))
 							
 							If SaveMSG = "" Then
-								If SaveGameVersion(i - 1) <> CompatibleNumber And SaveGameVersion(i - 1) <> "1.3.10" Then
+								If SaveGameVersion(i - 1) <> CompatibleNumber Then
 									DrawFrame(x + 280 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale)
 									Color(255, 0, 0)
 									Text(x + 330 * MenuScale, y + 34 * MenuScale, "Load", True, True)
@@ -516,7 +537,7 @@ Function UpdateMainMenu()
 								EndIf
 							Else
 								DrawFrame(x + 280 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale)
-								If SaveGameVersion(i - 1) <> CompatibleNumber And SaveGameVersion(i - 1) <> "1.3.10" Then
+								If SaveGameVersion(i - 1) <> CompatibleNumber Then
 									Color(255, 0, 0)
 								Else
 									Color(100, 100, 100)
@@ -541,8 +562,7 @@ Function UpdateMainMenu()
 						RowText("Are you sure you want to delete this save?", x + 20 * MenuScale, y + 15 * MenuScale, 400 * MenuScale, 200 * MenuScale)
 						;Text(x + 20 * MenuScale, y + 15 * MenuScale, "Are you sure you want to delete this save?")
 						If DrawButton(x + 50 * MenuScale, y + 150 * MenuScale, 100 * MenuScale, 30 * MenuScale, "Yes", False) Then
-							DeleteFile(CurrentDir() + SavePath + SaveMSG + "\save.txt")
-							DeleteDir(CurrentDir() + SavePath + SaveMSG)
+							DeleteFile(CurrentDir() + SavePath + SaveMSG + ".cbsav")
 							SaveMSG = ""
 							LoadSaveGames()
 						EndIf
@@ -958,6 +978,15 @@ Function UpdateMainMenu()
 					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
 						DrawOptionsTooltip(tx,ty,tw,th,"resourcepackdebug")
 					EndIf
+
+					y = y + 30*MenuScale
+
+					Color 255,255,255
+					Text(x + 20 * MenuScale, y, "Use numeric seeds:")
+					UseNumericSeeds = DrawTick(x + 310 * MenuScale, y + MenuScale, UseNumericSeeds)
+					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
+						DrawOptionsTooltip(tx,ty,tw,th,"numericseeds")
+					EndIf
 					
 					y = y + 50*MenuScale
 					
@@ -1177,9 +1206,9 @@ Function UpdateMainMenu()
 								DrawImage(m\Icon, x + 3 * MenuScale, y + 3 * MenuScale)
 							EndIf
 
-							Text(x + 85 * MenuScale, y + 10 * MenuScale, m\Name)
-							Text(x + 85 * MenuScale, y + (10+18) * MenuScale, m\Description)
-							Text(x + 85 * MenuScale, y + (10+18*2) * MenuScale, m\Author)
+							Text(x + 85 * MenuScale, y + 10 * MenuScale, EllipsisLeft(m\Name, 24))
+							Text(x + 85 * MenuScale, y + (10+18) * MenuScale, EllipsisLeft(m\Description, 24))
+							Text(x + 85 * MenuScale, y + (10+18*2) * MenuScale, EllipsisLeft(m\Author, 24))
 							m\IsActive = DrawTick(x + 370 * MenuScale, y + 25 * MenuScale, m\IsActive)
 
 							If DrawButton(x + 500 * MenuScale, y + 10 * MenuScale, 30 * MenuScale, 20 * MenuScale, "▲", False, False, i = 1) Then
@@ -1293,6 +1322,8 @@ Function UpdateMainMenu()
 	SetFont Font1
 End Function
 
+Dim GfxDrivers$(0)
+
 Function UpdateLauncher()
 	MenuScale = 1
 	
@@ -1330,11 +1361,17 @@ Function UpdateLauncher()
 			GFXModes=GFXModes+1 
 		End If
 	Next
+
+	Local gfxDriverCount = CountGfxDrivers()
+	Dim GfxDrivers$(gfxDriverCount + 1)
+	For i = 1 To gfxDriverCount
+		GfxDrivers(i) = GfxDriverName(i)
+	Next
 	
 	BlinkMeterIMG% = LoadImage_Strict("GFX\blinkmeter.jpg")
 	
 	AppTitle "SCP - Containment Breach Launcher"
-	
+
 	Local quit% = False
 	
 	Repeat
@@ -1375,11 +1412,10 @@ Function UpdateLauncher()
 		Text(x - 10, y - 25, "Graphics:")
 		
 		y=y+10
-		For i = 1 To CountGfxDrivers()
+		For i = 1 To gfxDriverCount
 			Color 0, 0, 0
 			If SelectedGFXDriver = i Then Rect(x - 1, y - 1, 290, 20, False)
-			;text(x, y, bbGfxDriverName(i))
-			LimitText(GfxDriverName(i), x, y, 290, False)
+			LimitText(GfxDrivers(i), x, y, 290, False)
 			If MouseOn(x - 1, y - 1, 290, 20) Then
 				Color 100, 100, 100
 				Rect(x - 1, y - 1, 290, 20, False)
@@ -1762,13 +1798,13 @@ Function InputBox$(x%, y%, width%, height%, Txt$, ID% = 0)
 	
 	If (Not MouseOnBox) And MouseHit1 And SelectedInputBox = ID Then SelectedInputBox = 0
 	
-	If SelectedInputBox = ID Then
-		Txt = TextInput(Txt)
-		If (MilliSecs() Mod 800) < 400 Then Rect (x + width / 2 + StringWidth(Txt) / 2 + 2, y + height / 2 - 5, 2, 12)
-	EndIf	
-	
 	Text(x + width / 2, y + height / 2, Txt, True, True)
-	
+
+	If SelectedInputBox = ID Then
+		If (MilliSecs() Mod 800) < 400 Then Rect (x + width / 2 + StringWidth(Txt) / 2 + 2, y + height / 2 - 5, 2, 12)
+		Txt = TextInput(Txt)
+	EndIf
+		
 	Return Txt
 End Function
 
@@ -2243,6 +2279,9 @@ Function DrawOptionsTooltip(x%,y%,width%,height%,option$,value#=0,ingame%=False)
 			txt = Chr(34)+"Open console on error"+Chr(34)+" is self-explanatory."
 		Case "resourcepackdebug"
 			txt = "Resources failing to load from mods cause a runtime error instead of silently falling back to the vanilla resource."
+		Case "numericseeds"
+			txt = "Allows seeds to be entered as integers, which will be used to directly seed the game's internal random number generator."
+			txt = txt + " When no seed is entered, the elapsed millseconds since the computer started is used."
 		Case "achpopup"
 			txt = "Displays a pop-up notification when an achievement is unlocked."
 		Case "launcher"

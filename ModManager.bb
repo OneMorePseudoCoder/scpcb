@@ -219,6 +219,7 @@ End Function
 Function GetWorkshopErrorCodeStr$(err%)
     Local txt$ = ""
     Select err Mod 1000
+        Case 2 txt = "Generic failure. Try changing your Steam download region or your connection type."
         Case 24 txt = "You are restricted from uploading content. Please contact Steam support."
         Case 17 txt = "You are currently VAC or game banned."
         Case 16 txt = "The operation timed out. Please try again."

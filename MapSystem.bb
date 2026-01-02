@@ -6953,8 +6953,6 @@ End Function
 ;-------------------------------------------------------------------------------------------------------
 
 Function CreateMap()
-	DebugLog ("Generating a map using the seed "+RandomSeed)
-	
 	I_Zone\Transition[0] = 13
 	I_Zone\Transition[1] = 7
 	I_Zone\HasCustomForest = False
@@ -6966,7 +6964,7 @@ Function CreateMap()
 	
 	Local zone%
 	
-	SeedRnd GenerateSeedNumber(RandomSeed)
+	SeedRnd GetRandomSeed()
 	
 	Dim MapName$(MapWidth, MapHeight)
 	
@@ -7356,7 +7354,8 @@ Function CreateMap()
 	
 	For rt.RoomTemplates = Each RoomTemplates
 		If rt\SetRoom <> -1 Then
-			SetRoom(rt\Name, rt\Shape, Floor(rt\SetRoom*Float(RoomAmounts(rt\Shape, rt\zone[0]))),MinPositions(rt\Shape, rt\zone[0]),MaxPositions(rt\Shape, rt\zone[0]))
+			Local start% = MinPositions(rt\Shape, rt\zone[0])
+			SetRoom(rt\Name, rt\Shape, start+Floor(rt\SetRoom*Float(RoomAmounts(rt\Shape, rt\zone[0]))),start,MaxPositions(rt\Shape, rt\zone[0]))
 		EndIf
 	Next
 
@@ -8104,7 +8103,7 @@ Dim CHUNKDATA(64,64)
 Function SetChunkDataValues()
 	Local StrTemp$,i%,j%
 	StrTemp$ = ""
-	SeedRnd GenerateSeedNumber(RandomSeed)
+	SeedRnd GetRandomSeed()
 	
 	For i = 0 To 63
 		For j = 0 To 63
@@ -8130,7 +8129,7 @@ Function CreateChunkParts(r.Rooms)
 	Local chp.ChunkPart,chp2.ChunkPart
 	Local obj%
 	StrTemp$ = ""
-	SeedRnd GenerateSeedNumber(RandomSeed)
+	SeedRnd GetRandomSeed()
 	
 	For i = 0 To ChunkAmount%
 		Local loc% = GetINISectionLocation(File$,"chunk"+i)

@@ -110,8 +110,13 @@ Function SaveGame(file$)
 	WriteFloat f, SuperManTimer
 	WriteByte f, LightsOn
 	
-	WriteString f, RandomSeed
-	
+	WriteByte f, HasNumericSeed
+	If HasNumericSeed
+		WriteInt f, RandomSeedNumeric
+	Else
+		WriteString f, RandomSeed
+	EndIf
+
 	WriteFloat f, SecondaryLightOn
 	WriteFloat f, PrevSecondaryLightOn
 	WriteByte f, RemoteDoorOn
@@ -571,8 +576,13 @@ Function LoadGame(file$)
 	SuperMan = ReadByte(f)
 	SuperManTimer = ReadFloat(f)
 	LightsOn = ReadByte(f)
-	
-	RandomSeed = ReadString(f)
+
+	HasNumericSeed = ReadByte(f)
+	If HasNumericSeed Then
+		RandomSeedNumeric = ReadInt(f)
+	Else
+		RandomSeed = ReadString(f)
+	EndIf
 	
 	SecondaryLightOn = ReadFloat(f)
 	PrevSecondaryLightOn = ReadFloat(f)
@@ -1182,13 +1192,6 @@ Function LoadGame(file$)
 	I_427\Using = ReadByte(f)
 	I_427\Timer = ReadFloat(f)
 	
-	If version = "1.3.10" Then
-		I_Zone\Transition[0] = ReadByte(f)
-		I_Zone\Transition[1] = ReadByte(f)
-		I_Zone\HasCustomForest = ReadByte(f)
-		I_Zone\HasCustomMT = ReadByte(f)
-	EndIf
-	
 	Wearing714 = ReadByte(f)
 	
 	CloseFile f
@@ -1407,8 +1410,13 @@ Function LoadGameQuick(file$)
 	SuperManTimer = ReadFloat(f)
 	LightsOn = ReadByte(f)
 	
-	RandomSeed = ReadString(f)
-	
+	HasNumericSeed = ReadByte(f)
+	If HasNumericSeed Then
+		RandomSeedNumeric = ReadInt(f)
+	Else
+		RandomSeed = ReadString(f)
+	EndIf
+
 	SecondaryLightOn = ReadFloat(f)
 	PrevSecondaryLightOn = ReadFloat(f)
 	RemoteDoorOn = ReadByte(f)
@@ -1916,13 +1924,6 @@ Function LoadGameQuick(file$)
 	EndIf
 	I_427\Using = ReadByte(f)
 	I_427\Timer = ReadFloat(f)
-	
-	If version = "1.3.10" Then
-		I_Zone\Transition[0] = ReadByte(f)
-		I_Zone\Transition[1] = ReadByte(f)
-		I_Zone\HasCustomForest = ReadByte(f)
-		I_Zone\HasCustomMT = ReadByte(f)
-	EndIf
 	
 	Wearing714 = ReadByte(f)
 	CloseFile f
