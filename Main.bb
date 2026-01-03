@@ -1742,7 +1742,7 @@ For i = 0 To 3
 Next
 NavImages(4) = LoadImage_Strict("GFX\navigator\batterymeter.png")
 
-Global NavBG = CreateImage(GraphicWidth,GraphicHeight)
+Global NavBG = CreateTexture(GraphicWidth,GraphicHeight, 1 + 1024)
 
 Global LightConeModel
 
@@ -6592,7 +6592,7 @@ Function DrawGUI()
 							PlayerX% = Floor((EntityX(PlayerRoom\obj)+8) / 8.0 + 0.5)
 							PlayerZ% = Floor((EntityZ(PlayerRoom\obj)+8) / 8.0 + 0.5)
 							
-							SetBuffer ImageBuffer(NavBG)
+							SetBuffer TextureBuffer(NavBG)
 							Local xx = x-ImageWidth(SelectedItem\itemtemplate\img)/2
 							Local yy = y-ImageHeight(SelectedItem\itemtemplate\img)/2+85
 							DrawImage(SelectedItem\itemtemplate\img, xx, yy)
@@ -6641,7 +6641,7 @@ Function DrawGUI()
 							Next
 							
 							SetBuffer BackBuffer()
-							DrawImageRect NavBG,xx+80,yy+70,xx+80,yy+70,270,230
+							DrawBufferRect TextureBuffer(NavBG),xx+80,yy+70,270,230,xx+80,yy+70,270,230
 							Color 30,30,30
 							If SelectedItem\itemtemplate\name = "S-NAV Navigator" Then Color(100, 0, 0)
 							Rect xx+80,yy+70,270,230,False
