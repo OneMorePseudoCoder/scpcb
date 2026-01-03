@@ -190,7 +190,11 @@ End Function
 Function UpdateMod(m.Mods, changelog$)
     If UpdatingMod <> Null Then Return
     UpdatingMod = m
-    Steam_UpdateItem(m\SteamworkshopId, m\Name, m\Description, m\Path, DetermineIcon(m), changelog)
+    Local desc$ = ""
+    If Not ShouldKeepModDescription Then
+        desc = m\Description
+    EndIf
+    Steam_UpdateItem(m\SteamworkshopId, m\Name, desc, m\Path, DetermineIcon(m), changelog)
 End Function
 
 Function UpdateUpdatingMod()

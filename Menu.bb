@@ -60,6 +60,7 @@ Global CurrLoadGamePage% = 0
 ; 0 is idle; 1 is upload confirmation; 2 is update confirmation 
 Global ModUIState%
 Global ModChangelog$
+Global ShouldKeepModDescription% = True
 Global SelectedMod.Mods
 
 Function EllipsisLeft$(txt$, maxLen%)
@@ -1303,13 +1304,15 @@ Function UpdateMainMenu()
 						DrawFrame(x, y, 420 * MenuScale, 200 * MenuScale)
 						RowText("Are you sure you want to update this item? If so, you can enter a list of changes below:", x + 20 * MenuScale, y + 15 * MenuScale, 400 * MenuScale, 200 * MenuScale)
 						ModChangelog = InputBox(x + 20 * MenuScale, y + 80 * MenuScale, 380 * MenuScale, 30 * MenuScale, ModChangelog, 99)
-						If DrawButton(x + 50 * MenuScale, y + 150 * MenuScale, 100 * MenuScale, 30 * MenuScale, "Yes", False) Then
+						Text(x + 20 * MenuScale, y + 125 * MenuScale, "Keep current description?")
+						ShouldKeepModDescription = DrawTick(x + 325 * MenuScale, y + 121 * MenuScale, ShouldKeepModDescription)
+						If DrawButton(x + 50 * MenuScale, y + 155 * MenuScale, 100 * MenuScale, 30 * MenuScale, "Yes", False) Then
 							UpdateMod(SelectedMod, ModChangelog)
 							ModChangelog = ""
 							ModUIState = 0
 							SelectedMod = Null
 						EndIf
-						If DrawButton(x + 250 * MenuScale, y + 150 * MenuScale, 100 * MenuScale, 30 * MenuScale, "No", False) Then
+						If DrawButton(x + 250 * MenuScale, y + 155 * MenuScale, 100 * MenuScale, 30 * MenuScale, "No", False) Then
 							ModChangelog = ""
 							ModUIState = 0
 							SelectedMod = Null
