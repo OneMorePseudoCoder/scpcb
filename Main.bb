@@ -35,6 +35,11 @@ If SteamActive Then
 	If Steam_Init() <> 0 Then RuntimeError("Steam failed to initialize")
 EndIf
 
+Global IsRestart% = False
+.Start
+Global IsRunning% = True
+Global ShouldRestart% = False
+
 Include "ModManager.bb"
 ReloadMods()
 
@@ -63,7 +68,7 @@ Dim ArrowIMG(4)
 
 Global LauncherWidth%= Min(GetINIInt(OptionFile, "launcher", "launcher width"), 1024)
 Global LauncherHeight% = Min(GetINIInt(OptionFile, "launcher", "launcher height"), 768)
-Global LauncherEnabled% = GetINIInt(OptionFile, "launcher", "launcher enabled")
+Global LauncherEnabled% = GetINIInt(OptionFile, "launcher", "launcher enabled") And (Not IsRestart)
 
 Global GraphicWidth% = GetINIInt(OptionFile, "options", "width")
 Global GraphicHeight% = GetINIInt(OptionFile, "options", "height")
@@ -80,7 +85,7 @@ Global ShowFPS = GetINIInt(OptionFile, "options", "show FPS")
 Global WireframeState
 Global HalloweenTex
 
-Global TotalGFXModes% = CountGfxModes3D(), GFXModes%
+Global TotalGFXModes% = CountGfxModes3D(), GFXModes% = 0
 Dim GfxModeWidths%(TotalGFXModes), GfxModeHeights%(TotalGFXModes)
 
 Global BorderlessWindowed% = GetINIInt(OptionFile, "options", "borderless windowed")
@@ -2772,7 +2777,7 @@ Global I_Zone.MapZones = New MapZones
 ;----------------------------------------------       		MAIN LOOP                 ---------------------------------------------------------------
 ;----------------------------------------------------------------------------------------------------------------------------------------------------
 
-Repeat
+While IsRunning
 
 	Cls
 	
@@ -3316,9 +3321,20 @@ Repeat
 	Else 
 		Flip 1
 	EndIf
-Forever
+Wend
+
+If ShouldRestart Then
+	IsRestart = True
+	Goto Start
+EndIf
 
 If SteamActive Then Steam_Shutdown()
+
+Function Restart()
+	Cls
+	IsRunning = False
+	ShouldRestart = True
+End Function
 
 ;----------------------------------------------------------------------------------------------------------------------------------------------------
 ;----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -11897,7 +11913,7 @@ End Function
 
 Function PlayStartupVideos()
 
-	If GetINIInt("options.ini","options","play startup video")=0 Then Return
+	If GetINIInt("options.ini","options","play startup video") = 0 Lor IsRestart Then Return
 
 	PlayMovie("GFX\menu\startup_Undertow")
 	PlayMovie("GFX\menu\startup_TSS")
