@@ -2171,28 +2171,9 @@ Function UpdateDoors()
 							d\openstate = Max(0, d\openstate - FPSfactor*0.8)
 							MoveEntity(d\obj, Sin(d\openstate) * -FPSfactor / 180.0, 0, 0)
 							If d\obj2 <> 0 Then MoveEntity(d\obj2, Sin(d\openstate) * FPSfactor / 180.0, 0, 0)
-							If d\openstate < 15 And d\openstate+FPSfactor => 15
-								If ParticleAmount=2
-									For i = 0 To Rand(75,99)
-										Local pvt% = CreatePivot()
-										PositionEntity(pvt, EntityX(d\frameobj,True)+Rnd(-0.2,0.2), EntityY(d\frameobj,True)+Rnd(0.0,1.2), EntityZ(d\frameobj,True)+Rnd(-0.2,0.2))
-										RotateEntity(pvt, 0, Rnd(360), 0)
-										
-										Local p.Particles = CreateParticle(EntityX(pvt), EntityY(pvt), EntityZ(pvt), 2, 0.002, 0, 300)
-										p\speed = 0.005
-										RotateEntity(p\pvt, Rnd(-20, 20), Rnd(360), 0)
-										
-										p\SizeChange = -0.00001
-										p\size = 0.01
-										ScaleSprite p\obj,p\size,p\size
-										
-										p\Achange = -0.01
-										
-										EntityOrder p\obj,-1
-										
-										FreeEntity pvt
-									Next
-								EndIf
+							If ParticleAmount=2 And d\openstate < 15 And d\openstate+FPSfactor => 15
+								Local particles% = SetEmitter(d\frameobj, ParticleEffect[3])
+								EntityOrder(particles, -1)
 							EndIf
 						Case 2
 							d\openstate = Max(0, d\openstate - FPSfactor * 2 * (d\fastopen+1))
@@ -2978,12 +2959,11 @@ Repeat
 			UpdateParticles()
 			Use427()
 			UpdateMonitorSaving()
-			;Added a simple code for updating the Particles function depending on the FPSFactor (still WIP, might not be the final version of it) - ENDSHN
-			UpdateParticles_Time# = Min(1,UpdateParticles_Time#+FPSfactor)
-			If UpdateParticles_Time#=1
+			UpdateParticles_Time# = UpdateParticles_Time#+FPSfactor
+			If UpdateParticles_Time#=>1
 				UpdateDevilEmitters()
 				UpdateParticles_Devil()
-				UpdateParticles_Time#=0
+				UpdateParticles_Time# = UpdateParticles_Time# - 1
 			EndIf
 		EndIf
 		
@@ -8398,6 +8378,19 @@ Function LoadEntities()
 	SetTemplateSizeVel(t0, .01, 1.01)
 	SetTemplateGravity(ParticleEffect[2], 0.005)
 	SetTemplateSubTemplate(ParticleEffect[2], t0)
+
+	;Big doors closing
+	ParticleEffect[3] = CreateTemplate()
+	SetTemplateEmitterBlend(ParticleEffect[3], 3)
+	SetTemplateEmitterLifeTime(ParticleEffect[3], 0)
+	SetTemplateParticlesPerInterval(ParticleEffect[3], 80)
+	SetTemplateParticleLifeTime(ParticleEffect[3], 90, 100)
+	SetTemplateTexture(ParticleEffect[3], "GFX\dust.jpg", 2, 1)
+	SetTemplateOffset(ParticleEffect[3], -0.2, 0.2, 0.0, 1.2, -0.2, 0.2)
+	SetTemplateVelocity(ParticleEffect[3], -0.005, 0.005, -0.0017, 0.0017, -0.005, 0.005)
+	SetTemplateSizeVel(ParticleEffect[3], -0.000005, 1)
+	SetTemplateSize(ParticleEffect[3], 0.005, 0.005)
+	SetTemplateAlphaVel(ParticleEffect[3], True)
 	
 	Room2slCam = CreateCamera()
 	CameraViewport(Room2slCam, 0, 0, 128, 128)
