@@ -2486,7 +2486,7 @@ End Function
 
 Function DrawFramedRowText(txt$, x%, y%, width%)
 	Local fw% = width - 12*MenuScale
-	Local lines% = GetLineAmount(txt, width, 0)
+	Local lines% = GetLineAmount(txt, fw, 0)
 	DrawFrame(x, y, width, ((StringHeight(txt)*lines)+(10+lines)*MenuScale), 0, 0, False)
 	RowText(txt, x + 6*MenuScale, y + 6*MenuScale, fw, 0)
 End Function
