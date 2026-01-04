@@ -1387,8 +1387,8 @@ Function CreateGrayScaleImage%(img%)
 	Local buf% = ImageBuffer(ret)
 	LockBuffer(rbuf)
 	LockBuffer(buf)
-	For x = 0 To BufferWidth(rbuf)-1
-		For y = 0 To BufferHeight(rbuf)-1
+	For x = 0 To ImageWidth(img)-1
+		For y = 0 To ImageHeight(img)-1
 			Local color% = ReadPixelFast(x, y, rbuf)
 			Local g% = ((color Shr 16) And 255) * 0.21 + ((color Shr 8) And 255) * 0.72 + (color And 255) * 0.07
 			WritePixelFast(x, y, (color And $FF000000) + (g Shl 16) + (g Shl 8) + g, buf)
