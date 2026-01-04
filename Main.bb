@@ -8148,7 +8148,7 @@ Function LoadEntities()
 	
 	ParticleTextures(0) = LoadTexture_Strict("GFX\smoke.png", 1 + 2)
 	ParticleTextures(1) = LoadTexture_Strict("GFX\flash.jpg", 1 + 2)
-	ParticleTextures(2) = LoadTexture_Strict("GFX\dust.jpg", 1 + 2)
+	ParticleTextures(2) = LoadTexture_Strict("GFX\dust.png", 1 + 2)
 	ParticleTextures(3) = LoadTexture_Strict("GFX\npcs\hg.pt", 1 + 2)
 	ParticleTextures(4) = LoadTexture_Strict("GFX\map\sun.jpg", 1 + 2)
 	ParticleTextures(5) = LoadTexture_Strict("GFX\bloodsprite.png", 1 + 2)
