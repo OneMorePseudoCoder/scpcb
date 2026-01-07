@@ -3607,8 +3607,12 @@ Function FillRoom(r.Rooms)
 			d\locked = True
 			
 			r\RoomDoors[0] = CreateDoor(r\zone, r\x - 208.0 * RoomScale, 0.0, r\z - 736.0 * RoomScale, 90, r, True, False, False, "", True)
+			MoveEntity(r\RoomDoors[0]\buttons[0], 0, 0, 16)
+			MoveEntity(r\RoomDoors[0]\buttons[1], 0, 0, 16)
 			r\RoomDoors[0]\AutoClose=False
 			r\RoomDoors[1] = CreateDoor(r\zone, r\x - 208.0 * RoomScale, 0.0, r\z + 736.0 * RoomScale, 90, r, True, False, False, "", True)
+			MoveEntity(r\RoomDoors[1]\buttons[0], 0, 0, 16)
+			MoveEntity(r\RoomDoors[1]\buttons[1], 0, 0, 16)
 			r\RoomDoors[1]\AutoClose=False
 			
 			r\RoomDoors[2] = CreateDoor(r\zone, r\x - 672.0 * RoomScale, 0.0, r\z - 1024.0 * RoomScale, 0, r, False, False, False, "GEAR")
@@ -4666,6 +4670,8 @@ Function FillRoom(r.Rooms)
 			Next
 			
 			r\RoomDoors[0] = CreateDoor(r\zone,r\x,r\y,r\z - 528.0 * RoomScale,0,r,False,False,6)
+			MoveEntity(r\RoomDoors[0]\buttons[0], 0, 0, 16)
+			MoveEntity(r\RoomDoors[0]\buttons[1], 0, 0, 16)
 			
 			sc.SecurityCams = CreateSecurityCam(r\x-256.0*RoomScale, r\y+384.0*RoomScale, r\z+640.0*RoomScale, r)
 			sc\angle = 180
