@@ -25,7 +25,7 @@ Function InstantiateMod.Mods(id$, path$)
     m\Id = id
     m\Path = path
     Local modIni$ = m\Path + "info.ini"
-    If FileType(modIni) <> 1 Then RuntimeError("Mod at " + Chr(34) + m\Path + Chr(34) + " is missing an info.ini file.")
+    If FileType(modIni) <> 1 Then RuntimeErrorExt("Mod at " + Chr(34) + m\Path + Chr(34) + " is missing an info.ini file.")
     Local ini% = OpenFile(modIni)
     While Not Eof(ini)
         Local l$ = Trim(ReadLine(ini))
@@ -47,10 +47,10 @@ Function InstantiateMod.Mods(id$, path$)
     Wend
     CloseFile(ini)
 
-    If m\Name = "" Then RuntimeError("Mod at " + Chr(34) + m\Path + Chr(34) + " is missing a name in its info.ini file.")
+    If m\Name = "" Then RuntimeErrorExt("Mod at " + Chr(34) + m\Path + Chr(34) + " is missing a name in its info.ini file.")
     For m2.Mods = Each Mods
         ; ID collisions should be impossible.
-        If m2 <> m And m2\Id = m\Id Then RuntimeError("Mod at " + Chr(34) + m\Path + Chr(34) + " and mod at " + Chr(34) + m\Path + Chr(34) + " share a mod ID.")
+        If m2 <> m And m2\Id = m\Id Then RuntimeErrorExt("Mod at " + Chr(34) + m\Path + Chr(34) + " and mod at " + Chr(34) + m\Path + Chr(34) + " share a mod ID.")
     Next
 
     m\IconPath = DetermineIcon(m, False)
@@ -159,7 +159,7 @@ Function LoadModdedTextureNonStrict%(file$, flags%)
 				If tmp <> 0 Then
 					Return tmp
 				Else If DebugResourcePacks Then
-					RuntimeError("Failed to load texture " + Chr(34) + modPath + Chr(34) + ".")
+					RuntimeErrorExt("Failed to load texture " + Chr(34) + modPath + Chr(34) + ".")
 				EndIf
 			EndIf
 		Next

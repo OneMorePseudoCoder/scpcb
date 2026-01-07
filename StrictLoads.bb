@@ -40,13 +40,13 @@ Function LoadImage_Strict(file$)
 				If tmp <> 0 Then
 					Return tmp
 				Else If DebugResourcePacks Then
-					RuntimeError("Failed to load image " + Chr(34) + modPath + Chr(34) + ".")
+					RuntimeErrorExt("Failed to load image " + Chr(34) + modPath + Chr(34) + ".")
 				EndIf
 			EndIf
 		Next
 	Next
 
-	If FileType(file$)<>1 Then RuntimeError "Image " + Chr(34) + file$ + Chr(34) + " missing."
+	If FileType(file$)<>1 Then RuntimeErrorExt "Image " + Chr(34) + file$ + Chr(34) + " missing."
 	tmp = LoadImage(file$)
 	Return tmp
 	;attempt to load the image again
@@ -338,15 +338,15 @@ Function LoadMesh_Strict(File$,parent=0)
 				If tmp <> 0 Then
 					Return tmp
 				Else If DebugResourcePacks Then
-					RuntimeError("Failed to load 3D Mesh " + Chr(34) + modPath + Chr(34) + ".")
+					RuntimeErrorExt("Failed to load 3D Mesh " + Chr(34) + modPath + Chr(34) + ".")
 				EndIf
 			EndIf
 		Next
 	Next
 
-	If FileType(File$) <> 1 Then RuntimeError "3D Mesh " + File$ + " not found."
+	If FileType(File$) <> 1 Then RuntimeErrorExt "3D Mesh " + File$ + " not found."
 	tmp = LoadMesh(File$, parent)
-	If tmp = 0 Then RuntimeError "Failed to load 3D Mesh: " + File$ 
+	If tmp = 0 Then RuntimeErrorExt "Failed to load 3D Mesh: " + File$ 
 	Return tmp  
 End Function
 
@@ -369,15 +369,15 @@ Function LoadAnimMesh_Strict(File$,parent=0)
 				If tmp <> 0 Then
 					Return tmp
 				Else If DebugResourcePacks Then
-					RuntimeError("Failed to load 3D Animated Mesh " + Chr(34) + modPath + Chr(34) + ".")
+					RuntimeErrorExt("Failed to load 3D Animated Mesh " + Chr(34) + modPath + Chr(34) + ".")
 				EndIf
 			EndIf
 		Next
 	Next
 
-	If FileType(File$) <> 1 Then RuntimeError "3D Animated Mesh " + File$ + " not found."
+	If FileType(File$) <> 1 Then RuntimeErrorExt "3D Animated Mesh " + File$ + " not found."
 	tmp = LoadAnimMesh(File$, parent)
-	If tmp = 0 Then RuntimeError "Failed to load 3D Animated Mesh: " + File$ 
+	If tmp = 0 Then RuntimeErrorExt "Failed to load 3D Animated Mesh: " + File$ 
 	Return tmp
 End Function
 
@@ -386,25 +386,25 @@ Function LoadTexture_Strict(File$,flags=1)
 	Local tmp% = LoadModdedTextureNonStrict(File, flags)
 	If tmp <> 0 Then Return tmp
 
-	If FileType(File$) <> 1 Then RuntimeError "Texture " + File$ + " not found."
+	If FileType(File$) <> 1 Then RuntimeErrorExt "Texture " + File$ + " not found."
 	tmp = LoadTexture(File$, flags+(256*(EnableVRam=True)))
-	If tmp = 0 Then RuntimeError "Failed to load Texture: " + File$
+	If tmp = 0 Then RuntimeErrorExt "Failed to load Texture: " + File$
 	Return tmp
 End Function
 
 Function LoadBrush_Strict(file$,flags,u#=1.0,v#=1.0)
 	File = DetermineModdedPath(File)
-	If FileType(file$)<>1 Then RuntimeError "Brush Texture " + file$ + "not found."
+	If FileType(file$)<>1 Then RuntimeErrorExt "Brush Texture " + file$ + "not found."
 	tmp = LoadBrush(file$, flags, u, v)
-	If tmp = 0 Then RuntimeError "Failed to load Brush: " + file$ 
+	If tmp = 0 Then RuntimeErrorExt "Failed to load Brush: " + file$ 
 	Return tmp 
 End Function 
 
 Function LoadFont_Strict(file$, height)
 	File = DetermineModdedPath(File)
-	If FileType(file$)<>1 Then RuntimeError "Font " + file$ + " not found."
+	If FileType(file$)<>1 Then RuntimeErrorExt "Font " + file$ + " not found."
 	tmp = LoadFont(file, height, bold, italic, underline)  
-	If tmp = 0 Then RuntimeError "Failed to load Font: " + file$ 
+	If tmp = 0 Then RuntimeErrorExt "Failed to load Font: " + file$ 
 	Return tmp
 End Function
 

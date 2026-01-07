@@ -7,6 +7,27 @@
 
 ;    See Credits.txt for a list of contributors
 
+Const VersionNumber$ = "1.3.12-pre3"
+Const CompatibleNumber$ = "1.3.12" ;Only change this if the version given isn't working with the current build version - ENDSHN
+
+InitErrorMsgs(10, True)
+SetErrorMsg(0, "An error occured in SCP - Containment Breach v" + VersionNumber)
+SetErrorMsg(1, "Please take a screenshot of this and send it to us!") 
+SetErrorMsg(2, "---------------------------------------------------")
+SetErrorMsg(3, "OS: " + SystemProperty("os") + " " + (32 + (GetEnv("ProgramFiles(X86)") <> 0) * 32) + " Bit (Build: " + SystemProperty("osbuild") + ")")
+SetErrorMsg(4, "CPU: " + Trim(SystemProperty("cpuname")) + " (Arch: " + SystemProperty("cpuarch") + ", " + GetEnv("NUMBER_OF_PROCESSORS") + " Threads)")
+
+SetErrorMsg(8, "Caught exception: " + "_CaughtError_")
+
+Function CatchErrors(location$)
+	SetErrorMsg(9, location)
+End Function
+
+Function RuntimeErrorExt%(Message$)
+	SetErrorMsg(8, "Caught exception: " + Message)
+	MemoryAccessViolation()
+End Function
+
 Include "StrictLoads.bb"
 Include "KeyName.bb"
 
@@ -16,16 +37,9 @@ Include "Blitz_File_FileName.bb"
 
 Include "DevilParticleSystem.bb"
 
-Global ErrorFile$ = "error_log_"
-Local ErrorFileInd% = 0
-While FileType(ErrorFile+Str(ErrorFileInd)+".txt")<>0
-	ErrorFileInd = ErrorFileInd+1
-Wend
-ErrorFile = ErrorFile+Str(ErrorFileInd)+".txt"
-
 Global SteamActive% = GetINIInt(OptionFile, "options", "enable steam")
 If SteamActive Then
-	If Steam_Init() <> 0 Then RuntimeError("Steam failed to initialize")
+	If Steam_Init() <> 0 Then RuntimeErrorExt("Steam failed to initialize")
 EndIf
 
 Global IsRestart% = False
@@ -36,12 +50,8 @@ Global ShouldRestart% = False
 Include "ModManager.bb"
 ReloadMods()
 
-Global UpdaterFont%
 Global Font1%, Font2%, Font3%, Font4%, Font5%
 Global ConsoleFont%
-
-Global VersionNumber$ = "1.3.12-pre3"
-Global CompatibleNumber$ = "1.3.12" ;Only change this if the version given isn't working with the current build version - ENDSHN
 
 Global MenuWhite%, MenuBlack%
 Global ButtonSFX% = LoadSound_Strict("SFX\Interact\Button.ogg")
@@ -127,6 +137,7 @@ Else
 	GraphicHeight = GfxModeHeights(SelectedGFXMode)
 EndIf
 SetGfxDriver(SelectedGFXDriver)
+Global GFXDriverName$ = GFXDriverName(SelectedGFXDriver)
 	
 ;New "fake fullscreen" - ENDSHN Psst, it's called borderless windowed mode --Love Mark,
 If BorderlessWindowed
@@ -1441,6 +1452,8 @@ Function UpdateConsole()
 					Else
 						CreateConsoleMsg("GUARANTEED KEY CARD OMNI OFF")
 					EndIf
+				Case "mav"
+					RuntimeErrorExt("Violation Access Memory")
 				Case "jorge"
 					;[Block]	
 					CreateConsoleMsg(Chr(74)+Chr(79)+Chr(82)+Chr(71)+Chr(69)+Chr(32)+Chr(72)+Chr(65)+Chr(83)+Chr(32)+Chr(66)+Chr(69)+Chr(69)+Chr(78)+Chr(32)+Chr(69)+Chr(88)+Chr(80)+Chr(69)+Chr(67)+Chr(84)+Chr(73)+Chr(78)+Chr(71)+Chr(32)+Chr(89)+Chr(79)+Chr(85)+Chr(46))
@@ -2767,7 +2780,12 @@ Global I_Zone.MapZones = New MapZones
 ;----------------------------------------------       		MAIN LOOP                 ---------------------------------------------------------------
 ;----------------------------------------------------------------------------------------------------------------------------------------------------
 
+Global TotalVidMem = TotalVidMem()
+Global TotalPhysMem = TotalPhys()
+
 While IsRunning
+	SetErrorMsg(5, "GPU: " + GFXDriverName + " (" + (TotalVidMem - (AvailVidMem() / 1024)) + "MB/" + TotalVidMem + " MB)")
+	SetErrorMsg(6, "Global memory status: (" + (TotalPhysMem - (AvailPhys() / 1024)) + "MB/" + TotalPhysMem + " MB)")
 
 	Cls
 	
@@ -8401,10 +8419,22 @@ Function LoadEntities()
 	CatchErrors("LoadEntities")
 End Function
 
+Function SetUpSeedErrorInfo()
+	Local txt$
+	If HasNumericSeed Then
+		txt = "Seed (numeric): " + RandomSeedNumeric
+	Else
+		txt = "Seed: " + RandomSeed
+	EndIf
+	SetErrorMsg(7, txt)
+End Function
+
 Function InitNewGame()
 	CatchErrors("Uncaught (InitNewGame)")
 	Local i%, de.Decals, d.Doors, it.Items, r.Rooms, sc.SecurityCams, e.Events
 	
+	SetUpSeedErrorInfo()
+
 	DrawLoading(45)
 	
 	HideDistance# = 15.0
@@ -8553,7 +8583,7 @@ Function InitNewGame()
 	
 	FreeTextureCache
 	DrawLoading(100)
-	
+
 	FlushKeys
 	FlushMouse
 	
@@ -8567,6 +8597,8 @@ Function InitLoadGame()
 	CatchErrors("Uncaught (InitLoadGame)")
 	Local d.Doors, sc.SecurityCams, rt.RoomTemplates, e.Events
 	
+	SetUpSeedErrorInfo()
+
 	DrawLoading(80)
 	
 	For d.Doors = Each Doors
@@ -8641,14 +8673,13 @@ Function InitLoadGame()
 	Next
 	
 	FreeTextureCache
-	
-	CatchErrors("InitLoadGame")
 	DrawLoading(100)
 	
 	PrevTime = MilliSecs()
 	FPSfactor = 0
 	ResetInput()
 	
+	CatchErrors("InitLoadGame")
 End Function
 
 Function NullGame(playbuttonsfx%=True)
@@ -8913,6 +8944,8 @@ Function NullGame(playbuttonsfx%=True)
 	Delete Each AchievementMsg
 	CurrAchvMSGID = 0
 	
+	SetErrorMsg(7, "")
+
 	;DeInitExt
 	
 	ClearWorld
@@ -11736,52 +11769,6 @@ End Function
 
 Function ScaledMouseY%()
 	Return Float(MouseY())*Float(GraphicHeight)/Float(RealGraphicHeight)
-End Function
-
-Function CatchErrors(location$)
-	;Local errStr$ = ErrorLog()
-	;Local errF%
-	;If Len(errStr)>0 Then
-	;	If FileType(ErrorFile)=0 Then
-	;		errF = WriteFile(ErrorFile)
-	;		WriteLine errF,"An error occured in SCP - Containment Breach!"
-	;		WriteLine errF,"Version: "+VersionNumber
-	;		WriteLine errF,"Save compatible version: "+CompatibleNumber
-	;		WriteLine errF,"Date and time: "+CurrentDate()+" at "+CurrentTime()
-	;		WriteLine errF,"Total video memory (MB): "+TotalVidMem()/1024/1024
-	;		WriteLine errF,"Available video memory (MB): "+AvailVidMem()/1024/1024
-	;		GlobalMemoryStatus m.MEMORYSTATUS
-	;		WriteLine errF,"Global memory status: "+(m\dwAvailPhys%/1024/1024)+" MB/"+(m\dwTotalPhys%/1024/1024)+" MB ("+(m\dwAvailPhys%/1024)+" KB/"+(m\dwTotalPhys%/1024)+" KB)"
-	;		WriteLine errF,"Triangles rendered: "+CurrTrisAmount
-	;		WriteLine errF,"Active textures: "+ActiveTextures()
-	;		WriteLine errF,""
-	;		WriteLine errF,"Error(s):"
-	;	Else
-	;		Local canwriteError% = True
-	;		errF = OpenFile(ErrorFile)
-	;		While (Not Eof(errF))
-	;			Local l$ = ReadLine(errF)
-	;			If Left(l,Len(location))=location
-	;				canwriteError = False
-	;				Exit
-	;			EndIf
-	;		Wend
-	;		If canwriteError
-	;			SeekFile errF,FileSize(ErrorFile)
-	;		EndIf
-	;	EndIf
-	;	If canwriteError
-	;		WriteLine errF,location+" ***************"
-	;		While Len(errStr)>0
-	;			WriteLine errF,errStr
-	;			DebugLog errStr
-	;			errStr = ErrorLog()
-	;		Wend
-	;	EndIf
-	;	Msg = "Blitz3D Error! Details in "+Chr(34)+ErrorFile+Chr(34)
-	;	MsgTimer = 20*70
-	;	CloseFile errF
-	;EndIf
 End Function
 
 Function PlayAnnouncement(file$) ;This function streams the announcement currently playing
