@@ -4250,7 +4250,8 @@ Function UpdateNPCs()
 															If (n\Path[n\PathLocation]\door\locked Or n\Path[n\PathLocation]\door\KeyCard<>0 Or n\Path[n\PathLocation]\door\Code<>"") And (Not n\Path[n\PathLocation]\door\open) Then
 																temp = False
 															Else
-																If n\Path[n\PathLocation]\door\open = False And (n\Path[n\PathLocation]\door\buttons[0]<>0 Or n\Path[n\PathLocation]\door\buttons[1]<>0) Then
+																d.Doors = n\Path[n\PathLocation]\door
+																If d\open = False And (d\buttons[0]<>0 Lor d\buttons[1]<>0) And (d\openstate <= 0 Lor d\openstate >= 180) Then
 																	UseDoor(n\Path[n\PathLocation]\door, False)
 																EndIf
 															EndIf
