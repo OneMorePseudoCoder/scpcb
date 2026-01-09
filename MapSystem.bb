@@ -1953,7 +1953,7 @@ Function PlaceGrid_MapCreator(r.Rooms)
 	
 End Function
 
-Function CreateRoom.Rooms(zone%, roomshape%, x#, y#, z#, angle%, name$ = "")
+Function CreateRoom.Rooms(zone%, roomshape%, x#, y#, z#, angle%, name$)
 	CatchErrors("Uncaught (CreateRoom)")
 	Local r.Rooms = New Rooms
 	Local rt.RoomTemplates
@@ -7418,9 +7418,9 @@ Function CreateMap()
 		For x = 1 To MapWidth - 2
 			If MapTemp(x, y) = 255 Then
 				If y>MapHeight/2 Then ;zone = 2
-					r = CreateRoom(zone, ROOM2, x * 8, 0, y * 8, "checkpoint1")
+					r = CreateRoom(zone, ROOM2, x * 8, 0, y * 8, 0, "checkpoint1")
 				Else ;If zone = 3
-					r = CreateRoom(zone, ROOM2, x * 8, 0, y * 8, "checkpoint2")
+					r = CreateRoom(zone, ROOM2, x * 8, 0, y * 8, 0, "checkpoint2")
 				EndIf
 				CalculateRoomExtents(r)
 			ElseIf MapTemp(x, y) > 0

@@ -922,7 +922,7 @@ Type Rooms
 	Field forestwallobj%
 End Type 
 
-Function CreateRoom.Rooms(zone%, roomshape%, x#, y#, z#, name$ = "")
+Function CreateRoom.Rooms(zone%, roomshape%, x#, y#, z#, name$)
 	Local r.Rooms = New Rooms
 	Local rt.RoomTemplates
 	Local tempf1#,tempf2#,tempf3#
