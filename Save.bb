@@ -483,12 +483,19 @@ Function LoadGame(file$)
 	GameSaved = True
 	
 	Local x#, y#, z#, i%, temp%, strtemp$, r.Rooms, id%, n.NPCs, do.Doors
-	Local f% = ReadFile(file + ".cbsav")
+	Local f% = ReadFile(SavePath + file + ".cbsav")
 	
 	strtemp = ReadString(f)
 	strtemp = ReadString(f)
 	
-	PlayTime = ReadInt(f)
+	Local playedTime = ReadInt(f)
+	If SpeedRunMode Then
+		If PrevSave <> file Then
+			TimerStopped = 2
+		EndIf
+	Else
+		PlayTime = playedTime
+	EndIf
 	
 	x = ReadFloat(f)
 	y = ReadFloat(f)
@@ -604,7 +611,7 @@ Function LoadGame(file$)
 		Next
 	Next
 	
-	If ReadInt(f) <> 113 Then RuntimeError("Couldn't load the game, save file corrupted (error 2.5)")
+	If ReadInt(f) <> 113 Then RuntimeErrorExt("Couldn't load the game, save file corrupted (error 2.5)")
 	
 	temp = ReadInt(f)
 	For i = 1 To temp
@@ -710,7 +717,7 @@ Function LoadGame(file$)
 		MTFroomState[i]=ReadInt(f)
 	Next
 	
-	If ReadInt(f) <> 632 Then RuntimeError("Couldn't load the game, save file corrupted (error 1)")
+	If ReadInt(f) <> 632 Then RuntimeErrorExt("Couldn't load the game, save file corrupted (error 1)")
 	
 	room2gw_brokendoor = ReadInt(f)
 	room2gw_x = ReadFloat(f)
@@ -744,9 +751,7 @@ Function LoadGame(file$)
 		
 		For rt.roomtemplates = Each RoomTemplates
 			If rt\id = roomtemplateID Then
-				r.Rooms = CreateRoom(level, rt\shape, x, y, z, rt\name)
-				TurnEntity(r\obj, 0, angle, 0)
-				r\angle = angle
+				r.Rooms = CreateRoom(level, rt\shape, x, y, z, angle, rt\name)
 				r\found = found
 				Exit
 			End If
@@ -843,7 +848,7 @@ Function LoadGame(file$)
 		EndIf
 	Next
 	
-	If ReadInt(f) <> 954 Then RuntimeError("Couldn't load the game, save file may be corrupted (error 2)")
+	If ReadInt(f) <> 954 Then RuntimeErrorExt("Couldn't load the game, save file may be corrupted (error 2)")
 	
 	Local spacing# = 8.0
 	Local zone%,shouldSpawnDoor%
@@ -977,7 +982,7 @@ Function LoadGame(file$)
 	
 	InitWayPoints()
 	
-	If ReadInt(f) <> 1845 Then RuntimeError("Couldn't load the game, save file corrupted (error 3)")
+	If ReadInt(f) <> 1845 Then RuntimeErrorExt("Couldn't load the game, save file corrupted (error 3)")
 	
 	Local d.Decals
 	For d.Decals = Each Decals
@@ -1177,7 +1182,7 @@ Function LoadGame(file$)
 		EndIf
 	Next
 	
-	;If ReadInt(f) <> 994 Then RuntimeError("Couldn't load the game, save file corrupted (error 4)")
+	;If ReadInt(f) <> 994 Then RuntimeErrorExt("Couldn't load the game, save file corrupted (error 4)")
 	
 	If ReadInt(f)<>994
 		UsedConsole = True
@@ -1317,7 +1322,10 @@ Function LoadGameQuick(file$)
 	GodMode = 0
 	NoClip = 0
 	
-	PlayTime = ReadInt(f)
+	Local playedTime = ReadInt(f)
+	If Not SpeedRunMode Then
+		PlayTime = playedTime
+	EndIf
 	
 	;HideEntity Head
 	HideEntity Collider
@@ -1440,7 +1448,7 @@ Function LoadGameQuick(file$)
 		Next
 	Next
 	
-	If ReadInt(f) <> 113 Then RuntimeError("Couldn't load the game, save file corrupted (error 2.5)")
+	If ReadInt(f) <> 113 Then RuntimeErrorExt("Couldn't load the game, save file corrupted (error 2.5)")
 	
 	For n.NPCs = Each NPCs
 		RemoveNPC(n)
@@ -1548,7 +1556,7 @@ Function LoadGameQuick(file$)
 		MTFroomState[i]=ReadInt(f)
 	Next
 	
-	If ReadInt(f) <> 632 Then RuntimeError("Couldn't load the game, save file corrupted (error 1)")
+	If ReadInt(f) <> 632 Then RuntimeErrorExt("Couldn't load the game, save file corrupted (error 1)")
 	
 	room2gw_brokendoor = ReadInt(f)
 	room2gw_x = ReadFloat(f)
@@ -1662,7 +1670,7 @@ Function LoadGameQuick(file$)
 	
 	;InitWayPoints()
 	
-	If ReadInt(f) <> 954 Then RuntimeError("Couldn't load the game, save file may be corrupted (error 2)")
+	If ReadInt(f) <> 954 Then RuntimeErrorExt("Couldn't load the game, save file may be corrupted (error 2)")
 	
 	temp = ReadInt (f)
 	
@@ -1711,7 +1719,7 @@ Function LoadGameQuick(file$)
 		Next		
 	Next
 	
-	If ReadInt(f) <> 1845 Then RuntimeError("Couldn't load the game, save file corrupted (error 3)")
+	If ReadInt(f) <> 1845 Then RuntimeErrorExt("Couldn't load the game, save file corrupted (error 3)")
 	
 	Local d.Decals
 	For d.Decals = Each Decals
@@ -1890,7 +1898,7 @@ Function LoadGameQuick(file$)
 		EndIf
 	Next
 	
-	;If ReadInt(f) <> 994 Then RuntimeError("Couldn't load the game, save file corrupted (error 4)")
+	;If ReadInt(f) <> 994 Then RuntimeErrorExt("Couldn't load the game, save file corrupted (error 4)")
 	
 	If ReadInt(f)<>994
 		UsedConsole = True
@@ -2001,7 +2009,7 @@ End Function
 Function LoadSaveGames()
 	CatchErrors("Uncaught (LoadSaveGames)")
 	SaveGameAmount = 0
-	If FileType(SavePath)=1 Then RuntimeError "Can't create dir "+Chr(34)+SavePath+Chr(34)
+	If FileType(SavePath)=1 Then RuntimeErrorExt "Can't create dir "+Chr(34)+SavePath+Chr(34)
 	If FileType(SavePath)=0 Then CreateDir(SavePath)
 	myDir=ReadDir(SavePath) 
 	Repeat 
@@ -2030,13 +2038,14 @@ Function LoadSaveGames()
 	Dim SaveGameTime$(SaveGameAmount + 1)
 	Dim SaveGameDate$(SaveGameAmount + 1)
 	Dim SaveGameVersion$(SaveGameAmount + 1)
+	Dim SaveGamePlayTime$(SaveGameAmount + 1)
 	For i = 1 To SaveGameAmount
 		DebugLog (SavePath + SaveGames(i - 1))
 		Local f% = ReadFile(SavePath + SaveGames(i - 1) + ".cbsav")
 		SaveGameTime(i - 1) = ReadString(f)
 		SaveGameDate(i - 1) = ReadString(f)
+		SaveGamePlayTime(i - 1) = ReadInt(f)
 		;Skip all data until the CompatibleVersion number
-		ReadInt(f)
 		For j = 0 To 5
 			ReadFloat(f)
 		Next
@@ -2162,18 +2171,12 @@ Function LoadMap(file$)
 			
 			For rt.RoomTemplates=Each RoomTemplates
 				If Lower(rt\Name) = name Then
-					
-					r.Rooms = CreateRoom(0, rt\Shape, (MapWidth-x) * 8.0, 0, y * 8.0, name)
-					DebugLog "createroom"
-					
-					r\angle = angle
-					If r\angle<>90 And r\angle<>270
-						r\angle = r\angle + 180
+					If angle<>90 And angle<>270
+						angle = angle + 180
 					EndIf
-					r\angle = WrapAngle(r\angle)
+					angle = WrapAngle(angle)
 					
-					TurnEntity(r\obj, 0, r\angle, 0)
-					
+					r.Rooms = CreateRoom(0, rt\Shape, (MapWidth-x) * 8.0, 0, y * 8.0, angle, name)
 					MapTemp(MapWidth-x,y)=True
 					
 					Exit
@@ -2338,18 +2341,12 @@ Function LoadMap(file$)
 			
 			For rt.RoomTemplates=Each RoomTemplates
 				If Lower(rt\Name) = name Then
-					
-					r.Rooms = CreateRoom(0, rt\Shape, (MapWidth-x) * 8.0, 0, y * 8.0, name)
-					DebugLog "createroom"
-					
-					r\angle = angle
-					If r\angle<>90 And r\angle<>270
-						r\angle = r\angle + 180
+					If angle<>90 And angle<>270
+						angle = angle + 180
 					EndIf
-					r\angle = WrapAngle(r\angle)
+					angle = WrapAngle(angle)
 					
-					TurnEntity(r\obj, 0, r\angle, 0)
-					
+					r.Rooms = CreateRoom(0, rt\Shape, (MapWidth-x) * 8.0, 0, y * 8.0, angle, name)
 					MapTemp(MapWidth-x,y)=True
 					
 					Exit
@@ -2471,10 +2468,10 @@ Function LoadMap(file$)
 	;r = CreateRoom(0, ROOM1, 8, 0, (MapHeight-1) * 8, "173")
 	;r = CreateRoom(0, ROOM1, (MapWidth-1) * 8, 0, (MapHeight-1) * 8, "pocketdimension")
 	;r = CreateRoom(0, ROOM1, 0, 0, 8, "gatea")
-	If IntroEnabled Then r = CreateRoom(0, ROOM1, 8, 0, (MapHeight+2) * 8, "173")
-	r = CreateRoom(0, ROOM1, (MapWidth+2) * 8, 0, (MapHeight+2) * 8, "pocketdimension")
-	r = CreateRoom(0, ROOM1, 0, 500, -16, "gatea")
-	r = CreateRoom(0, ROOM1, -16, 800, 0, "dimension1499")
+	If IntroEnabled Then r = CreateRoom(0, ROOM1, 8, 0, (MapHeight+2) * 8, 0, "173")
+	r = CreateRoom(0, ROOM1, (MapWidth+2) * 8, 0, (MapHeight+2) * 8, 0, "pocketdimension")
+	r = CreateRoom(0, ROOM1, 0, 500, -16, 0, "gatea")
+	r = CreateRoom(0, ROOM1, -16, 800, 0, 0, "dimension1499")
 	
 	CreateEvent("173", "173", 0)
 	CreateEvent("pocketdimension", "pocketdimension", 0)   

@@ -136,7 +136,7 @@ Function InitItemTemplatesFromFile(file$)
 
 				name = Trim(Mid(l, 2, Len(l) - 2))
 				If name = "" then
-					RuntimeError("Empty item name.")
+					RuntimeErrorExt("Empty item name.")
 				EndIf
 				tempname = ""
 				model = ""
@@ -179,7 +179,7 @@ Function InitItemTemplatesFromFile(file$)
 						g = Int(Piece(value,2,","))
 						b = Int(Piece(value,3,","))
 					Default
-						RuntimeError("Unknown key "+Chr(34)+key+Chr(34)+" in item "+Chr(34)+name+Chr(34)+".")
+						RuntimeErrorExt("Unknown key "+Chr(34)+key+Chr(34)+" in item "+Chr(34)+name+Chr(34)+".")
 				End Select
 			EndIf
 		EndIf
@@ -291,7 +291,7 @@ Function CreateItem.Items(name$, tempname$, x#, y#, z#, r%=0,g%=0,b%=0,a#=1.0,in
 	
 	i\WontColl = False
 	
-	If i\itemtemplate = Null Then RuntimeError("Item template not found ("+name+", "+tempname+")")
+	If i\itemtemplate = Null Then RuntimeErrorExt("Item template not found ("+name+", "+tempname+")")
 	
 	ResetEntity i\collider		
 	PositionEntity(i\collider, x, y, z, True)

@@ -2522,7 +2522,6 @@ Function UpdateEvents()
 				If PlayerRoom = e\room Then
 					If Not Using294 Then
 						If EntityDistance(e\room\Objects[0], Collider)<1.5 Then
-							GiveAchievement(Achv294)
 							If EntityInView(e\room\Objects[0], Camera) Then
 								DrawHandIcon = True
 								If MouseHit1 Then
@@ -3292,7 +3291,7 @@ Function UpdateEvents()
 						Next
 						
 						If lastX=firstX And lastY=firstY Then
-							RuntimeError("The maintenance tunnels could not be generated properly!")
+							RuntimeErrorExt("The maintenance tunnels could not be generated properly!")
 						EndIf
 						
 						;place the tunnels
@@ -5493,19 +5492,8 @@ Function UpdateEvents()
 									dist = EntityDistance(e\room\RoomDoors[0]\frameobj, e\room\NPC[0]\Collider)
 									
 									e\room\NPC[0]\State = 1
-									If dist > 2.5 Then
-										PointEntity e\room\NPC[0]\obj, e\room\RoomDoors[1]\frameobj
-										RotateEntity e\room\NPC[0]\Collider, 0, CurveAngle(EntityYaw(e\room\NPC[0]\obj), EntityYaw(e\room\NPC[0]\Collider), 15.0), 0
-									ElseIf dist > 0.7
-										If ChannelPlaying (e\room\NPC[0]\SoundChn) Then
-											e\room\NPC[0]\State = 0
-											PointEntity e\room\NPC[0]\obj, Collider
-											RotateEntity e\room\NPC[0]\Collider, 0, CurveAngle(EntityYaw(e\room\NPC[0]\obj), EntityYaw(e\room\NPC[0]\Collider), 15.0), 0
-										Else
-											PointEntity e\room\NPC[0]\obj, e\room\RoomDoors[0]\frameobj
-											RotateEntity e\room\NPC[0]\Collider, 0, CurveAngle(EntityYaw(e\room\NPC[0]\obj), EntityYaw(e\room\NPC[0]\Collider), 15.0), 0
-										EndIf
-									Else
+									; The > 100 check is a failsafe because there are reports of him being teleported god knows where that I'm struggling to reproduce.
+									If dist <= 0.7 Lor dist > 100 Then
 										RemoveNPC(e\room\NPC[0])
 										e\room\NPC[0]=Null
 										e\EventState = -1
@@ -5525,6 +5513,18 @@ Function UpdateEvents()
 												EndIf
 											EndIf
 										Next
+									Else If dist <= 2.5 Then
+										If ChannelPlaying (e\room\NPC[0]\SoundChn) Then
+											e\room\NPC[0]\State = 0
+											PointEntity e\room\NPC[0]\obj, Collider
+											RotateEntity e\room\NPC[0]\Collider, 0, CurveAngle(EntityYaw(e\room\NPC[0]\obj), EntityYaw(e\room\NPC[0]\Collider), 15.0), 0
+										Else
+											PointEntity e\room\NPC[0]\obj, e\room\RoomDoors[0]\frameobj
+											RotateEntity e\room\NPC[0]\Collider, 0, CurveAngle(EntityYaw(e\room\NPC[0]\obj), EntityYaw(e\room\NPC[0]\Collider), 15.0), 0
+										EndIf
+									Else
+										PointEntity e\room\NPC[0]\obj, e\room\RoomDoors[1]\frameobj
+										RotateEntity e\room\NPC[0]\Collider, 0, CurveAngle(EntityYaw(e\room\NPC[0]\obj), EntityYaw(e\room\NPC[0]\Collider), 15.0), 0
 									EndIf
 								EndIf
 								
@@ -7128,8 +7128,8 @@ Function UpdateEvents()
 							e\SoundCHN2 = PlaySound2(e\room\NPC[0]\Sound, Camera, e\room\NPC[0]\Collider, 15.0)
 						EndIf
 						UpdateSoundOrigin(e\SoundCHN2,Camera,e\room\NPC[0]\Collider,15.0)
-						If (Not ChannelPlaying(e\SoundCHN2)) Then RemoveEvent(e)
 					EndIf
+					If e\EventState2 And (e\SoundCHN2 = 0 Lor (Not ChannelPlaying(e\SoundCHN2))) Then RemoveEvent(e)
 				EndIf
 				;[End Block]
 				

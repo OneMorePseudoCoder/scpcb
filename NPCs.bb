@@ -249,6 +249,7 @@ Function CreateNPC.NPCs(NPCtype%, x#, y#, z#)
 			EntityRadius n\Collider, 0.26
 			EntityType n\Collider, HIT_PLAYER
 			n\obj = LoadAnimMesh_Strict("GFX\npcs\scp096.b3d")
+			n\obj2 = CreatePivot(FindChild(n\obj, "Reyelid"))
 			
 			n\Speed = (GetINIFloat("DATA\NPCs.ini", "SCP-096", "speed") / 100.0)
 			
@@ -1279,39 +1280,26 @@ Function UpdateNPCs()
 							EndIf
 							;AnimateNPC(n, 1085,1412, 0.1) ;sitting
 							
-							angle = WrapAngle(DeltaYaw(n\Collider, Collider));-EntityYaw(n\Collider,True))
-							
-							If (Not NoTarget)
-								If angle<90 Or angle>270 Then
-									CameraProject Camera,EntityX(n\Collider), EntityY(n\Collider)+0.25, EntityZ(n\Collider)
-									
-									If ProjectedX()>0 And ProjectedX()<GraphicWidth Then
-										If ProjectedY()>0 And ProjectedY()<GraphicHeight Then
-											If EntityVisible(Collider, n\Collider) Then
-												If (BlinkTimer < - 16 Or BlinkTimer > - 6)
-													PlaySound_Strict LoadTempSound("SFX\SCP\096\Triggered.ogg")
-													
-													CurrCameraZoom = 10
-													
-													n\Frame = 194
-													;n\Frame = 307
-													If n\SoundChn <> 0 Then
-														StopStream_Strict(n\SoundChn) : n\SoundChn = 0 : n\SoundChn_IsStream = False
-													EndIf
-													n\Sound = 0
-													n\State = 1
-													n\State3 = 0
-												EndIf
-											EndIf									
-										EndIf
-									EndIf								
-									
+							If dist < (CameraFogFar * LightVolume) And Sees096Face(n) Then
+								PlaySound_Strict LoadTempSound("SFX\SCP\096\Triggered.ogg")
+								
+								CurrCameraZoom = 10
+								
+								n\Frame = 194
+								;n\Frame = 307
+								If n\SoundChn <> 0 Then
+									StopStream_Strict(n\SoundChn) : n\SoundChn = 0 : n\SoundChn_IsStream = False
 								EndIf
+								n\Sound = 0
+								n\State = 1
+								n\State3 = 0
 							EndIf
 						EndIf
 						;[End Block]
 					Case 4
 						;[Block]
+						CanSave = False
+						
 						CurrCameraZoom = CurveValue(Max(CurrCameraZoom, (Sin(Float(MilliSecs())/20.0)+1.0) * 10.0),CurrCameraZoom,8.0)
 						
 						If n\Target = Null Then 
@@ -1494,6 +1482,8 @@ Function UpdateNPCs()
 						
 						;[End Block]
 					Case 1,2,3
+						CanSave = False
+
 						;[Block]
 						;If n\Sound = 0 Then
 						;	n\Sound = LoadSound_Strict("SFX\Music\096Angered.ogg")
@@ -1622,33 +1612,19 @@ Function UpdateNPCs()
 								AnimateNPC(n,312,422,0.3,False)
 							EndIf
 							
-							angle = WrapAngle(DeltaYaw(n\Collider, Camera));-EntityYaw(n\Collider))
-							If (Not NoTarget)
-								If angle<55 Or angle>360-55 Then
-									CameraProject Camera,EntityX(n\Collider), EntityY(Collider)+5.8*0.2-0.25, EntityZ(n\Collider)
-									
-									If ProjectedX()>0 And ProjectedX()<GraphicWidth Then
-										If ProjectedY()>0 And ProjectedY()<GraphicHeight Then
-											If EntityVisible(Collider, n\Collider) Then
-												If (BlinkTimer < - 16 Or BlinkTimer > - 6)
-													PlaySound_Strict LoadTempSound("SFX\SCP\096\Triggered.ogg")
-													
-													CurrCameraZoom = 10
-													
-													If n\Frame >= 422
-														n\Frame = 677 ;833
-													EndIf
-													If n\SoundChn <> 0 Then
-														StopStream_Strict(n\SoundChn) : n\SoundChn = 0 : n\SoundChn_IsStream = False
-													EndIf
-													n\Sound = 0
-													n\State = 2
-												EndIf
-											EndIf									
-										EndIf
-									EndIf
-									
+							If dist < (CameraFogFar * LightVolume) And Sees096Face(n) Then
+								PlaySound_Strict LoadTempSound("SFX\SCP\096\Triggered.ogg")
+								
+								CurrCameraZoom = 10
+								
+								If n\Frame >= 422
+									n\Frame = 677 ;833
 								EndIf
+								If n\SoundChn <> 0 Then
+									StopStream_Strict(n\SoundChn) : n\SoundChn = 0 : n\SoundChn_IsStream = False
+								EndIf
+								n\Sound = 0
+								n\State = 2
 							EndIf
 						EndIf
 						;[End Block]
@@ -3920,6 +3896,7 @@ Function UpdateNPCs()
 						If Rand(700)=1 Then PlaySound2(LoadTempSound("SFX\SCP\066\Eric"+Rand(1,3)+".ogg"),Camera, n\Collider, 8.0)
 						
 						If dist < 1.0+n\LastDist Then
+							GiveAchievement(Achv066)
 							n\State = Rand(2,3)
 						EndIf
 					Case 2 ;roll towards the player and make a sound, and then escape	
@@ -4181,8 +4158,6 @@ Function UpdateNPCs()
 							If n\State3<900 Then
 								BlurTimer = ((Sin(MilliSecs()/50)+1.0)*200)/dist
 								
-								If (WearingNightVision>0) Then GiveAchievement(Achv966)
-								
 								If (Not Wearing714) And (WearingGasMask<3) And (WearingHazmat<3) And dist<16 Then
 									If StaminaEffect<1.5 Then
 										Select Rand(4)
@@ -4275,7 +4250,8 @@ Function UpdateNPCs()
 															If (n\Path[n\PathLocation]\door\locked Or n\Path[n\PathLocation]\door\KeyCard<>0 Or n\Path[n\PathLocation]\door\Code<>"") And (Not n\Path[n\PathLocation]\door\open) Then
 																temp = False
 															Else
-																If n\Path[n\PathLocation]\door\open = False And (n\Path[n\PathLocation]\door\buttons[0]<>0 Or n\Path[n\PathLocation]\door\buttons[1]<>0) Then
+																d.Doors = n\Path[n\PathLocation]\door
+																If d\open = False And (d\buttons[0]<>0 Lor d\buttons[1]<>0) And (d\openstate <= 0 Lor d\openstate >= 180) Then
 																	UseDoor(n\Path[n\PathLocation]\door, False)
 																EndIf
 															EndIf
@@ -4307,6 +4283,7 @@ Function UpdateNPCs()
 										HideEntity n\Collider
 										EntityPick(n\Collider, 1.5)
 										If PickedEntity() <> 0 Then
+											If WearingNightVision<> 0 Then GiveAchievement(Achv966)
 											n\Angle = EntityYaw(n\Collider)+Rnd(80,110)
 										EndIf
 										ShowEntity n\Collider
@@ -5219,6 +5196,11 @@ Function MeNPCSeesPlayer%(me.NPCs,disablesoundoncrouch%=False)
 	
 End Function
 
+Function Sees096Face%(n.NPCs)
+	Local angle# = WrapAngle(DeltaYaw(n\Collider, Collider));-EntityYaw(n\Collider,True))
+	Return (Not NoTarget) And (angle < 55 Lor angle > 360-55) And EntityVisible(Camera, n\obj2) And EntityInView(n\obj2, Camera) And (BlinkTimer < - 16 Lor BlinkTimer > - 6) And (Not IsNVGBlinking)
+End Function
+
 Function TeleportMTFGroup(n.NPCs)
 	Local n2.NPCs
 	
@@ -5281,7 +5263,7 @@ Function UpdateMTFUnit(n.NPCs)
 			Case NPCtype1499
 				realType = "1499-1"
 		End Select
-		RuntimeError "Called UpdateMTFUnit on "+realType
+		RuntimeErrorExt "Called UpdateMTFUnit on "+realType
 	EndIf
 	;[End Block]
 	
@@ -7179,7 +7161,7 @@ Function ManipulateNPCBones()
 			If bonename$<>""
 				pvt% = CreatePivot()
 				bone% = FindChild(n\obj,bonename$)
-				If bone% = 0 Then RuntimeError "ERROR: NPC bone "+Chr(34)+bonename$+Chr(34)+" does not exist."
+				If bone% = 0 Then RuntimeErrorExt "ERROR: NPC bone "+Chr(34)+bonename$+Chr(34)+" does not exist."
 				PositionEntity pvt%,EntityX(bone%,True),EntityY(bone%,True),EntityZ(bone%,True)
 				Select n\ManipulationType
 					Case 0 ;<--- looking at player

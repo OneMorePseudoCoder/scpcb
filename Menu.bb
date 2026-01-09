@@ -38,13 +38,14 @@ Global SavePath$ = "Saves\"
 Global SaveMSG$
 
 ;nykyisen tallennuksen nimi ja samalla missä kansiossa tallennustiedosto sijaitsee saves-kansiossa
-Global CurrSave$
+Global PrevSave$, CurrSave$
 
 Global SaveGameAmount%
 Dim SaveGames$(SaveGameAmount+1) 
 Dim SaveGameTime$(SaveGameAmount + 1)
 Dim SaveGameDate$(SaveGameAmount + 1)
 Dim SaveGameVersion$(SaveGameAmount + 1)
+Dim SaveGamePlayTime$(SaveGameAmount + 1)
 
 Global SavedMapsAmount% = 0
 Dim SavedMaps$(SavedMapsAmount+1)
@@ -521,7 +522,7 @@ Function UpdateMainMenu()
 							Text(x + 20 * MenuScale, y + 10 * MenuScale, SaveGames(i - 1))
 							Text(x + 20 * MenuScale, y + (10+18) * MenuScale, SaveGameTime(i - 1)) ;y + (10+23) * MenuScale
 							Text(x + 120 * MenuScale, y + (10+18) * MenuScale, SaveGameDate(i - 1))
-							Text(x + 20 * MenuScale, y + (10+36) * MenuScale, SaveGameVersion(i - 1))
+							Text(x + 20 * MenuScale, y + (10+36) * MenuScale, SaveGameVersion(i - 1) + RSet(FormatDuration(SaveGamePlayTime(i - 1), False), 14))
 							
 							If SaveMSG = "" Then
 								If SaveGameVersion(i - 1) <> CompatibleNumber Then
@@ -532,10 +533,11 @@ Function UpdateMainMenu()
 									If DrawButton(x + 280 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, "Load", False) Then
 										LoadEntities()
 										LoadAllSounds()
-										LoadGame(SavePath + SaveGames(i - 1))
+										LoadGame(SaveGames(i - 1))
 										CurrSave = SaveGames(i - 1)
 										InitLoadGame()
 										MainMenuOpen = False
+										Return
 									EndIf
 								EndIf
 								
@@ -682,10 +684,10 @@ Function UpdateMainMenu()
 					y=y+30*MenuScale
 					
 					;Local prevGamma# = ScreenGamma
-					ScreenGamma = (SlideBar(x + 310*MenuScale, y+6*MenuScale, 150*MenuScale, ScreenGamma*50.0)/50.0)
+					ScreenGamma = (SlideBar(x + 310*MenuScale, y+6*MenuScale, 150*MenuScale, ScreenGamma*50.0, 1)/50.0)
 					Color 255,255,255
 					Text(x + 20 * MenuScale, y, "Screen gamma")
-					If MouseOn(x+310*MenuScale,y+6*MenuScale,150*MenuScale+14,20) And OnSliderID=0
+					If (MouseOn(x+310*MenuScale,y+6*MenuScale,150*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=1
 						DrawOptionsTooltip(tx,ty,tw,th,"gamma",ScreenGamma)
 					EndIf
 					
@@ -723,13 +725,13 @@ Function UpdateMainMenu()
 					y=y+50*MenuScale
 					
 					Local SlideBarFOV# = FOV-40
-					SlideBarFOV = (SlideBar(x + 310*MenuScale, y+6*MenuScale,150*MenuScale, SlideBarFOV*2.0)/2.0)
+					SlideBarFOV = (SlideBar(x + 310*MenuScale, y+6*MenuScale,150*MenuScale, SlideBarFOV*2.0, 4)/2.0)
 					FOV = Int(SlideBarFOV+40)
 					Color 255,255,255
 					Text(x + 20 * MenuScale, y, "Field of view:")
 					Color 255,255,0
 					Text(x + 25 * MenuScale, y + 25 * MenuScale, FOV+" FOV")
-					If MouseOn(x+310*MenuScale,y+6*MenuScale,150*MenuScale+14,20)
+					If (MouseOn(x+310*MenuScale,y+6*MenuScale,150*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=4
 						DrawOptionsTooltip(tx,ty,tw,th,"fov")
 					EndIf
 					
@@ -741,21 +743,21 @@ Function UpdateMainMenu()
 					
 					y = y + 20*MenuScale
 					
-					MusicVolume = (SlideBar(x + 310*MenuScale, y-4*MenuScale, 150*MenuScale, MusicVolume*100.0)/100.0)
+					MusicVolume = (SlideBar(x + 310*MenuScale, y-4*MenuScale, 150*MenuScale, MusicVolume*100.0, 1)/100.0)
 					Color 255,255,255
 					Text(x + 20 * MenuScale, y, "Music volume:")
-					If MouseOn(x+310*MenuScale,y-4*MenuScale,150*MenuScale+14,20)
+					If (MouseOn(x+310*MenuScale,y-4*MenuScale,150*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=1
 						DrawOptionsTooltip(tx,ty,tw,th,"musicvol",MusicVolume)
 					EndIf
 					
 					y = y + 40*MenuScale
 					
 					;SFXVolume = (SlideBar(x + 310*MenuScale, y-4*MenuScale, 150*MenuScale, SFXVolume*100.0)/100.0)
-					PrevSFXVolume = (SlideBar(x + 310*MenuScale, y-4*MenuScale, 150*MenuScale, SFXVolume*100.0)/100.0)
+					PrevSFXVolume = (SlideBar(x + 310*MenuScale, y-4*MenuScale, 150*MenuScale, SFXVolume*100.0, 2)/100.0)
 					SFXVolume = PrevSFXVolume
 					Color 255,255,255
 					Text(x + 20 * MenuScale, y, "Sound volume:")
-					If MouseOn(x+310*MenuScale,y-4*MenuScale,150*MenuScale+14,20)
+					If (MouseOn(x+310*MenuScale,y-4*MenuScale,150*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=2
 						DrawOptionsTooltip(tx,ty,tw,th,"soundvol",PrevSFXVolume)
 					EndIf
 					;If MouseDown1 Then
@@ -796,7 +798,7 @@ Function UpdateMainMenu()
 						EndIf
 						EnableSFXRelease_Prev% = EnableSFXRelease
 					EndIf
-					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
+					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th+220*MenuScale,"sfxautorelease")
 					EndIf
 					y = y + 30*MenuScale
@@ -804,7 +806,7 @@ Function UpdateMainMenu()
 					Color 255,255,255
 					Text x + 20 * MenuScale, y, "Enable user tracks:"
 					EnableUserTracks = DrawTick(x + 310 * MenuScale, y + MenuScale, EnableUserTracks)
-					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
+					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"usertrack")
 					EndIf
 					
@@ -818,7 +820,7 @@ Function UpdateMainMenu()
 						Else
 							Text x + 350 * MenuScale, y + MenuScale, "Random"
 						EndIf
-						If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
+						If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 							DrawOptionsTooltip(tx,ty,tw,th,"usertrackmode")
 						EndIf
 						If DrawButton(x + 20 * MenuScale, y + 30 * MenuScale, 190 * MenuScale, 25 * MenuScale, "Scan for User Tracks",False)
@@ -844,7 +846,7 @@ Function UpdateMainMenu()
 							
 							DebugLog "User Tracks Check Ended"
 						EndIf
-						If MouseOn(x+20*MenuScale,y+30*MenuScale,190*MenuScale,25*MenuScale)
+						If MouseOn(x+20*MenuScale,y+30*MenuScale,190*MenuScale,25*MenuScale) And OnSliderID=0
 							DrawOptionsTooltip(tx,ty,tw,th,"usertrackscan")
 						EndIf
 						If UserTrackCheck%>0
@@ -857,14 +859,15 @@ Function UpdateMainMenu()
 				ElseIf MainMenuTab = 6 ;Controls
 					;[Block]
 					height = 270 * MenuScale
+					If SpeedRunMode Then height = height + 20 * MenuScale
 					DrawFrame(x, y, width, height)	
 					
 					y = y + 20*MenuScale
 					
-					MouseSens = (SlideBar(x + 310*MenuScale, y-4*MenuScale, 150*MenuScale, (MouseSens+0.5)*100.0)/100.0)-0.5
+					MouseSens = (SlideBar(x + 310*MenuScale, y-4*MenuScale, 150*MenuScale, (MouseSens+0.5)*100.0, 1)/100.0)-0.5
 					Color(255, 255, 255)
 					Text(x + 20 * MenuScale, y, "Mouse sensitivity:")
-					If MouseOn(x+310*MenuScale,y-4*MenuScale,150*MenuScale+14,20)
+					If (MouseOn(x+310*MenuScale,y-4*MenuScale,150*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=1
 						DrawOptionsTooltip(tx,ty,tw,th,"mousesensitivity",MouseSens)
 					EndIf
 					
@@ -873,16 +876,16 @@ Function UpdateMainMenu()
 					Color(255, 255, 255)
 					Text(x + 20 * MenuScale, y, "Invert mouse Y-axis:")
 					InvertMouse = DrawTick(x + 310 * MenuScale, y + MenuScale, InvertMouse)
-					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
+					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"mouseinvert")
 					EndIf
 					
 					y = y + 40*MenuScale
 					
-					MouseSmooth = (SlideBar(x + 310*MenuScale, y-4*MenuScale, 150*MenuScale, (MouseSmooth)*50.0)/50.0)
+					MouseSmooth = (SlideBar(x + 310*MenuScale, y-4*MenuScale, 150*MenuScale, (MouseSmooth)*50.0, 2)/50.0)
 					Color(255, 255, 255)
 					Text(x + 20 * MenuScale, y, "Mouse smoothing:")
-					If MouseOn(x+310*MenuScale,y-4*MenuScale,150*MenuScale+14,20)
+					If (MouseOn(x+310*MenuScale,y-4*MenuScale,150*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=2
 						DrawOptionsTooltip(tx,ty,tw,th,"mousesmoothing",MouseSmooth)
 					EndIf
 					
@@ -903,6 +906,11 @@ Function UpdateMainMenu()
 					Text(x + 20 * MenuScale, y + 100 * MenuScale, "Quick Save")
 					InputBox(x + 160 * MenuScale, y + 100 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_SAVE,210)),11)
 					
+					If SpeedRunMode Then
+						Text(x + 20 * MenuScale, y + 120 * MenuScale, "Stop Timer")
+						InputBox(x + 160 * MenuScale, y + 120 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_STOP_TIMER,210)),13)
+					EndIf
+
 					Text(x + 280 * MenuScale, y + 20 * MenuScale, "Manual Blink")
 					InputBox(x + 470 * MenuScale, y + 20 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_BLINK,210)),7)				
 					Text(x + 280 * MenuScale, y + 40 * MenuScale, "Sprint")
@@ -914,7 +922,7 @@ Function UpdateMainMenu()
 					Text(x + 280 * MenuScale, y + 100 * MenuScale, "Open/Close Console")
 					InputBox(x + 470 * MenuScale, y + 100 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_CONSOLE,210)),12)
 					
-					If MouseOn(x+20*MenuScale,y,width-40*MenuScale,120*MenuScale)
+					If MouseOn(x+20*MenuScale,y,width-40*MenuScale,120*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"controls")
 					EndIf
 					
@@ -943,6 +951,8 @@ Function UpdateMainMenu()
 								KEY_SAVE = key
 							Case 12
 								KEY_CONSOLE = key
+							Case 13
+								KEY_STOP_TIMER = key
 						End Select
 						SelectedInputBox = 0
 					EndIf
@@ -957,7 +967,7 @@ Function UpdateMainMenu()
 					Color 255,255,255				
 					Text(x + 20 * MenuScale, y, "Show HUD:")	
 					HUDenabled = DrawTick(x + 310 * MenuScale, y + MenuScale, HUDenabled)
-					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
+					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"hud")
 					EndIf
 					
@@ -966,7 +976,7 @@ Function UpdateMainMenu()
 					Color 255,255,255
 					Text(x + 20 * MenuScale, y, "Enable console:")
 					CanOpenConsole = DrawTick(x + 310 * MenuScale, y + MenuScale, CanOpenConsole)
-					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
+					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"consoleenable")
 					EndIf
 					
@@ -975,17 +985,17 @@ Function UpdateMainMenu()
 					Color 255,255,255
 					Text(x + 20 * MenuScale, y, "Open console on error:")
 					ConsoleOpening = DrawTick(x + 310 * MenuScale, y + MenuScale, ConsoleOpening)
-					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
+					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"consoleerror")
 					EndIf
 
 					y = y + 30*MenuScale
 
 					Color 255,255,255
-					Text(x + 20 * MenuScale, y, "Debug resource packs:")
-					DebugResourcePacks = DrawTick(x + 310 * MenuScale, y + MenuScale, DebugResourcePacks)
-					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
-						DrawOptionsTooltip(tx,ty,tw,th,"resourcepackdebug")
+					Text(x + 20 * MenuScale, y, "Speed run mode:")
+					SpeedRunMode = DrawTick(x + 310 * MenuScale, y + MenuScale, SpeedRunMode)
+					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
+						DrawOptionsTooltip(tx,ty,tw,th,"speedrunmode")
 					EndIf
 
 					y = y + 30*MenuScale
@@ -993,7 +1003,7 @@ Function UpdateMainMenu()
 					Color 255,255,255
 					Text(x + 20 * MenuScale, y, "Use numeric seeds:")
 					UseNumericSeeds = DrawTick(x + 310 * MenuScale, y + MenuScale, UseNumericSeeds)
-					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
+					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"numericseeds")
 					EndIf
 					
@@ -1002,7 +1012,7 @@ Function UpdateMainMenu()
 					Color 255,255,255
 					Text(x + 20 * MenuScale, y, "Achievement popups:")
 					AchvMSGenabled% = DrawTick(x + 310 * MenuScale, y + MenuScale, AchvMSGenabled%)
-					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
+					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"achpopup")
 					EndIf
 
@@ -1011,7 +1021,7 @@ Function UpdateMainMenu()
 					Color 255,255,255
 					Text(x + 20 * MenuScale, y, "Use launcher:")
 					LauncherEnabled% = DrawTick(x + 310 * MenuScale, y + MenuScale, LauncherEnabled%)
-					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
+					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"launcher")
 					EndIf
 					
@@ -1020,7 +1030,7 @@ Function UpdateMainMenu()
 					Color 255,255,255
 					Text(x + 20 * MenuScale, y, "Show FPS:")
 					ShowFPS% = DrawTick(x + 310 * MenuScale, y + MenuScale, ShowFPS%)
-					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
+					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"showfps")
 					EndIf
 					
@@ -1030,22 +1040,22 @@ Function UpdateMainMenu()
 					Text(x + 20 * MenuScale, y, "Framelimit:")
 					Color 255,255,255
 					If DrawTick(x + 310 * MenuScale, y, CurrFrameLimit > 0.0) Then
-						;CurrFrameLimit# = (SlideBar(x + 150*MenuScale, y+30*MenuScale, 100*MenuScale, CurrFrameLimit#*50.0)/50.0)
+						;CurrFrameLimit# = (SlideBar(x + 150*MenuScale, y+30*MenuScale, 100*MenuScale, CurrFrameLimit#*50.0, 1)/50.0)
 						;CurrFrameLimit = Max(CurrFrameLimit, 0.1)
 						;Framelimit% = CurrFrameLimit#*100.0
-						CurrFrameLimit# = (SlideBar(x + 150*MenuScale, y+30*MenuScale, 100*MenuScale, CurrFrameLimit#*99.0)/99.0)
+						CurrFrameLimit# = (SlideBar(x + 150*MenuScale, y+30*MenuScale, 100*MenuScale, CurrFrameLimit#*99.0, 1)/99.0)
 						CurrFrameLimit# = Max(CurrFrameLimit, 0.01)
 						Framelimit% = 19+(CurrFrameLimit*100.0)
 						Color 255,255,0
 						Text(x + 25 * MenuScale, y + 25 * MenuScale, Framelimit%+" FPS")
-						If MouseOn(x+150*MenuScale,y+30*MenuScale,100*MenuScale+14,20)
+						If (MouseOn(x+150*MenuScale,y+30*MenuScale,100*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=1
 							DrawOptionsTooltip(tx,ty,tw,th,"framelimit",Framelimit)
 						EndIf
 					Else
 						CurrFrameLimit# = 0.0
 						Framelimit = 0
 					EndIf
-					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
+					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"framelimit",Framelimit)
 					EndIf
 					;[End Block]
@@ -1384,6 +1394,10 @@ Function UpdateMainMenu()
 		
 	End If
 	
+	If SpeedRunMode And (Not TimerStopped) Then
+		DrawTimer()
+	EndIf
+
 	Color 255,255,255
 	SetFont ConsoleFont
 	Text 20,GraphicHeight-30,"v"+VersionNumber
@@ -1414,6 +1428,9 @@ Function CreateGrayScaleImage%(img%)
 End Function
 
 Dim GfxDrivers$(0)
+Dim AspectRatioWidths%(0), AspectRatioHeights%(0)
+Dim GfxModeCountPerAspectRatio%(0)
+Dim GfxModeWidthsByAspectRatio%(0, 0), GfxModeHeightsByAspectRatio%(0, 0)
 
 Function UpdateLauncher()
 	MenuScale = 1
@@ -1426,7 +1443,22 @@ Function UpdateLauncher()
 	
 	RealGraphicWidth = GraphicWidth
 	RealGraphicHeight = GraphicHeight
+
+	Local TotalGfxModes% = CountGfxModes3D()
+
+	Local selectedGdc% = GreatestCommonDivsior(GraphicWidth, GraphicHeight)
+	Local SelectedAspectRatioWidth% = GraphicWidth / selectedGdc, SelectedAspectRatioHeight% = GraphicHeight / selectedGdc
 	
+	Local SelectedGfxMode% = -1, AspectRatioCount%
+	Local SelectedAspectRatio% = -1
+	Local nativeGdc% = GreatestCommonDivsior(DesktopWidth(), DesktopHeight())
+	Local NativeAspectRatioWidth = DesktopWidth() / nativeGdc : NativeAspectRatioHeight = DesktopHeight() / nativeGdc
+	Local nativeAspectRatio%, nativeGfxMode
+
+	Dim AspectRatioWidths%(TotalGfxModes), AspectRatioHeights%(TotalGfxModes)
+	Dim GfxModeCountPerAspectRatio%(TotalGfxModes)
+	Dim GfxModeWidthsByAspectRatio%(TotalGfxModes, TotalGfxModes), GfxModeHeightsByAspectRatio%(TotalGfxModes, TotalGfxModes)
+
 	Font1 = LoadFont_Strict("GFX\font\cour\Courier New.ttf", 18)
 	SetFont Font1
 	MenuWhite = LoadImage_Strict("GFX\menu\menuwhite.jpg")
@@ -1440,18 +1472,36 @@ Function UpdateLauncher()
 		HandleImage(ArrowIMG(i), 0, 0)
 	Next
 	
-	For i% = 1 To TotalGFXModes
-		Local samefound% = False
-		For  n% = 0 To TotalGFXModes - 1
-			If GfxModeWidths(n) = GfxModeWidth(i) And GfxModeHeights(n) = GfxModeHeight(i) Then samefound = True : Exit
-		Next
-		If samefound = False Then
-			If GraphicWidth = GfxModeWidth(i) And GraphicHeight = GfxModeHeight(i) Then SelectedGFXMode = GFXModes
-			GfxModeWidths(GFXModes) = GfxModeWidth(i)
-			GfxModeHeights(GFXModes) = GfxModeHeight(i)
-			GFXModes=GFXModes+1 
-		End If
+	For i% = 1 To TotalGfxModes
+		Local w% = GfxModeWidth(i), h% = GfxModeHeight(i)
+		Local gdc% = GreatestCommonDivsior(w, h)
+		Local aw% = w / gdc, ah% = h / gdc
+		If (aw < 50 And ah < 50) Lor (aw = NativeAspectRatioWidth And ah = NativeAspectRatioHeight) Lor (aw = SelectedAspectRatioWidth And ah = SelectedAspectRatioHeight) Then
+			Local ai% = -1
+			For n% = 0 To AspectRatioCount - 1
+				If AspectRatioWidths(n) = aw And AspectRatioHeights(n) = ah Then ai = n : Exit
+			Next
+			If ai = -1 Then
+				ai = AspectRatioCount
+				AspectRatioWidths(ai) = aw : AspectRatioHeights(ai) = ah
+				AspectRatioCount = AspectRatioCount + 1
+			EndIf
+			Local sameFound% = False
+			Local lai% = GfxModeCountPerAspectRatio(ai)
+			For n = 0 To lai-1
+				If GfxModeWidthsByAspectRatio(ai, n) = w And GfxModeHeightsByAspectRatio(ai, n) = h Then sameFound = True : Exit
+			Next
+			If Not sameFound
+				GfxModeWidthsByAspectRatio(ai, lai) = w : GfxModeHeightsByAspectRatio(ai, lai) = h
+				GfxModeCountPerAspectRatio(ai) = GfxModeCountPerAspectRatio(ai) + 1
+
+				If GraphicWidth = w And GraphicHeight = h Then SelectedGfxMode = lai : SelectedAspectRatio = ai
+				If DesktopWidth() = w And DesktopHeight() = h Then nativeGfxMode = lai : nativeAspectRatio = ai
+			EndIf
+		EndIf
 	Next
+
+	If SelectedGfxMode = -1 Then SelectedGfxMode = nativeGfxMode : SelectedAspectRatio = nativeAspectRatio
 
 	Local gfxDriverCount = CountGfxDrivers()
 	Dim GfxDrivers$(gfxDriverCount + 1)
@@ -1464,9 +1514,10 @@ Function UpdateLauncher()
 	AppTitle "SCP - Containment Breach Launcher"
 
 	Local quit% = False
+
+	Local height% = 18
 	
 	Repeat
-		
 		;Cls
 		Color 0,0,0
 		Rect 0,0,LauncherWidth,LauncherHeight,True
@@ -1476,23 +1527,63 @@ Function UpdateLauncher()
 		Color 255, 255, 255
 		DrawImage(LauncherIMG, 0, 0)
 		
-		Text(20, 240 - 65, "Resolution: ")
-		
-		Local x% = 40
-		Local y% = 270 - 65
-		For i = 0 To (GFXModes - 1)
+		Local x% = 20
+		Local y% = 240 - 65
+
+		Text(x, y, "Resolution: ")
+
+		x = x + 130
+		y = y - 5
+
+		Color 255, 255, 255
+		Rect(x, y, 400, 20)
+		For i = 0 To (AspectRatioCount - 1)
 			Color 0, 0, 0
-			If SelectedGFXMode = i Then Rect(x - 1, y - 1, 100, 20, False)
-			
-			Text(x, y, (GfxModeWidths(i) + "x" + GfxModeHeights(i)))
-			If MouseOn(x - 1, y - 1, 100, 20) Then
+			Local txt$ = Str(AspectRatioWidths(i)) + ":" + Str(AspectRatioHeights(i))
+			Local txtW% = StringWidth(txt)
+			Text(x + 5, y + 5, txt)
+			Local temp% = False
+			If SelectedAspectRatio = i Then temp = True
+			If MouseOn(x + 1, y + 1, txtW + 8, height) Then
 				Color 100, 100, 100
-				Rect(x - 1, y - 1, 100, 20, False)
-				If MouseHit1 Then SelectedGFXMode = i
+				temp = True
+				If MouseHit1 Then SelectedAspectRatio = i : SelectedGfxMode = Min(GfxModeCountPerAspectRatio(i) - 1, SelectedGfxMode)
+			EndIf
+			If temp Then Rect(x + 1, y + 1, txtW + 8, height, False)
+			If nativeAspectRatio = i Then
+				Color 0, 255, 0
+				Rect(x + 0, y + 0, txtW + 10, height + 2, False)
+			EndIf
+			x = x + txtW + 15
+		Next
+
+		x% = 40
+		y% = 270 - 65
+
+		For i = 0 To (GfxModeCountPerAspectRatio(SelectedAspectRatio) - 1)
+			Color 0, 0, 0
+
+			Local gfxWidth% = GfxModeWidthsByAspectRatio(SelectedAspectRatio, i), gfxHeight% = GfxModeHeightsByAspectRatio(SelectedAspectRatio, i)
+			txt$ = gfxWidth + "x" + gfxHeight
+			txtW% = StringWidth(txt)
+
+			If SelectedGfxMode = i Then Rect(x - 4, y - 4, txtW + 8, height, False)
+
+			Text(x, y, txt)
+
+			If gfxWidth = DesktopWidth() And gfxHeight = DesktopHeight() Then
+				Color 0, 255, 0
+				Rect(x - 5, y - 5, txtW + 10, height + 2, False)
+			EndIf
+
+			If MouseOn(x - 4, y - 4, txtW + 8, height) Then
+				Color 100, 100, 100
+				Rect(x - 4, y - 4, txtW + 8, height, False)
+				If MouseHit1 Then SelectedGfxMode = i
 			EndIf
 			
 			y=y+20
-			If y >= 250 - 65 + (LauncherHeight - 80 - 260) Then y = 270 - 65 : x=x+100
+			If y >= 250 - 65 + (LauncherHeight - 80 - 260) Then y = 270 - 65 : x=x+105
 		Next
 		
 		;-----------------------------------------------------------------
@@ -1505,11 +1596,13 @@ Function UpdateLauncher()
 		y=y+10
 		For i = 1 To gfxDriverCount
 			Color 0, 0, 0
-			If SelectedGFXDriver = i Then Rect(x - 1, y - 1, 290, 20, False)
-			LimitText(GfxDrivers(i), x, y, 290, False)
-			If MouseOn(x - 1, y - 1, 290, 20) Then
+			txt$ = EllipsisLeft(GfxDrivers(i), 30)
+			txtW% = StringWidth(txt)
+			If SelectedGFXDriver = i Then Rect(x - 4, y - 4, txtW + 8, height, False)
+			Text(x, y, txt)
+			If MouseOn(x - 4, y - 4, txtW + 8, height) Then
 				Color 100, 100, 100
-				Rect(x - 1, y - 1, 290, 20, False)
+				Rect(x - 4, y - 4, txtW + 8, height, False)
 				If MouseHit1 Then SelectedGFXDriver = i
 			EndIf
 			
@@ -1536,18 +1629,9 @@ Function UpdateLauncher()
 		Text(40 + 430 + 15, 262 - 55 + 35 + 12, "windowed mode",False,False)
 		Text(40 + 430 + 15, 262 - 55 + 95 + 8, "Use launcher")
 		
-		If (Not BorderlessWindowed)
-			Text(40+ 260 + 15, 262 - 55 + 140, "Current Resolution: "+(GfxModeWidths(SelectedGFXMode) + "x" + GfxModeHeights(SelectedGFXMode)))
-		Else
-			Text(40+ 260 + 15, 262 - 55 + 140, "Current Resolution: "+GfxModeWidths(SelectedGFXMode) + "x" + GfxModeHeights(SelectedGFXMode))
-			If GfxModeWidths(SelectedGFXMode)<G_viewport_width Then
-				Text(40+ 260 + 65, 262 - 55 + 160, "(upscaled to")
-				Text(40+ 260 + 65, 262 - 55 + 180, G_viewport_width + "x" + G_viewport_height + ",32)")
-			ElseIf GfxModeWidths(SelectedGFXMode)>G_viewport_width Then
-				Text(40+ 260 + 65, 262 - 55 + 160, "(downscaled to")
-				Text(40+ 260 + 65, 262 - 55 + 180, G_viewport_width + "x" + G_viewport_height + ",32)")
-			EndIf
-		EndIf
+		gfxWidth% = GfxModeWidthsByAspectRatio(SelectedAspectRatio, SelectedGfxMode) : gfxHeight% = GfxModeHeightsByAspectRatio(SelectedAspectRatio, SelectedGfxMode)
+
+		Text(260 + 15, 262 - 55 + 140, "Current Resolution: "+gfxWidth + "x" + gfxHeight)
 
 		If DrawButton(LauncherWidth - 30 - 90 - 130 - 15, LauncherHeight - 50 - 55, 130, 30, "MAP CREATOR", False, False) Then
 			ExecFile(Chr(34)+"Map Creator\StartMapCreator.bat"+Chr(34))
@@ -1560,8 +1644,8 @@ Function UpdateLauncher()
 		EndIf
 		
 		If DrawButton(LauncherWidth - 30 - 90, LauncherHeight - 50 - 55, 100, 30, "LAUNCH", False, False) Then
-			GraphicWidth = GfxModeWidths(SelectedGFXMode)
-			GraphicHeight = GfxModeHeights(SelectedGFXMode)
+			GraphicWidth = gfxWidth
+			GraphicHeight = gfxHeight
 			RealGraphicWidth = GraphicWidth
 			RealGraphicHeight = GraphicHeight
 			Exit
@@ -1571,8 +1655,8 @@ Function UpdateLauncher()
 		Flip
 	Forever
 	
-	PutINIValue(OptionFile, "options", "width", GfxModeWidths(SelectedGFXMode))
-	PutINIValue(OptionFile, "options", "height", GfxModeHeights(SelectedGFXMode))
+	PutINIValue(OptionFile, "options", "width", GfxModeWidthsByAspectRatio(SelectedAspectRatio, SelectedGfxMode))
+	PutINIValue(OptionFile, "options", "height", GfxModeHeightsByAspectRatio(SelectedAspectRatio, SelectedGfxMode))
 	If Fullscreen Then
 		PutINIValue(OptionFile, "options", "fullscreen", "true")
 	Else
@@ -1593,6 +1677,33 @@ Function UpdateLauncher()
 	FreeImage(LauncherIMG) : LauncherIMG = 0
 	
 	If quit Then End
+
+	Dim AspectRatioWidths%(0), AspectRatioHeights%(0)
+	Dim GfxModeCountPerAspectRatio%(0)
+	Dim GfxModeWidthsByAspectRatio%(0, 0), GfxModeHeightsByAspectRatio%(0, 0)
+End Function
+
+Function GreatestCommonDivsior(u%, v%)
+	If u <= 0 Lor v <= 0 Then Return 1
+
+	Local k% = 0, t% = u Or v, d
+
+	While (t And 1) = 0
+		k = k + 1
+		t = t Shr 1
+	Wend
+
+	v = v Shr k
+	u = u Shr k
+
+	If (u And 1) = 0 Then d = (u Shr 1) Else If (v And 1) = 0 Then d = -(v Shr 1) Else d = (u Shr 1) - (v Shr 1)
+	While d <> 0
+		While (d And 1) = 0 d = d / 2 Wend
+		If d > 0 Then u = d Else v = -d
+		d = (u Shr 1) - (v Shr 1)
+	Wend
+	
+	Return u Shl k
 End Function
 
 
@@ -1780,7 +1891,7 @@ Function DrawLoading(percent%, shortloading=False)
 			strtemp$ = ""
 			temp = Rand(2,9)
 			For i = 0 To temp
-				strtemp$ = STRTEMP + Chr(Rand(48,122))
+				strtemp$ = STRTEMP + RandomDefaultWidthChar(48,122,"?")
 			Next
 			Text(GraphicWidth / 2, GraphicHeight / 2 + 80, strtemp, True, True)
 			
@@ -1825,7 +1936,7 @@ Function DrawLoading(percent%, shortloading=False)
 			strtemp$ = SelectedLoadingScreen\txt[0]
 			temp = Int(Len(SelectedLoadingScreen\txt[0])-Rand(5))
 			For i = 0 To Rand(10,15);temp
-				strtemp$ = Replace(SelectedLoadingScreen\txt[0],Mid(SelectedLoadingScreen\txt[0],Rand(1,Len(strtemp)-1),1),Chr(Rand(130,250)))
+				strtemp$ = Replace(SelectedLoadingScreen\txt[0],Mid(SelectedLoadingScreen\txt[0],Rand(1,Len(strtemp)-1),1),RandomDefaultWidthChar(130,250,"?"))
 			Next		
 			SetFont Font1
 			RowText(strtemp, GraphicWidth / 2-200, GraphicHeight / 2 +120,400,300,True)		
@@ -1843,6 +1954,10 @@ Function DrawLoading(percent%, shortloading=False)
 			SetFont Font1
 			RowText(SelectedLoadingScreen\txt[LoadingScreenText], GraphicWidth / 2-200, GraphicHeight / 2 +120,400,300,True)
 			
+		EndIf
+
+		If SpeedRunMode And (Not TimerStopped) And PlayTime > 0 Then
+			DrawTimer()
 		EndIf
 		
 		Color 0,0,0
@@ -1866,6 +1981,12 @@ Function DrawLoading(percent%, shortloading=False)
 		If percent <> 100 Then Exit
 		
 	Until (GetKey()<>0 Or MouseHit(1))
+	Cls
+End Function
+
+Function RandomDefaultWidthChar$(min%, max%, def$)
+	Local c$ = Chr(Rand(min%, max%))
+	If StringWidth(c) <> StringWidth("L") Then Return def Else Return c
 End Function
 
 Function InputBox$(x%, y%, width%, height%, Txt$, ID% = 0)
@@ -1891,9 +2012,16 @@ Function InputBox$(x%, y%, width%, height%, Txt$, ID% = 0)
 
 	If SelectedInputBox = ID Then
 		If (MilliSecs() Mod 800) < 400 Then Rect (x + width / 2 + StringWidth(Txt) / 2 + 2, y + height / 2 - 17 * MenuScale / 2, 2, 17 * MenuScale)
-		Txt = TextInput(Txt)
+		Local key% = GetKey()
+		If key = 22 Then
+			Txt = Txt + GetClipboardContents()
+		Else If key = 3 Then
+			SetClipboardContents(Txt)
+		Else
+			Txt = TextInput(Txt)
+		EndIf
 	EndIf
-		
+
 	Return Txt
 End Function
 
@@ -1983,17 +2111,21 @@ Function DrawTick%(x%, y%, selected%, locked% = False)
 	Return selected
 End Function
 
-Function SlideBar#(x%, y%, width%, value#)
+Function SlideBar#(x%, y%, width%, value#, ID%)
 	
 	If MouseDown1 And OnSliderID=0 Then
 		If ScaledMouseX() >= x And ScaledMouseX() <= x + width + 14 And ScaledMouseY() >= y And ScaledMouseY() <= y + 20 Then
-			value = Min(Max((ScaledMouseX() - x) * 100 / width, 0), 100)
+			OnSliderID = ID
 		EndIf
 	EndIf
-	
+
+	If ID = OnSliderID Then
+		value = Min(Max((ScaledMouseX() - x) * 100 / width, 0), 100)
+	EndIf
+
 	Color 255,255,255
 	Rect(x, y, width + 14, 20,False)
-	
+
 	DrawImage(BlinkMeterIMG, x + width * value / 100.0 +3, y+3)
 	
 	Color 170,170,170 
@@ -2181,35 +2313,6 @@ Function GetLineAmount2(A$, W, H, Leading#=1)
 	
 End Function
 
-Function LimitText%(txt$, x%, y%, width%, usingAA%=True)
-	Local TextLength%
-	Local UnFitting%
-	Local LetterWidth%
-	If usingAA Then
-		If txt = "" Or width = 0 Then Return 0
-		TextLength = StringWidth(txt)
-		UnFitting = TextLength - width
-		If UnFitting <= 0 Then ;mahtuu
-			Text(x, y, txt)
-		Else ;ei mahdu
-			LetterWidth = TextLength / Len(txt)
-			
-			Text(x, y, Left(txt, Max(Len(txt) - UnFitting / LetterWidth - 4, 1)) + "...")
-		End If
-	Else
-		If txt = "" Or width = 0 Then Return 0
-		TextLength = StringWidth(txt)
-		UnFitting = TextLength - width
-		If UnFitting <= 0 Then ;mahtuu
-			Text(x, y, txt)
-		Else ;ei mahdu
-			LetterWidth = TextLength / Len(txt)
-			
-			Text(x, y, Left(txt, Max(Len(txt) - UnFitting / LetterWidth - 4, 1)) + "...")
-		End If
-	EndIf
-End Function
-
 Function DrawTooltip(message$)
 	Local scale# = GraphicHeight/768.0
 	
@@ -2368,8 +2471,8 @@ Function DrawOptionsTooltip(x%,y%,width%,height%,option$,value#=0,ingame%=False)
 			txt2 = "Using the console will disable Steam achievements."
 		Case "consoleerror"
 			txt = Chr(34)+"Open console on error"+Chr(34)+" is self-explanatory."
-		Case "resourcepackdebug"
-			txt = "Resources failing to load from mods cause a runtime error instead of silently falling back to the vanilla resource."
+		Case "speedrunmode"
+			txt = "Displays a timer and changes how play time is tracked to conform to the requirements of speed running. Timer can be stopped by pressing " + KeyName(KEY_STOP_TIMER) + "."
 		Case "numericseeds"
 			txt = "Allows seeds to be entered as integers, which will be used to directly seed the game's internal random number generator."
 			txt = txt + " When no seed is entered, the elapsed millseconds since the computer started is used."
@@ -2485,7 +2588,7 @@ Global OnSliderID% = 0
 
 Function Slider3(x%,y%,width%,value%,ID%,val1$,val2$,val3$)
 	
-	If MouseDown1 Then
+	If MouseDown1 And OnSliderID = 0 Then
 		If (ScaledMouseX() >= x) And (ScaledMouseX() <= x+width+14) And (ScaledMouseY() >= y-8) And (ScaledMouseY() <= y+10)
 			OnSliderID = ID
 		EndIf
@@ -2537,7 +2640,7 @@ End Function
 
 Function Slider4(x%,y%,width%,value%,ID%,val1$,val2$,val3$,val4$)
 	
-	If MouseDown1 Then
+	If MouseDown1 And OnSliderID = 0 Then
 		If (ScaledMouseX() >= x) And (ScaledMouseX() <= x+width+14) And (ScaledMouseY() >= y-8) And (ScaledMouseY() <= y+10)
 			OnSliderID = ID
 		EndIf
@@ -2596,7 +2699,7 @@ End Function
 
 Function Slider5(x%,y%,width%,value%,ID%,val1$,val2$,val3$,val4$,val5$)
 	
-	If MouseDown1 Then
+	If MouseDown1 And OnSliderID = 0 Then
 		If (ScaledMouseX() >= x) And (ScaledMouseX() <= x+width+14) And (ScaledMouseY() >= y-8) And (ScaledMouseY() <= y+10)
 			OnSliderID = ID
 		EndIf
@@ -2662,7 +2765,7 @@ End Function
 
 Function Slider7(x%,y%,width%,value%,ID%,val1$,val2$,val3$,val4$,val5$,val6$,val7$)
 	
-	If MouseDown1 Then
+	If MouseDown1 And OnSliderID = 0 Then
 		If (ScaledMouseX() >= x) And (ScaledMouseX() <= x+width+14) And (ScaledMouseY() >= y-8) And (ScaledMouseY() <= y+10)
 			OnSliderID = ID
 		EndIf

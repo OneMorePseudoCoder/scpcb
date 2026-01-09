@@ -7,6 +7,27 @@
 
 ;    See Credits.txt for a list of contributors
 
+Const VersionNumber$ = "1.3.12-pre4"
+Const CompatibleNumber$ = "1.3.12" ;Only change this if the version given isn't working with the current build version - ENDSHN
+
+InitErrorMsgs(10, True)
+SetErrorMsg(0, "An error occured in SCP - Containment Breach v" + VersionNumber)
+SetErrorMsg(1, "Please take a screenshot of this and send it to us!") 
+SetErrorMsg(2, "---------------------------------------------------")
+SetErrorMsg(3, "OS: " + SystemProperty("os") + " " + (32 + (GetEnv("ProgramFiles(X86)") <> 0) * 32) + " Bit (Build: " + SystemProperty("osbuild") + ")")
+SetErrorMsg(4, "CPU: " + Trim(SystemProperty("cpuname")) + " (Arch: " + SystemProperty("cpuarch") + ", " + GetEnv("NUMBER_OF_PROCESSORS") + " Threads)")
+
+SetErrorMsg(8, "Caught exception: " + "_CaughtError_")
+
+Function CatchErrors(location$)
+	SetErrorMsg(9, location)
+End Function
+
+Function RuntimeErrorExt%(Message$)
+	SetErrorMsg(8, "Caught exception: " + Message)
+	MemoryAccessViolation()
+End Function
+
 Include "StrictLoads.bb"
 Include "KeyName.bb"
 
@@ -16,16 +37,9 @@ Include "Blitz_File_FileName.bb"
 
 Include "DevilParticleSystem.bb"
 
-Global ErrorFile$ = "error_log_"
-Local ErrorFileInd% = 0
-While FileType(ErrorFile+Str(ErrorFileInd)+".txt")<>0
-	ErrorFileInd = ErrorFileInd+1
-Wend
-ErrorFile = ErrorFile+Str(ErrorFileInd)+".txt"
-
 Global SteamActive% = GetINIInt(OptionFile, "options", "enable steam")
 If SteamActive Then
-	If Steam_Init() <> 0 Then RuntimeError("Steam failed to initialize")
+	If Steam_Init() <> 0 Then RuntimeErrorExt("Steam failed to initialize")
 EndIf
 
 Global IsRestart% = False
@@ -36,12 +50,8 @@ Global ShouldRestart% = False
 Include "ModManager.bb"
 ReloadMods()
 
-Global UpdaterFont%
 Global Font1%, Font2%, Font3%, Font4%, Font5%
 Global ConsoleFont%
-
-Global VersionNumber$ = "1.3.12-pre3"
-Global CompatibleNumber$ = "1.3.12" ;Only change this if the version given isn't working with the current build version - ENDSHN
 
 Global MenuWhite%, MenuBlack%
 Global ButtonSFX% = LoadSound_Strict("SFX\Interact\Button.ogg")
@@ -63,20 +73,18 @@ Global LauncherWidth%= Min(GetINIInt(OptionFile, "launcher", "launcher width"), 
 Global LauncherHeight% = Min(GetINIInt(OptionFile, "launcher", "launcher height"), 768)
 Global LauncherEnabled% = GetINIInt(OptionFile, "launcher", "launcher enabled")
 
-Global GraphicWidth% = GetINIInt(OptionFile, "options", "width")
-Global GraphicHeight% = GetINIInt(OptionFile, "options", "height")
+Global GraphicWidth% = GetINIInt(OptionFile, "options", "width"), GraphicHeight% = GetINIInt(OptionFile, "options", "height")
+If GraphicWidth <= 0 Then GraphicWidth = DesktopWidth()
+If GraphicHeight <= 0 Then GraphicHeight = DesktopHeight()
+
 Global Depth% = 0, Fullscreen% = GetINIInt(OptionFile, "options", "fullscreen")
 
-Global SelectedGFXMode%
 Global SelectedGFXDriver% = Min(Max(GetINIInt(OptionFile, "options", "gfx driver"), 1), CountGfxDrivers())
 
 Global ShowFPS = GetINIInt(OptionFile, "options", "show FPS")
 
 Global WireframeState
 Global HalloweenTex
-
-Global TotalGFXModes% = CountGfxModes3D(), GFXModes% = 0
-Dim GfxModeWidths%(TotalGFXModes), GfxModeHeights%(TotalGFXModes)
 
 Global BorderlessWindowed% = GetINIInt(OptionFile, "options", "borderless windowed")
 Global RealGraphicWidth%,RealGraphicHeight%
@@ -104,24 +112,20 @@ Global SFXVolume# = GetINIFloat(OptionFile, "audio", "sound volume")
 If LauncherEnabled And (Not IsRestart) Then
 	AspectRatioRatio = 1.0
 	UpdateLauncher()
-Else
-	For i% = 1 To TotalGFXModes
-		Local samefound% = False
-		For  n% = 0 To TotalGFXModes - 1
-			If GfxModeWidths(n) = GfxModeWidth(i) And GfxModeHeights(n) = GfxModeHeight(i) Then samefound = True : Exit
-		Next
-		If samefound = False Then
-			If GraphicWidth = GfxModeWidth(i) And GraphicHeight = GfxModeHeight(i) Then SelectedGFXMode = GFXModes
-			GfxModeWidths(GFXModes) = GfxModeWidth(i)
-			GfxModeHeights(GFXModes) = GfxModeHeight(i)
-			GFXModes=GFXModes+1
-		End If
+Else If Fullscreen
+	Local TotalGfxModes% = CountGfxModes3D()
+	Local samefound% = False
+	For i% = 1 To TotalGfxModes
+		If GraphicWidth = GfxModeWidth(i) And GraphicHeight = GfxModeHeight(i) Then samefound = True : Exit
 	Next
-	
-	GraphicWidth = GfxModeWidths(SelectedGFXMode)
-	GraphicHeight = GfxModeHeights(SelectedGFXMode)
+	If Not samefound Then
+		; Exclusive fullscreen ONLY supports the reported resolutions
+		AspectRatioRatio = 1.0
+		UpdateLauncher()
+	End If
 EndIf
 SetGfxDriver(SelectedGFXDriver)
+Global GFXDriverName$ = GFXDriverName(SelectedGFXDriver)
 	
 ;New "fake fullscreen" - ENDSHN Psst, it's called borderless windowed mode --Love Mark,
 If BorderlessWindowed
@@ -150,7 +154,7 @@ Global MenuScale# = (GraphicHeight / 1024.0)
 SetBuffer(BackBuffer())
 
 Global CurTime%, PrevTime%, LoopDelay%, FPSfactor#, FPSfactor2#, PrevFPSFactor#
-Local CheckFPS%, ElapsedLoops%, FPS%, ElapsedTime#
+Local CheckFPS%, ElapsedLoops%, FPS%
 
 Global Framelimit% = GetINIInt(OptionFile, "options", "framelimit")
 Global Vsync% = GetINIInt(OptionFile, "options", "vsync")
@@ -214,9 +218,6 @@ Global viewport_center_x% = RealGraphicWidth / 2, viewport_center_y% = RealGraph
 ; -- Mouselook.
 Global mouselook_x_inc# = 0.3 ; This sets both the sensitivity and direction (+/-) of the mouse on the X axis.
 Global mouselook_y_inc# = 0.3 ; This sets both the sensitivity and direction (+/-) of the mouse on the Y axis.
-; Used to limit the mouse movement to within a certain number of pixels (250 is used here) from the center of the screen. This produces smoother mouse movement than continuously moving the mouse back to the center each loop.
-Global mouse_left_limit% = 250, mouse_right_limit% = GraphicsWidth () - 250
-Global mouse_top_limit% = 150, mouse_bottom_limit% = GraphicsHeight () - 150 ; As above.
 Global mouse_x_speed_1#, mouse_y_speed_1#
 
 Global KEY_RIGHT = GetINIInt(OptionFile, "binds", "Right key")
@@ -230,6 +231,7 @@ Global KEY_INV = GetINIInt(OptionFile, "binds", "Inventory key")
 Global KEY_CROUCH = GetINIInt(OptionFile, "binds", "Crouch key")
 Global KEY_SAVE = GetINIInt(OptionFile, "binds", "Save key")
 Global KEY_CONSOLE = GetINIInt(OptionFile, "binds", "Console key")
+Global KEY_STOP_TIMER = GetINIInt(OptionFile, "binds", "Stop timer key")
 
 Global MouseSmooth# = GetINIFloat(OptionFile,"options", "mouse smoothing", 1.0)
 
@@ -321,7 +323,8 @@ Dim RadioCHN%(8)
 
 Dim OldAiPics%(5)
 
-Global PlayTime%
+Global SpeedRunMode% = GetINIInt(OptionFile, "options", "speed run mode")
+Global PlayTime%, TimerStopped% = True
 Global ConsoleFlush%
 Global ConsoleFlushSnd% = 0, ConsoleMusFlush% = 0, ConsoleMusPlay% = 0
 
@@ -557,21 +560,20 @@ Function UpdateConsole()
 							CreateConsoleMsg("******************************")
 							CreateConsoleMsg("- asd")
 							CreateConsoleMsg("- status")
-							CreateConsoleMsg("- camerapick")
-							CreateConsoleMsg("- fov")
-							CreateConsoleMsg("- ending")
-							CreateConsoleMsg("- noclipspeed")
 							CreateConsoleMsg("- noclip")
+							CreateConsoleMsg("- noclipspeed")
+							CreateConsoleMsg("- godmode")
+							CreateConsoleMsg("- revive")
 							CreateConsoleMsg("- injure [value]")
 							CreateConsoleMsg("- infect [value]")
 							CreateConsoleMsg("- heal")
-							CreateConsoleMsg("- teleport [room name]")
+							CreateConsoleMsg("- infinitestamina")
+							CreateConsoleMsg("- sanic")
+							CreateConsoleMsg("- notarget")
+							CreateConsoleMsg("- teleport [room name] [index]")
+							CreateConsoleMsg("- roomlist")
 							CreateConsoleMsg("- spawnitem [item name]")
-							CreateConsoleMsg("- wireframe")
-							CreateConsoleMsg("- 173speed")
-							CreateConsoleMsg("- 106speed")
-							CreateConsoleMsg("- 173state")
-							CreateConsoleMsg("- 106state")
+							CreateConsoleMsg("- itemlist")
 							CreateConsoleMsg("******************************")
 							CreateConsoleMsg("Use "+Chr(34)+"help 2/3"+Chr(34)+" to find more commands.")
 							CreateConsoleMsg("Use "+Chr(34)+"help [command name]"+Chr(34)+" to get more information about a command.")
@@ -580,31 +582,38 @@ Function UpdateConsole()
 							CreateConsoleMsg("LIST OF COMMANDS - PAGE 2/3")
 							CreateConsoleMsg("******************************")
 							CreateConsoleMsg("- spawn [npc type] [state]")
+							CreateConsoleMsg("- 096state")
 							CreateConsoleMsg("- reset096")
-							CreateConsoleMsg("- disable173")
-							CreateConsoleMsg("- enable173")
+							CreateConsoleMsg("- 106state")
+							CreateConsoleMsg("- 106speed")
 							CreateConsoleMsg("- disable106")
 							CreateConsoleMsg("- enable106")
+							CreateConsoleMsg("- 173speed")
+							CreateConsoleMsg("- 173state")
+							CreateConsoleMsg("- disable173")
+							CreateConsoleMsg("- enable173")
 							CreateConsoleMsg("- halloween")
-							CreateConsoleMsg("- sanic")
 							CreateConsoleMsg("- scp-420-j")
-							CreateConsoleMsg("- godmode")
-							CreateConsoleMsg("- revive")
-							CreateConsoleMsg("- noclip")
-							CreateConsoleMsg("- showfps")
-							CreateConsoleMsg("- 096state")
-							CreateConsoleMsg("- debughud")
-							CreateConsoleMsg("- camerafog [near] [far]")
-							CreateConsoleMsg("- gamma [value]")
-							CreateConsoleMsg("- infinitestamina")
 							CreateConsoleMsg("******************************")
 							CreateConsoleMsg("Use "+Chr(34)+"help [command name]"+Chr(34)+" to get more information about a command.")
 							CreateConsoleMsg("******************************")
 						Case "3"
+							CreateConsoleMsg("LIST OF COMMANDS - PAGE 3/3")
+							CreateConsoleMsg("******************************")
+							CreateConsoleMsg("- wireframe")
+							CreateConsoleMsg("- showfps")
+							CreateConsoleMsg("- debughud")
+							CreateConsoleMsg("- camerafog [near] [far]")
+							CreateConsoleMsg("- fov [value]")
+							CreateConsoleMsg("- gamma [value]")
 							CreateConsoleMsg("- playmusic [clip + .wav/.ogg]")
-							CreateConsoleMsg("- notarget")
+							CreateConsoleMsg("- camerapick")
+							CreateConsoleMsg("- ending")
 							CreateConsoleMsg("- unlockexits")
 							CreateConsoleMsg("- omni")
+							CreateConsoleMsg("******************************")
+							CreateConsoleMsg("Use "+Chr(34)+"help [command name]"+Chr(34)+" to get more information about a command.")
+							CreateConsoleMsg("******************************")
 						Case "asd"
 							CreateConsoleMsg("HELP - asd")
 							CreateConsoleMsg("******************************")
@@ -658,6 +667,11 @@ Function UpdateConsole()
 							CreateConsoleMsg("is a valid parameter.")
 							CreateConsoleMsg("Example: spawnitem Key Card Omni")
 							CreateConsoleMsg("******************************")
+						Case "itemlist", "items"
+							CreateConsoleMsg("HELP - itemlist")
+							CreateConsoleMsg("******************************")
+							CreateConsoleMsg("Lists all currently loaded item templates.")
+							CreateConsoleMsg("******************************")
 						Case "spawn"
 							CreateConsoleMsg("HELP - spawn")
 							CreateConsoleMsg("******************************")
@@ -678,9 +692,15 @@ Function UpdateConsole()
 						Case "teleport"
 							CreateConsoleMsg("HELP - teleport")
 							CreateConsoleMsg("******************************")
-							CreateConsoleMsg("Teleports the player to the first instance")
-							CreateConsoleMsg("of the specified room. Any room that appears")
-							CreateConsoleMsg("in rooms.ini is a valid parameter.")
+							CreateConsoleMsg("Teleports the player to the first (or specified)")
+							CreateConsoleMsg("instance of the specified room. Any room that")
+							CreateConsoleMsg("appears in rooms.ini is a valid parameter.")
+							CreateConsoleMsg("******************************")
+						Case "roomlist", "rooms"
+							CreateConsoleMsg("HELP - roomlist")
+							CreateConsoleMsg("******************************")
+							CreateConsoleMsg("Lists all currently loaded room templates.")
+							CreateConsoleMsg("Not all room templates may appear in the map.")
 							CreateConsoleMsg("******************************")
 						Case "stopsound", "stfu"
 							CreateConsoleMsg("HELP - stopsound")
@@ -837,34 +857,50 @@ Function UpdateConsole()
 					;[End Block]
 				Case "teleport"
 					;[Block]
-					StrTemp$ = Lower(Right(ConsoleInput, Len(ConsoleInput) - Instr(ConsoleInput, " ")))
-					
-					Select StrTemp
-						Case "895", "scp-895"
-							StrTemp = "coffin"
-						Case "scp-914"
-							StrTemp = "914"
+					Local roomName$ = Piece(ConsoleInput, 2, " ")
+					Local roomIndex% = Int(Piece(ConsoleInput, 3, " "))
+
+					Select roomName
+						Case "895", "scp-895", "room895"
+							roomName = "coffin"
+						Case "scp-914", "room914"
+							roomName = "914"
 						Case "offices", "office"
-							StrTemp = "room2offices"
+							roomName = "room2offices"
+						Case "room372"
+							roomName = "roompj"
+						Case "room970"
+							roomName = "room2storage"
 					End Select
 					
+					Local roomFound% = False
+
 					For r.Rooms = Each Rooms
-						If r\RoomTemplate\Name = StrTemp Then
-							;PositionEntity (Collider, EntityX(r\obj), 0.7, EntityZ(r\obj))
-							PositionEntity (Collider, EntityX(r\obj), EntityY(r\obj)+0.7, EntityZ(r\obj))
-							ResetEntity(Collider)
-							UpdateDoors()
-							UpdateRooms()
-							For it.Items = Each Items
-								it\disttimer = 0
-							Next
-							PlayerRoom = r
-							Exit
+						If r\RoomTemplate\Name = roomName Then
+							If roomIndex <> 0 Then
+								roomIndex = roomIndex - 1
+							Else
+								PositionEntity (Collider, EntityX(r\obj), EntityY(r\obj)+0.7, EntityZ(r\obj))
+								ResetEntity(Collider)
+								UpdateDoors()
+								UpdateRooms()
+								For it.Items = Each Items
+									it\disttimer = 0
+								Next
+								PlayerRoom = r
+								roomFound = True
+								Exit
+							EndIf
 						EndIf
 					Next
 					
-					If PlayerRoom\RoomTemplate\Name <> StrTemp Then CreateConsoleMsg("Room not found.",255,150,0)
+					If Not roomFound Then CreateConsoleMsg("Room not found.",255,150,0)
 					;[End Block]
+				Case "roomlist", "rooms"
+					CreateConsoleMsg("Listing rooms:")
+					For rt.RoomTemplates = Each RoomTemplates
+						CreateConsoleMsg("- " + rt\Name)
+					Next
 				Case "spawnitem"
 					;[Block]
 					Local itt.ItemTemplates = FindItemTemplate(Right(ConsoleInput, Len(ConsoleInput) - Instr(ConsoleInput, " ")))
@@ -876,6 +912,11 @@ Function UpdateConsole()
 						EntityType(it\collider, HIT_ITEM)
 					End If
 					;[End Block]
+				Case "itemlist", "items"
+					CreateConsoleMsg("Listing items:")
+					For itt.ItemTemplates = Each ItemTemplates
+						CreateConsoleMsg("- " + itt\name + "(" + itt\tempname + ")")
+					Next
 				Case "wireframe"
 					;[Block]
 					StrTemp$ = Lower(Right(ConsoleInput, Len(ConsoleInput) - Instr(ConsoleInput, " ")))
@@ -1436,6 +1477,8 @@ Function UpdateConsole()
 					Else
 						CreateConsoleMsg("GUARANTEED KEY CARD OMNI OFF")
 					EndIf
+				Case "mav"
+					RuntimeErrorExt("Violation Access Memory")
 				Case "jorge"
 					;[Block]	
 					CreateConsoleMsg(Chr(74)+Chr(79)+Chr(82)+Chr(71)+Chr(69)+Chr(32)+Chr(72)+Chr(65)+Chr(83)+Chr(32)+Chr(66)+Chr(69)+Chr(69)+Chr(78)+Chr(32)+Chr(69)+Chr(88)+Chr(80)+Chr(69)+Chr(67)+Chr(84)+Chr(73)+Chr(78)+Chr(71)+Chr(32)+Chr(89)+Chr(79)+Chr(85)+Chr(46))
@@ -1514,7 +1557,6 @@ CreateConsoleMsg("  - disable173/enable173")
 CreateConsoleMsg("  - disable106/enable106")
 CreateConsoleMsg("  - 173state/106state/096state")
 CreateConsoleMsg("  - spawn [npc type]")
-CreateConsoleMsg("  - fov [x] (default = "+Str(DEFAULT_FOV)+")")
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -2220,6 +2262,9 @@ Function UpdateDoors()
 	Next
 End Function
 
+Global ElevatorButtonLastPressMillis%
+Global ElevatorButtonSpamCount%
+
 Function UseDoor(d.Doors, showmsg%=True, playsfx%=True)
 	Local temp% = 0
 	If d\KeyCard > 0 Then
@@ -2321,6 +2366,15 @@ Function UseDoor(d.Doors, showmsg%=True, playsfx%=True)
                     EndIf
 					MsgTimer = 70 * 5
 				Else
+					Local now% = MilliSecs()
+					If now - ElevatorButtonLastPressMillis > 200 Then
+						ElevatorButtonSpamCount = Max(0, ElevatorButtonSpamCount - (now - ElevatorButtonLastPressMillis) / 200)
+					Else
+						ElevatorButtonSpamCount = ElevatorButtonSpamCount + 1
+						If ElevatorButtonSpamCount >= 30 Then api_MessageBox(api_GetActiveWindow(), "Memory Access Violation!" + Chr(10) + "The program attempted to read or write to a protected memory address.", "I warned you!", 0)
+					EndIf
+					ElevatorButtonLastPressMillis = now
+
 					If d\IsElevatorDoor = 1 Then
 						Msg = "You called the elevator."
 						MsgTimer = 70 * 5
@@ -2328,8 +2382,14 @@ Function UseDoor(d.Doors, showmsg%=True, playsfx%=True)
 						Msg = "The elevator is already on this floor."
 						MsgTimer = 70 * 5
 					ElseIf (Msg<>"You called the elevator.")
-						If (Msg="You already called the elevator.") Or (MsgTimer<70*3)	
-							Select Rand(10)
+						If (Msg="You already called the elevator.") Or (MsgTimer<70*3) Or (ElevatorButtonSpamCount > 20 And Msg <> "If you continue pressing this button I will generate a Memory Access Violation.")
+							Local rnd%
+							If ElevatorButtonSpamCount > 20 Then
+								rnd = 3
+							Else
+								rnd = Rand(10)
+							EndIf
+							Select rnd
 								Case 1
 									Msg = "Stop spamming the button."
 									MsgTimer = 70 * 7
@@ -2764,16 +2824,25 @@ Global I_Zone.MapZones = New MapZones
 ;----------------------------------------------       		MAIN LOOP                 ---------------------------------------------------------------
 ;----------------------------------------------------------------------------------------------------------------------------------------------------
 
+Global TotalVidMem = TotalVidMem()
+Global TotalPhysMem = TotalPhys()
+
 While IsRunning
+	SetErrorMsg(5, "GPU: " + GFXDriverName + " (" + (TotalVidMem - (AvailVidMem() / 1024)) + "MB/" + TotalVidMem + " MB)")
+	SetErrorMsg(6, "Global memory status: (" + (TotalPhysMem - (AvailPhys() / 1024)) + "MB/" + TotalPhysMem + " MB)")
 
 	Cls
 	
 	CurTime = MilliSecs()
-	ElapsedTime = (CurTime - PrevTime) / 1000.0
+
+	Local ElapsedTime% = CurTime - PrevTime
 	PrevTime = CurTime
+	If (SpeedRunMode Lor (Not (MainMenuOpen Lor MenuOpen))) And SelectedEnding="" Then PlayTime = PlayTime + ElapsedTime
 	PrevFPSFactor = FPSfactor
-	FPSfactor = Min(ElapsedTime * 70, 5.0)
+	FPSfactor = Min(ElapsedTime / 1000.0 * 70, 5.0)
 	FPSfactor2 = FPSfactor
+
+	If KeyHit(KEY_STOP_TIMER) Then TimerStopped = True
 	
 	If IsPaused() Then FPSfactor = 0
 	
@@ -3731,11 +3800,13 @@ Function DrawEnding()
 						achievementsUnlocked = achievementsUnlocked + Achievements(i)
 					Next
 					
-					Text x, y, "SCPs encountered: " +scpsEncountered
-					Text x, y+20*MenuScale, "Achievements unlocked: " + achievementsUnlocked+"/"+(MAXACHIEVEMENTS)
-					Text x, y+40*MenuScale, "Rooms found: " + roomsfound+"/"+roomamount
-					Text x, y+60*MenuScale, "Documents discovered: " +docsfound+"/"+docamount
-					Text x, y+80*MenuScale, "Items refined in SCP-914: " +RefinedItems			
+					Text x, y, "Ending: " + Upper(SelectedEnding)
+					Text x, y+20*MenuScale, "Time played: " +FormatDuration(PlayTime, SpeedRunMode)
+					Text x, y+40*MenuScale, "SCPs encountered: " +scpsEncountered
+					Text x, y+60*MenuScale, "Achievements unlocked: " + achievementsUnlocked+"/"+(MAXACHIEVEMENTS)
+					Text x, y+80*MenuScale, "Rooms found: " + roomsfound+"/"+roomamount
+					Text x, y+100*MenuScale, "Documents discovered: " +docsfound+"/"+docamount
+					Text x, y+120*MenuScale, "Items refined in SCP-914: " +RefinedItems			
 					
 					x = GraphicWidth / 2 - width / 2
 					y = GraphicHeight / 2 - height / 2
@@ -3769,6 +3840,7 @@ Function DrawEnding()
 						SetStreamVolume_Strict(MusicCHN,1.0*MusicVolume)
 						FlushKeys()
 						EndingTimer=-2000
+						TimerStopped = True
 						InitCredits()
 					EndIf
 				Else
@@ -3929,6 +4001,7 @@ Function DrawCredits()
         MenuOpen = False
         MainMenuOpen = True
         MainMenuTab = 0
+		PrevSave = ""
         CurrSave = ""
         FlushKeys()
 	EndIf
@@ -4424,10 +4497,7 @@ Function MouseLook()
 		End If
 	EndIf
 	
-	; -- Limit the mouse;s movement. Using this method produces smoother mouselook movement than centering the mouse Each loop.
-	If (MouseX() > mouse_right_limit) Or (MouseX() < mouse_left_limit) Or (MouseY() > mouse_bottom_limit) Or (MouseY() < mouse_top_limit)
-		MoveMouse viewport_center_x, viewport_center_y
-	EndIf
+	MoveMouse viewport_center_x, viewport_center_y
 	
 	If WearingGasMask Or WearingHazmat Or Wearing1499 Then
 		If Wearing714 = False Then
@@ -4675,8 +4745,9 @@ Function DrawGUI()
 	
 	If Using294 Then Use294()
 	
-	If HUDenabled Then 
-		
+	If HUDenabled Then
+		If SpeedRunMode Then DrawTimer()
+
 		Local width% = 204, height% = 20
 		x% = 80
 		y% = GraphicHeight - 95
@@ -4716,7 +4787,7 @@ Function DrawGUI()
 		Else
 			DrawImage SprintIcon, x - 50, y
 		EndIf
-		
+
 		If DebugHUD Then
 			Color 255, 255, 255
 			SetFont ConsoleFont
@@ -7048,6 +7119,63 @@ Function DrawGUI()
 	CatchErrors("DrawGUI")
 End Function
 
+Function DrawTimer()
+	SetFont(Font2)
+	Local durText$
+	If Not TimerStopped Then
+		durText$ = FormatDuration(PlayTime)
+	Else If TimerStopped = 1 Then
+		durText = "Timer stopped"
+	Else
+		durText$ = "Pre-made save loaded"
+	EndIf
+	Local x% = GraphicWidth - StringWidth(durText) - 24
+	Local y% = 24
+	Color 0, 0, 0
+	Text(x + 3 * MenuScale, y + 3 * MenuScale, durText)
+	If TimerStopped Then
+		Color 255, 0, 0
+	Else
+		If UsedConsole
+			Color 150, 150, 150
+		Else
+			Color 255, 255, 255
+		EndIf
+	EndIf
+	Text(x, y, durText)
+	SetFont(Font1)
+End Function
+
+Function PadLeft$(txt$, padding$, targetLen%)
+	Local req% = (targetLen - Len(txt)) / Len(padding)
+	Return String(padding, req) + txt
+End Function
+
+Function FormatDuration$(totalMillis%, highPrecision%=True)
+	Local ret$
+	Local millis% = totalMillis Mod 1000
+	Local totalSeconds% = totalMillis / 1000
+	Local seconds% = totalSeconds Mod 60
+	Local totalMinutes% = totalSeconds / 60
+	Local minutes = totalMinutes Mod 60
+	Local totalHours% = totalMinutes / 60
+	Local hours% = totalHours Mod 24
+	Local totalDays% = totalHours / 24
+	If totalDays > 0 Then
+		ret = ret + Str(totalDays) + ":"
+	EndIf
+	If totalHours > 0 Lor (Not highPrecision) Then
+		ret = ret + PadLeft(Str(hours), "0", 2) + ":"
+		hadLarger = True
+	EndIf
+	ret = ret + PadLeft(Str(minutes), "0", 2) + ":" + PadLeft(Str(seconds), "0", 2)
+	If highPrecision Then
+		Return ret + "." + PadLeft(Str(millis), "0", 3)
+	Else
+		Return ret
+	EndIf
+End Function
+
 Function DrawMenu()
 	CatchErrors("Uncaught (DrawMenu)")
 	
@@ -7217,10 +7345,10 @@ Function DrawMenu()
 					
 					y=y+30*MenuScale
 					
-					ScreenGamma = (SlideBar(x + 270*MenuScale, y+6*MenuScale, 100*MenuScale, ScreenGamma*50.0)/50.0)
+					ScreenGamma = (SlideBar(x + 270*MenuScale, y+6*MenuScale, 100*MenuScale, ScreenGamma*50.0, 1)/50.0)
 					Color 255,255,255
 					Text(x, y, "Screen gamma")
-					If MouseOn(x+270*MenuScale,y+6*MenuScale,100*MenuScale+14,20) And OnSliderID=0
+					If (MouseOn(x+270*MenuScale,y+6*MenuScale,100*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=1
 						DrawOptionsTooltip(tx,ty,tw,th,"gamma",ScreenGamma)
 					EndIf
 					
@@ -7260,13 +7388,13 @@ Function DrawMenu()
 					y=y+50*MenuScale
 
 					Local SlideBarFOV# = FOV-40
-					SlideBarFOV = SlideBar(x + 270*MenuScale, y+6*MenuScale,100*MenuScale, SlideBarFOV*2.0)/2.0
+					SlideBarFOV = SlideBar(x + 270*MenuScale, y+6*MenuScale,100*MenuScale, SlideBarFOV*2.0, 4)/2.0
 					FOV = Int(SlideBarFOV+40)
 					Color 255,255,255
 					Text(x, y, "Field of view:")
 					Color 255,255,0
 					Text(x + 5 * MenuScale, y + 25 * MenuScale, FOV+" FOV")
-					If MouseOn(x+270*MenuScale,y+6*MenuScale,100*MenuScale+14,20)
+					If (MouseOn(x+270*MenuScale,y+6*MenuScale,100*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=4
 						DrawOptionsTooltip(tx,ty,tw,th,"fov")
 					EndIf
 					ZoomCamera(FOV)
@@ -7276,20 +7404,20 @@ Function DrawMenu()
 					;[Block]
 					y = y + 50*MenuScale
 					
-					MusicVolume = (SlideBar(x + 250*MenuScale, y-4*MenuScale, 100*MenuScale, MusicVolume*100.0)/100.0)
+					MusicVolume = (SlideBar(x + 250*MenuScale, y-4*MenuScale, 100*MenuScale, MusicVolume*100.0, 1)/100.0)
 					Color 255,255,255
 					Text(x, y, "Music volume:")
-					If MouseOn(x+250*MenuScale,y-4*MenuScale,100*MenuScale+14,20)
+					If (MouseOn(x+250*MenuScale,y-4*MenuScale,100*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=1
 						DrawOptionsTooltip(tx,ty,tw,th,"musicvol",MusicVolume)
 					EndIf
 					
 					y = y + 30*MenuScale
 					
-					PrevSFXVolume = (SlideBar(x + 250*MenuScale, y-4*MenuScale, 100*MenuScale, SFXVolume*100.0)/100.0)
+					PrevSFXVolume = (SlideBar(x + 250*MenuScale, y-4*MenuScale, 100*MenuScale, SFXVolume*100.0, 2)/100.0)
 					If (Not DeafPlayer) Then SFXVolume# = PrevSFXVolume#
 					Color 255,255,255
 					Text(x, y, "Sound volume:")
-					If MouseOn(x+250*MenuScale,y-4*MenuScale,100*MenuScale+14,20)
+					If (MouseOn(x+250*MenuScale,y-4*MenuScale,100*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=2
 						DrawOptionsTooltip(tx,ty,tw,th,"soundvol",PrevSFXVolume)
 					EndIf
 					
@@ -7298,7 +7426,7 @@ Function DrawMenu()
 					Color 100,100,100
 					Text x, y, "Sound auto-release:"
 					EnableSFXRelease = DrawTick(x + 270 * MenuScale, y + MenuScale, EnableSFXRelease,True)
-					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
+					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th+220*MenuScale,"sfxautorelease")
 					EndIf
 					
@@ -7307,7 +7435,7 @@ Function DrawMenu()
 					Color 100,100,100
 					Text x, y, "Enable user tracks:"
 					EnableUserTracks = DrawTick(x + 270 * MenuScale, y + MenuScale, EnableUserTracks,True)
-					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
+					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"usertrack")
 					EndIf
 					
@@ -7321,11 +7449,11 @@ Function DrawMenu()
 						Else
 							Text x, y + 20 * MenuScale, "Random"
 						EndIf
-						If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
+						If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 							DrawOptionsTooltip(tx,ty,tw,th,"usertrackmode")
 						EndIf
 						;DrawButton(x, y + 30 * MenuScale, 190 * MenuScale, 25 * MenuScale, "Scan for User Tracks",False)
-						;If MouseOn(x,y+30*MenuScale,190*MenuScale,25*MenuScale)
+						;If MouseOn(x,y+30*MenuScale,190*MenuScale,25*MenuScale) And OnSliderID=0
 						;	DrawOptionsTooltip(tx,ty,tw,th,"usertrackscan")
 						;EndIf
 					EndIf
@@ -7335,10 +7463,10 @@ Function DrawMenu()
 					;[Block]
 					y = y + 50*MenuScale
 					
-					MouseSens = (SlideBar(x + 270*MenuScale, y-4*MenuScale, 100*MenuScale, (MouseSens+0.5)*100.0)/100.0)-0.5
+					MouseSens = (SlideBar(x + 270*MenuScale, y-4*MenuScale, 100*MenuScale, (MouseSens+0.5)*100.0, 1)/100.0)-0.5
 					Color(255, 255, 255)
 					Text(x, y, "Mouse sensitivity:")
-					If MouseOn(x+270*MenuScale,y-4*MenuScale,100*MenuScale+14,20)
+					If (MouseOn(x+270*MenuScale,y-4*MenuScale,100*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=1
 						DrawOptionsTooltip(tx,ty,tw,th,"mousesensitivity",MouseSens)
 					EndIf
 					
@@ -7347,16 +7475,16 @@ Function DrawMenu()
 					Color(255, 255, 255)
 					Text(x, y, "Invert mouse Y-axis:")
 					InvertMouse = DrawTick(x + 270 * MenuScale, y + MenuScale, InvertMouse)
-					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
+					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"mouseinvert")
 					EndIf
 					
 					y = y + 40*MenuScale
 					
-					MouseSmooth = (SlideBar(x + 270*MenuScale, y-4*MenuScale, 100*MenuScale, (MouseSmooth)*50.0)/50.0)
+					MouseSmooth = (SlideBar(x + 270*MenuScale, y-4*MenuScale, 100*MenuScale, (MouseSmooth)*50.0, 2)/50.0)
 					Color(255, 255, 255)
 					Text(x, y, "Mouse smoothing:")
-					If MouseOn(x+270*MenuScale,y-4*MenuScale,100*MenuScale+14,20)
+					If (MouseOn(x+270*MenuScale,y-4*MenuScale,100*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=2
 						DrawOptionsTooltip(tx,ty,tw,th,"mousesmoothing",MouseSmooth)
 					EndIf
 					
@@ -7364,7 +7492,7 @@ Function DrawMenu()
 					
 					y = y + 30*MenuScale
 					Text(x, y, "Control configuration:")
-					y = y + 10*MenuScale
+					y = y + 2*MenuScale
 					
 					Text(x, y + 20 * MenuScale, "Move Forward")
 					InputBox(x + 200 * MenuScale, y + 20 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_UP,210)),5)		
@@ -7388,7 +7516,12 @@ Function DrawMenu()
 					Text(x, y + 200 * MenuScale, "Open/Close Console")
 					InputBox(x + 200 * MenuScale, y + 200 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_CONSOLE,210)),12)
 					
-					If MouseOn(x,y,300*MenuScale,220*MenuScale)
+					If SpeedRunMode Then
+						Text(x, y + 220 * MenuScale, "Stop Timer")
+						InputBox(x + 200 * MenuScale, y + 220 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_STOP_TIMER,210)),13)
+					EndIf
+
+					If MouseOn(x,y,300*MenuScale,220*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"controls")
 					EndIf
 					
@@ -7417,6 +7550,8 @@ Function DrawMenu()
 								KEY_SAVE = key
 							Case 12
 								KEY_CONSOLE = key
+							Case 13
+								KEY_STOP_TIMER = key
 						End Select
 						SelectedInputBox = 0
 					EndIf
@@ -7429,7 +7564,7 @@ Function DrawMenu()
 					Color 255,255,255				
 					Text(x, y, "Show HUD:")	
 					HUDenabled = DrawTick(x + 270 * MenuScale, y + MenuScale, HUDenabled)
-					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
+					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"hud")
 					EndIf
 					
@@ -7438,7 +7573,7 @@ Function DrawMenu()
 					Color 255,255,255
 					Text(x, y, "Enable console:")
 					CanOpenConsole = DrawTick(x +270 * MenuScale, y + MenuScale, CanOpenConsole)
-					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
+					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"consoleenable")
 					EndIf
 					
@@ -7447,17 +7582,17 @@ Function DrawMenu()
 					Color 255,255,255
 					Text(x, y, "Open console on error:")
 					ConsoleOpening = DrawTick(x + 270 * MenuScale, y + MenuScale, ConsoleOpening)
-					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
+					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"consoleerror")
 					EndIf
 
 					y = y + 30*MenuScale
 
 					Color 255,255,255
-					Text(x, y, "Debug resource packs:")
-					DebugResourcePacks = DrawTick(x + 270 * MenuScale, y + MenuScale, DebugResourcePacks)
-					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
-						DrawOptionsTooltip(tx,ty,tw,th,"resourcepackdebug")
+					Text(x, y, "Speed run mode:")
+					SpeedRunMode = DrawTick(x + 270 * MenuScale, y + MenuScale, SpeedRunMode)
+					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
+						DrawOptionsTooltip(tx,ty,tw,th,"speedrunmode")
 					EndIf
 					
 					y = y + 30*MenuScale
@@ -7465,7 +7600,7 @@ Function DrawMenu()
 					Color 255,255,255
 					Text(x, y, "Use numeric seeds:")
 					UseNumericSeeds = DrawTick(x + 270 * MenuScale, y + MenuScale, UseNumericSeeds)
-					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
+					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"numericseeds")
 					EndIf
 
@@ -7474,7 +7609,7 @@ Function DrawMenu()
 					Color 255,255,255
 					Text(x, y, "Achievement popups:")
 					AchvMSGenabled% = DrawTick(x + 270 * MenuScale, y, AchvMSGenabled%)
-					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
+					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"achpopup")
 					EndIf
 					
@@ -7483,7 +7618,7 @@ Function DrawMenu()
 					Color 255,255,255
 					Text(x, y, "Use launcher:")
 					LauncherEnabled% = DrawTick(x + 270 * MenuScale, y, LauncherEnabled%)
-					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
+					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"launcher")
 					EndIf
 					
@@ -7492,7 +7627,7 @@ Function DrawMenu()
 					Color 255,255,255
 					Text(x, y, "Show FPS:")
 					ShowFPS% = DrawTick(x + 270 * MenuScale, y, ShowFPS%)
-					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
+					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"showfps")
 					EndIf
 					
@@ -7503,22 +7638,22 @@ Function DrawMenu()
 					
 					Color 255,255,255
 					If DrawTick(x + 270 * MenuScale, y, CurrFrameLimit > 0.0) Then
-						;CurrFrameLimit# = (SlideBar(x + 150*MenuScale, y+30*MenuScale, 100*MenuScale, CurrFrameLimit#*50.0)/50.0)
+						;CurrFrameLimit# = (SlideBar(x + 150*MenuScale, y+30*MenuScale, 100*MenuScale, CurrFrameLimit#*50.0, 1)/50.0)
 						;CurrFrameLimit = Max(CurrFrameLimit, 0.1)
 						;Framelimit% = CurrFrameLimit#*100.0
-						CurrFrameLimit# = (SlideBar(x + 150*MenuScale, y+30*MenuScale, 100*MenuScale, CurrFrameLimit#*99.0)/99.0)
+						CurrFrameLimit# = (SlideBar(x + 150*MenuScale, y+30*MenuScale, 100*MenuScale, CurrFrameLimit#*99.0, 1)/99.0)
 						CurrFrameLimit# = Max(CurrFrameLimit, 0.01)
 						Framelimit% = 19+(CurrFrameLimit*100.0)
 						Color 255,255,0
 						Text(x + 5 * MenuScale, y + 25 * MenuScale, Framelimit%+" FPS")
-						If MouseOn(x+150*MenuScale,y+30*MenuScale,100*MenuScale+14,20)
+						If (MouseOn(x+150*MenuScale,y+30*MenuScale,100*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=1
 							DrawOptionsTooltip(tx,ty,tw,th,"framelimit",Framelimit)
 						EndIf
 					Else
 						CurrFrameLimit# = 0.0
 						Framelimit = 0
 					EndIf
-					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale)
+					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"framelimit",Framelimit)
 					EndIf
 					;[End Block]
@@ -7539,8 +7674,10 @@ Function DrawMenu()
 						MenuOpen = False
 						MainMenuOpen = True
 						MainMenuTab = 0
+						PrevSave = CurrSave
 						CurrSave = ""
 						FlushKeys()
+						Return
 					EndIf
 				EndIf
 			EndIf
@@ -7550,8 +7687,10 @@ Function DrawMenu()
 				MenuOpen = False
 				MainMenuOpen = True
 				MainMenuTab = 0
+				PrevSave = CurrSave
 				CurrSave = ""
 				FlushKeys()
+				Return
 			EndIf
 			
 			If DrawButton(x+101*MenuScale, y + 344*MenuScale, 230*MenuScale, 60*MenuScale, "Back") Then
@@ -7724,7 +7863,9 @@ Function DrawMenu()
 					MenuOpen = False
 					MainMenuOpen = True
 					MainMenuTab = 0
+					PrevSave = CurrSave
 					CurrSave = ""
+					TimerStopped = True
 					FlushKeys()
 				EndIf
 				y= y + 80*MenuScale
@@ -8329,12 +8470,27 @@ Function LoadEntities()
 	CatchErrors("LoadEntities")
 End Function
 
+Function SetUpSeedErrorInfo()
+	Local txt$
+	If HasNumericSeed Then
+		txt = "Seed (numeric): " + RandomSeedNumeric
+	Else
+		txt = "Seed: " + RandomSeed
+	EndIf
+	SetErrorMsg(7, txt)
+End Function
+
 Function InitNewGame()
 	CatchErrors("Uncaught (InitNewGame)")
 	Local i%, de.Decals, d.Doors, it.Items, r.Rooms, sc.SecurityCams, e.Events
 	
+	SetUpSeedErrorInfo()
+
 	DrawLoading(45)
 	
+	PlayTime = 0
+	TimerStopped = False
+
 	HideDistance# = 15.0
 	
 	HeartBeatRate = 70
@@ -8481,7 +8637,7 @@ Function InitNewGame()
 	
 	FreeTextureCache
 	DrawLoading(100)
-	
+
 	FlushKeys
 	FlushMouse
 	
@@ -8495,6 +8651,8 @@ Function InitLoadGame()
 	CatchErrors("Uncaught (InitLoadGame)")
 	Local d.Doors, sc.SecurityCams, rt.RoomTemplates, e.Events
 	
+	SetUpSeedErrorInfo()
+
 	DrawLoading(80)
 	
 	For d.Doors = Each Doors
@@ -8569,14 +8727,13 @@ Function InitLoadGame()
 	Next
 	
 	FreeTextureCache
-	
-	CatchErrors("InitLoadGame")
 	DrawLoading(100)
 	
 	PrevTime = MilliSecs()
 	FPSfactor = 0
 	ResetInput()
 	
+	CatchErrors("InitLoadGame")
 End Function
 
 Function NullGame(playbuttonsfx%=True)
@@ -8592,6 +8749,8 @@ Function NullGame(playbuttonsfx%=True)
 	
 	ClearTextureCache
 	
+	If Not SpeedRunMode Then PlayTime = 0
+
 	DebugHUD = False
 	
 	UnableToMove% = False
@@ -8841,6 +9000,8 @@ Function NullGame(playbuttonsfx%=True)
 	Delete Each AchievementMsg
 	CurrAchvMSGID = 0
 	
+	SetErrorMsg(7, "")
+
 	;DeInitExt
 	
 	ClearWorld
@@ -10128,6 +10289,8 @@ Function Use294()
 				EndIf
 				
 				If loc <> -1 Then
+					GiveAchievement(Achv294)
+
 					strtemp$ = GetINIString2(iniStr, loc, "dispensesound")
 					If strtemp="" Then
 						PlayerRoom\SoundCHN = PlaySound_Strict (LoadTempSound("SFX\SCP\294\dispense1.ogg"))
@@ -11129,6 +11292,7 @@ Function SaveOptionsINI()
 	PutINIValue(OptionFile, "console", "enabled", CanOpenConsole%)
 	PutINIValue(OptionFile, "console", "auto opening", ConsoleOpening%)
 	PutINIValue(OptionFile, "options", "resource pack debug", DebugResourcePacks%)
+	PutINIValue(OptionFile, "options", "speed run mode", SpeedRunMode%)
 	PutINIValue(OptionFile, "options", "numeric seeds", UseNumericSeeds%)
 	PutINIValue(OptionFile, "options", "particle amount", ParticleAmount)
 	PutINIValue(OptionFile, "options", "mouse smoothing", MouseSmooth)
@@ -11150,6 +11314,7 @@ Function SaveOptionsINI()
 	PutINIValue(OptionFile, "binds", "Crouch key", KEY_CROUCH)
 	PutINIValue(OptionFile, "binds", "Save key", KEY_SAVE)
 	PutINIValue(OptionFile, "binds", "Console key", KEY_CONSOLE)
+	PutINIValue(OptionFile, "binds", "Stop timer key", KEY_STOP_TIMER)
 	
 End Function
 
@@ -11599,52 +11764,6 @@ End Function
 
 Function ScaledMouseY%()
 	Return Float(MouseY())*Float(GraphicHeight)/Float(RealGraphicHeight)
-End Function
-
-Function CatchErrors(location$)
-	;Local errStr$ = ErrorLog()
-	;Local errF%
-	;If Len(errStr)>0 Then
-	;	If FileType(ErrorFile)=0 Then
-	;		errF = WriteFile(ErrorFile)
-	;		WriteLine errF,"An error occured in SCP - Containment Breach!"
-	;		WriteLine errF,"Version: "+VersionNumber
-	;		WriteLine errF,"Save compatible version: "+CompatibleNumber
-	;		WriteLine errF,"Date and time: "+CurrentDate()+" at "+CurrentTime()
-	;		WriteLine errF,"Total video memory (MB): "+TotalVidMem()/1024/1024
-	;		WriteLine errF,"Available video memory (MB): "+AvailVidMem()/1024/1024
-	;		GlobalMemoryStatus m.MEMORYSTATUS
-	;		WriteLine errF,"Global memory status: "+(m\dwAvailPhys%/1024/1024)+" MB/"+(m\dwTotalPhys%/1024/1024)+" MB ("+(m\dwAvailPhys%/1024)+" KB/"+(m\dwTotalPhys%/1024)+" KB)"
-	;		WriteLine errF,"Triangles rendered: "+CurrTrisAmount
-	;		WriteLine errF,"Active textures: "+ActiveTextures()
-	;		WriteLine errF,""
-	;		WriteLine errF,"Error(s):"
-	;	Else
-	;		Local canwriteError% = True
-	;		errF = OpenFile(ErrorFile)
-	;		While (Not Eof(errF))
-	;			Local l$ = ReadLine(errF)
-	;			If Left(l,Len(location))=location
-	;				canwriteError = False
-	;				Exit
-	;			EndIf
-	;		Wend
-	;		If canwriteError
-	;			SeekFile errF,FileSize(ErrorFile)
-	;		EndIf
-	;	EndIf
-	;	If canwriteError
-	;		WriteLine errF,location+" ***************"
-	;		While Len(errStr)>0
-	;			WriteLine errF,errStr
-	;			DebugLog errStr
-	;			errStr = ErrorLog()
-	;		Wend
-	;	EndIf
-	;	Msg = "Blitz3D Error! Details in "+Chr(34)+ErrorFile+Chr(34)
-	;	MsgTimer = 20*70
-	;	CloseFile errF
-	;EndIf
 End Function
 
 Function PlayAnnouncement(file$) ;This function streams the announcement currently playing
