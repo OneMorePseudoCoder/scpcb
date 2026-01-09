@@ -7,7 +7,7 @@
 
 ;    See Credits.txt for a list of contributors
 
-Const VersionNumber$ = "1.3.12-pre4"
+Const VersionNumber$ = "1.3.12-pre5"
 Const CompatibleNumber$ = "1.3.12" ;Only change this if the version given isn't working with the current build version - ENDSHN
 
 InitErrorMsgs(10, True)
