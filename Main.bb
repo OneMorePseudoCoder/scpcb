@@ -225,6 +225,8 @@ Global mouselook_x_inc# = 0.3 ; This sets both the sensitivity and direction (+/
 Global mouselook_y_inc# = 0.3 ; This sets both the sensitivity and direction (+/-) of the mouse on the Y axis.
 Global mouse_x_speed_1#, mouse_y_speed_1#
 
+Global MoveInputCancelling% = GetINIInt(OptionFile, "options", "move input cancelling")
+
 Global KEY_RIGHT = GetINIInt(OptionFile, "binds", "Right key")
 Global KEY_LEFT = GetINIInt(OptionFile, "binds", "Left key")
 Global KEY_UP = GetINIInt(OptionFile, "binds", "Up key")
@@ -4100,6 +4102,8 @@ End Function
 
 ;--------------------------------------- player controls -------------------------------------------
 
+Global MoveX%, MoveZ%
+
 Function MovePlayer()
 	CatchErrors("Uncaught (MovePlayer)")
 	Local Sprint# = 1.0, Speed# = 0.018, i%, angle#
@@ -4189,9 +4193,16 @@ Function MovePlayer()
 		CrouchState = CurveValue(Crouch, CrouchState, 10.0)
 	EndIf
 	
-	If (Not NoClip) Then 
-		If ((KeyDown(KEY_DOWN) Xor KeyDown(KEY_UP)) Or (KeyDown(KEY_RIGHT) Xor KeyDown(KEY_LEFT)) And Playable) Or ForceMove>0 Then
-			
+	If (Not NoClip) Then
+		Local isMoving% = ForceMove>0
+		If (Not isMoving) And Playable Then
+			If MoveInputCancelling Then
+				isMoving = (KeyDown(KEY_DOWN) Xor KeyDown(KEY_UP)) Or (KeyDown(KEY_RIGHT) Xor KeyDown(KEY_LEFT))
+			Else
+				isMoving = KeyDown(KEY_DOWN) Lor KeyDown(KEY_UP) Lor KeyDown(KEY_RIGHT) Lor KeyDown(KEY_LEFT)
+			EndIf
+		EndIf
+		If isMoving Then
 			If Crouch = 0 And (KeyDown(KEY_SPRINT)) And Stamina > 0.0 And (Not IsZombie) Then
 				Sprint = 2.5
 				Stamina = Stamina - FPSfactor * 0.4 * StaminaEffect
@@ -4281,8 +4292,21 @@ Function MovePlayer()
 		
 		temp = False
 		If (Not IsZombie%)
-			Local moveZ% = KeyDown(KEY_DOWN) - KeyDown(KEY_UP)
-			Local moveX% = KeyDown(KEY_LEFT) - KeyDown(KEY_RIGHT)
+			If MoveInputCancelling Then
+				MoveZ = KeyDown(KEY_DOWN) - KeyDown(KEY_UP)
+				MoveX = KeyDown(KEY_LEFT) - KeyDown(KEY_RIGHT)
+			Else
+				If KeyHit(KEY_DOWN) MoveZ = 1
+				If KeyHit(KEY_UP) MoveZ = -1
+				If KeyHit(KEY_LEFT) MoveX = 1
+				If KeyHit(KEY_RIGHT) MoveX = -1
+				
+				If MoveZ = 1 And (Not KeyDown(KEY_DOWN)) Then MoveZ = -KeyDown(KEY_UP)
+				If MoveZ = -1 And (Not KeyDown(KEY_UP)) Then MoveZ = KeyDown(KEY_DOWN)
+				If MoveX = 1 And (Not KeyDown(KEY_LEFT)) Then MoveX = -KeyDown(KEY_RIGHT)
+				If MoveX = -1 And (Not KeyDown(KEY_RIGHT)) Then MoveX = KeyDown(KEY_LEFT)
+			EndIf
+
 			If moveZ > 0 And Playable Then
 				temp = True
 				If moveX = 0 Then angle = 180 Else angle = 135 * moveX
