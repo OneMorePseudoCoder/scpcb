@@ -3288,17 +3288,11 @@ While IsRunning
 				Color 0,0,0
 				Text((GraphicWidth / 2)+1, (GraphicHeight / 2) + 201, Msg, True, False)
 				Color messageOpacity, messageOpacity, messageOpacity
-				If Left(Msg,14)="Blitz3D Error!" Then
-					Color 255,0,0
-				EndIf
 				Text((GraphicWidth / 2), (GraphicHeight / 2) + 200, Msg, True, False)
 			Else
 				Color 0,0,0
 				Text((GraphicWidth / 2)+1, (GraphicHeight * 0.94) + 1, Msg, True, False)
 				Color messageOpacity, messageOpacity, messageOpacity
-				If Left(Msg,14)="Blitz3D Error!" Then
-					Color 255,0,0
-				EndIf
 				Text((GraphicWidth / 2), (GraphicHeight * 0.94), Msg, True, False)
 			EndIf
 			MsgTimer=MsgTimer-FPSfactor2 
@@ -6906,12 +6900,11 @@ Function DrawGUI()
 								For i = 1 To Ceil(SelectedItem\state / 10.0)
 									DrawImage NavImages(4),xtemp+i*8-6,ytemp+4
 								Next
-								
-								SetFont Font3
+							EndIf
 						EndIf
-						EndIf
-						
 					EndIf
+
+					SetFont Font1
 					;[End Block]
 				;new Items in SCP:CB 1.3
 				Case "scp1499","super1499"
