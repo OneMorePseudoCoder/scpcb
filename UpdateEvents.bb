@@ -9946,11 +9946,15 @@ Function UpdateEndings()
 											obj = CopyEntity(e\room\Objects[12])
 											PositionEntity obj, EntityX(e\room\obj,True)-4160*RoomScale, EntityY(e\room\Objects[11],True), EntityZ(e\room\obj,True)-1920*RoomScale
 											EntityParent obj,e\room\Objects[17]
-											
+
 											obj = CopyEntity(e\room\Objects[12])
 											PositionEntity obj, EntityX(e\room\obj,True)-4064*RoomScale, EntityY(e\room\Objects[11],True), EntityZ(e\room\obj,True)-2112*RoomScale
 											EntityParent obj,e\room\Objects[17]
-											
+
+											; Super bandaid fix where we turn the walls that close in on the player into balls (for what the collision is concerned).
+											EntityType e\room\Objects[13],HIT_PLAYER
+											EntityType e\room\Objects[14],HIT_PLAYER
+
 											e\SoundCHN = PlaySound2(LoadTempSound("SFX\Ending\GateA\Bell1.ogg"), Camera, e\room\Objects[12])
 											
 											p.Particles = CreateParticle(EntityX(e\room\Objects[11],True),EntityY(Camera,True), EntityZ(e\room\Objects[11],True), 4, 8.0, 0, 50)
