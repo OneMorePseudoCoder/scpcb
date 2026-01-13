@@ -606,6 +606,8 @@ Function LoadGame(file$)
 	
 	MapWidth = ReadInt(f)
 	MapHeight = ReadInt(f)
+	Dim MapTemp%(MapWidth+1, MapHeight+1)
+	Dim MapFound%(MapWidth+1, MapHeight+1)
 	For x = 0 To MapWidth 
 		For y = 0 To MapHeight
 			MapTemp( x, y) = ReadInt(f)

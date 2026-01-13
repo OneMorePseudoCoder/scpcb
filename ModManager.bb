@@ -248,3 +248,22 @@ Function GetWorkshopErrorCodeStr$(err%)
         Return "Code " + Str(err)
     EndIf
 End Function
+
+Function GetModdedINIString$(file$, section$, key$)
+    For m.ActiveMods = Each ActiveMods
+        Local moddedPath$ = m\Path + file
+        If FileType(moddedPath) = 1
+            Local ret$ = GetINIString(moddedPath, section, key)
+            If ret <> "" Then Return ret
+        EndIf
+    Next
+    Return GetINIString(file, section, key)
+End Function
+
+Function GetModdedINIInt%(file$, section$, key$)
+    Return Int(GetModdedINIString(file, section, key))
+End Function
+
+Function GetModdedINIFloat#(file$, section$, key$)
+    Return Float(GetModdedINIString(file, section, key))
+End Function

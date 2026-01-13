@@ -1705,11 +1705,12 @@ Function InitRoomTemplates()
 
 End Function
 
+Const MapOptions$ = "Data\map.ini"
 Const RoomScale# = 8.0 / 2048.0
 Const ZONEAMOUNT = 3
-Global MapWidth% = GetINIInt("options.ini", "options", "map width"), MapHeight% = GetINIInt("options.ini", "options", "map height")
-Dim MapTemp%(MapWidth+1, MapHeight+1)
-Dim MapFound%(MapWidth+1, MapHeight+1)
+Global MapWidth%, MapHeight%
+Dim MapTemp%(0,0)
+Dim MapFound%(0,0)
 
 Global RoomAmbience%[20]
 
@@ -5994,9 +5995,6 @@ Function RemoveWaypoint(w.WayPoints)
 End Function
 
 
-Dim MapF(MapWidth+1, MapHeight+1), MapG(MapWidth+1, MapHeight+1), MapH(MapWidth+1, MapHeight+1)
-Dim MapState(MapWidth+1, MapHeight+1)
-Dim MapParent(MapWidth+1, MapHeight+1, 2)
 Function FindPath(n.NPCs, x#, y#, z#)
 	
 	DebugLog "findpath: "+n\NPCtype
@@ -6273,7 +6271,7 @@ Function UpdateScreens()
 	
 End Function
 
-Dim MapName$(MapWidth, MapHeight)
+Dim MapName$(0, 0)
 Dim MapRoomID%(ROOM4 + 1)
 Dim MapRoom$(ROOM4 + 1, 0)
 
@@ -7043,6 +7041,11 @@ Function CreateMap()
 	
 	SeedRnd GetRandomSeed()
 	
+	MapWidth% = GetModdedINIInt(MapOptions, "facility", "width")
+	MapHeight% = GetModdedINIInt(MapOptions, "facility", "height")
+	
+	Dim MapTemp%(MapWidth+1, MapHeight+1)
+	Dim MapFound%(MapWidth+1, MapHeight+1)
 	Dim MapName$(MapWidth, MapHeight)
 	
 	Dim MapRoomID%(ROOM4 + 1)
@@ -7153,10 +7156,11 @@ Function CreateMap()
 	
 	Local y_min%, y_max%, x_min%, x_max%
 	
+	Local forceRoom1 = GetModdedINIInt(MapOptions, "facility", "force room1")
+
 	;force more room1s (if needed)
 	For i = 0 To 2
-		;need more rooms if there are less than 5 of them
-		temp = -Room1Amount[i]+5
+		temp = -Room1Amount[i]+forceRoom1
 		
 		If temp > 0 Then
 			
@@ -7220,6 +7224,9 @@ Function CreateMap()
 		EndIf
 	Next
 	
+	Local forceRoom4 = GetModdedINIInt(MapOptions, "facility", "force room4")
+	Local forceRoom2c = GetModdedINIInt(MapOptions, "facility", "force room2c")
+
 	;force more room4s and room2Cs
 	For i = 0 To 2
 		
@@ -7228,50 +7235,56 @@ Function CreateMap()
 		x_min = 1
 		x_max = MapWidth - 2
 		
-		If Room4Amount[i]<1 Then ;we want at least 1 ROOM4
+		temp = -Room4Amount[i]+forceRoom4
+
+		If temp > 0 Then
 			DebugLog "forcing a ROOM4 into zone "+i
 			temp=0
 			
 			For y = y_min To y_max
 				For x = x_min To x_max
 					If MapTemp(x,y)=3 Then
-						Select 0 ;see if adding a ROOM1 is possible
+						placed=False
+						Select 0 ;see if adding a ROOM4 is possible
 							Case (MapTemp(x+1,y) Or MapTemp(x+1,y+1) Or MapTemp(x+1,y-1) Or MapTemp(x+2,y) Or x=x_max)
 								MapTemp(x+1,y)=1
-								temp=1
+								placed=True
 							Case (MapTemp(x-1,y) Or MapTemp(x-1,y+1) Or MapTemp(x-1,y-1) Or MapTemp(x-2,y) Or x=x_min)
 								MapTemp(x-1,y)=1
-								temp=1
+								placed=True
 							Case (MapTemp(x,y+1) Or MapTemp(x+1,y+1) Or MapTemp(x-1,y+1) Or MapTemp(x,y+2) Or (i=0 And y=y_max))
 								MapTemp(x,y+1)=1
-								temp=1
+								placed=True
 							Case (MapTemp(x,y-1) Or MapTemp(x+1,y-1) Or MapTemp(x-1,y-1) Or MapTemp(x,y-2) Or (i<2 And y=y_min))
 								MapTemp(x,y-1)=1
-								temp=1
+								placed=True
 						End Select
-						If temp=1 Then
+						If placed Then
 							MapTemp(x,y)=4 ;turn this room into a ROOM4
 							DebugLog "ROOM4 forced into slot ("+x+", "+y+")"
 							Room4Amount[i]=Room4Amount[i]+1
 							Room3Amount[i]=Room3Amount[i]-1
 							Room1Amount[i]=Room1Amount[i]+1
+							temp = temp - 1
 						EndIf
 					EndIf
-					If temp=1 Then Exit
+					If temp=0 Then Exit
 				Next
-				If temp=1 Then Exit
+				If temp=0 Then Exit
 			Next
 			
-			If temp=0 Then DebugLog "Couldn't place ROOM4 in zone "+i
+			If temp>0 Then DebugLog "Couldn't place all ROOM4s in zone "+i
 		EndIf
 		
-		If Room2CAmount[i]<1 Then ;we want at least 1 ROOM2C
+		temp = -Room2CAmount[i]+forceRoom2c
+
+		If temp>0 Then
 			DebugLog "forcing a ROOM2C into zone "+i
-			temp=0
-			
+
 			For y = y_max To y_min Step -1
 				For x = x_min To x_max
 					If MapTemp(x,y)=1 Then
+						placed=False
 						Select True ;see if adding some rooms is possible
 							Case MapTemp(x-1,y)>0
 								If (MapTemp(x+1,y-1)+MapTemp(x+1,y+1)+MapTemp(x+2,y))=0 And x<x_max Then
@@ -7280,13 +7293,13 @@ Function CreateMap()
 										MapTemp(x+1,y)=2
 										DebugLog "ROOM2C forced into slot ("+(x+1)+", "+(y)+")"
 										MapTemp(x+1,y-1)=1
-										temp=1
+										placed=True
 									Else If (MapTemp(x+1,y+2)+MapTemp(x+2,y+1))=0 And (y<y_max Or i>0) Then
 										MapTemp(x,y)=2
 										MapTemp(x+1,y)=2
 										DebugLog "ROOM2C forced into slot ("+(x+1)+", "+(y)+")"
 										MapTemp(x+1,y+1)=1
-										temp=1
+										placed=True
 									EndIf
 								EndIf
 							Case MapTemp(x+1,y)>0
@@ -7296,13 +7309,13 @@ Function CreateMap()
 										MapTemp(x-1,y)=2
 										DebugLog "ROOM2C forced into slot ("+(x-1)+", "+(y)+")"
 										MapTemp(x-1,y-1)=1
-										temp=1
+										placed=True
 									Else If (x-2<0 Lor MapTemp(x-2,y+1)=0) And MapTemp(x-1,y+2)=0 And (y<y_max Or i>0) Then
 										MapTemp(x,y)=2
 										MapTemp(x-1,y)=2
 										DebugLog "ROOM2C forced into slot ("+(x-1)+", "+(y)+")"
 										MapTemp(x-1,y+1)=1
-										temp=1
+										placed=True
 									EndIf
 								EndIf
 							Case MapTemp(x,y-1)>0
@@ -7312,13 +7325,13 @@ Function CreateMap()
 										MapTemp(x,y+1)=2
 										DebugLog "ROOM2C forced into slot ("+(x)+", "+(y+1)+")"
 										MapTemp(x-1,y+1)=1
-										temp=1
+										placed=True
 									Else If (MapTemp(x+2,y+1)+MapTemp(x+1,y+2))=0 And x<x_max Then
 										MapTemp(x,y)=2
 										MapTemp(x,y+1)=2
 										DebugLog "ROOM2C forced into slot ("+(x)+", "+(y+1)+")"
 										MapTemp(x+1,y+1)=1
-										temp=1
+										placed=True
 									EndIf
 								EndIf
 							Case MapTemp(x,y+1)>0
@@ -7328,27 +7341,28 @@ Function CreateMap()
 										MapTemp(x,y-1)=2
 										DebugLog "ROOM2C forced into slot ("+(x)+", "+(y-1)+")"
 										MapTemp(x-1,y-1)=1
-										temp=1
+										placed=True
 									Else If (MapTemp(x+2,y-1)+MapTemp(x+1,y-2))=0 And x<x_max Then
 										MapTemp(x,y)=2
 										MapTemp(x,y-1)=2
 										DebugLog "ROOM2C forced into slot ("+(x)+", "+(y-1)+")"
 										MapTemp(x+1,y-1)=1
-										temp=1
+										placed=True
 									EndIf
 								EndIf
 						End Select
-						If temp=1 Then
+						If placed Then
 							Room2CAmount[i]=Room2CAmount[i]+1
 							Room2Amount[i]=Room2Amount[i]+1
+							temp = temp - 1
 						EndIf
 					EndIf
-					If temp=1 Then Exit
+					If temp=0 Then Exit
 				Next
-				If temp=1 Then Exit
+				If temp=0 Then Exit
 			Next
 			
-			If temp=0 Then DebugLog "Couldn't place ROOM2C in zone "+i
+			If temp>0 Then DebugLog "Couldn't place all ROOM2C in zone "+i
 		EndIf
 		
 	Next
