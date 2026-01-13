@@ -1502,7 +1502,7 @@ Type RoomTemplates
 	Field obj%, id%
 	Field objPath$
 	
-	Field zone%[5]
+	Field zone%[ZONEAMOUNT]
 	
 	;Field ambience%
 	
@@ -1512,7 +1512,7 @@ Type RoomTemplates
 	
 	Field Shape%, Name$
 	Field Commonness%, Large%
-	Field SetRoom#
+	Field SetRoom#, SetRoomPriority%
 	Field DisableDecals%
 	
 	Field TempTriggerboxAmount
@@ -1527,7 +1527,7 @@ Type RoomTemplates
 	
 	Field UseLightCones%
 	
-	Field DisableOverlapCheck% = True
+	Field DisableOverlapCheck%
 	
 	Field MinX#, MinY#, MinZ#
 	Field MaxX#, MaxY#, MaxZ#
@@ -1588,7 +1588,7 @@ Function LoadRoomTemplates(file$)
 			Local key$ = Lower(Trim(Left(l, splitterPos - 1)))
 			Local value$ = Trim(Right(l, Len(l) - splitterPos))
 			Select key
-				Case "mesh path" rt\objPath = value
+				Case "mesh path", "meshpath" rt\objPath = value
 				Case "shape"
 					Select Lower(value)
 						Case "room1", "1" rt\Shape = ROOM1
@@ -1597,13 +1597,14 @@ Function LoadRoomTemplates(file$)
 						Case "room3", "3" rt\Shape = ROOM3
 						Case "room4", "4" rt\Shape = ROOM4
 					End Select
-				Case "zone1", "zone2", "zone3", "zone4", "zone5" rt\zone[Int(Right(key, 1))-1] = Int(value)
+				Case "zone1", "zone2", "zone3" rt\zone[Int(Right(key, 1))-1] = Int(value)
 				Case "commonness" rt\Commonness = Max(Min(Int(value), 100), 0)
 				Case "large" rt\Large = ParseINIInt(value)
-				Case "set room" rt\SetRoom = Float(value)
-				Case "disabledecals" rt\DisableDecals = ParseINIInt(value)
-				Case "usevolumelighting" rt\UseLightCones = ParseINIInt(value)
-				Case "disableoverlapcheck" rt\DisableDecals = ParseINIInt(value)
+				Case "set room", "setroom" rt\SetRoom = Float(value)
+				Case "set room priority", "setroompriority" rt\SetRoomPriority = Int(value)
+				Case "disable decals", "disabledecals" rt\DisableDecals = ParseINIInt(value)
+				Case "use volume lighting", "usevolumelighting" rt\UseLightCones = ParseINIInt(value)
+				Case "disable overlap check", "disableoverlapcheck" rt\DisableOverlapCheck = ParseINIInt(value)
 			End Select
 		EndIf
 	Wend
@@ -1662,6 +1663,8 @@ Const ROOMS_DATA_PATH$ = "Data\rooms.ini"
 InitRoomTemplates()
 
 Function InitRoomTemplates()
+	Delete Each RoomTemplates
+
 	Local modRooms$
 	Local hasOverride%
 	Local lowest.ActiveMods = Last ActiveMods
@@ -1682,9 +1685,27 @@ Function InitRoomTemplates()
 		EndIf
 		lowest = Before lowest
 	Wend
+
+	Local sorted%
+	Repeat
+		Sorted = True
+		For rt.RoomTemplates = Each RoomTemplates
+			Local rtt.RoomTemplates = After rt
+			While rtt <> Null And rtt\SetRoomPriority > rt\SetRoomPriority
+			sorted = False
+				Insert rtt Before rt
+				rtt = After rt
+			Wend
+		Next
+	Until sorted
+
+	For rt.RoomTemplates = Each RoomTemplates
+		DebugLog(rt\Name + "  " + rt\SetRoomPriority + " " + rt\SetRoom)
+	Next
+
 End Function
 
-Global RoomScale# = 8.0 / 2048.0
+Const RoomScale# = 8.0 / 2048.0
 Const ZONEAMOUNT = 3
 Global MapWidth% = GetINIInt("options.ini", "options", "map width"), MapHeight% = GetINIInt("options.ini", "options", "map height")
 Dim MapTemp%(MapWidth+1, MapHeight+1)
@@ -1995,8 +2016,8 @@ Function CreateRoom.Rooms(zone%, roomshape%, x#, y#, z#, angle%, name$)
 	Local temp% = 0
 	For rt.RoomTemplates = Each RoomTemplates
 		
-		For i = 0 To 4
-			If rt\zone[i]=zone Then 
+		For i = 1 To ZONEAMOUNT
+			If rt\zone[i-1]=zone Then 
 				If rt\Shape = roomshape Then temp=temp+rt\Commonness : Exit
 			EndIf
 		Next
@@ -2006,8 +2027,8 @@ Function CreateRoom.Rooms(zone%, roomshape%, x#, y#, z#, angle%, name$)
 	Local RandomRoom% = Rand(temp)
 	temp = 0
 	For rt.RoomTemplates = Each RoomTemplates
-		For i = 0 To 4
-			If rt\zone[i]=zone And rt\Shape = roomshape Then
+		For i = 1 To ZONEAMOUNT
+			If rt\zone[i-1]=zone And rt\Shape = roomshape Then
 				temp=temp+rt\Commonness
 				If RandomRoom > temp - rt\Commonness And RandomRoom <= temp Then
 					r\RoomTemplate = rt
@@ -7364,44 +7385,14 @@ Function CreateMap()
 			EndIf
 		Next
 	Next
-
-	;zone 1 --------------------------------------------------------------------------------------------------
 	
 	MapRoom(ROOM1, 0) = "start"	
-
-	MapRoom(ROOM2, 0) = "room2closets"
-	MapRoom(ROOM2C, 0) = "lockroom"
-	MapRoom(ROOM2C, Floor(0.5*Float(Room2CAmount[0]))) = "room1162"
-	
-	MapRoom(ROOM3, Floor(Rnd(0.2,0.8)*Float(Room3Amount[0]))) = "room3storage"
-
-	MapRoom(ROOM4, Floor(0.3*Float(Room4Amount[0]))) = "room4info"
-	
-	;zone 2 --------------------------------------------------------------------------------------------------
-
-	MapRoom(ROOM2, Room2Amount[0]+Floor(0.1*Float(Room2Amount[1]))) = "room2nuke"
-	MapRoom(ROOM2C, Room2CAmount[0]+Floor(0.5*Float(Room2CAmount[1]))) = "room2cpit"
-
-	MapRoom(ROOM3, Room3Amount[0]+Floor(0.3*Float(Room3Amount[1]))) = "room513"
-	MapRoom(ROOM3, Room3Amount[0]+Floor(0.6*Float(Room3Amount[1]))) = "room966"
-	
-	;zone 3  --------------------------------------------------------------------------------------------------
 	
 	MapRoom(ROOM1, MaxPositions(ROOM1, 3)-1) = "exit1"
 	MapRoom(ROOM1, MaxPositions(ROOM1, 3)) = "gateaentrance"
-	MapRoom(ROOM1, MinPositions(ROOM1, 3)) = "room1lifts"
-	
-	MapRoom(ROOM2, MinPositions(ROOM2, 3)+Floor(0.1*Float(Room2Amount[2]))) = "room2poffices"
-	MapRoom(ROOM2C, Room2CAmount[0]+Room2CAmount[1]) = "room2ccont"	
-	MapRoom(ROOM2C, Room2CAmount[0]+Room2CAmount[1]+1) = "lockroom2"		
-	
-	MapRoom(ROOM3, Room3Amount[0]+Room3Amount[1]+Floor(0.3*Float(Room3Amount[2]))) = "room3servers"
-	MapRoom(ROOM3, Room3Amount[0]+Room3Amount[1]+Floor(0.7*Float(Room3Amount[2]))) = "room3servers2"
-	;MapRoom(ROOM3, Room3Amount[0]+Room3Amount[1]) = "room3gw"
-	MapRoom(ROOM3, Room3Amount[0]+Room3Amount[1]+Floor(0.5*Float(Room3Amount[2]))) = "room3offices"
 	
 	For rt.RoomTemplates = Each RoomTemplates
-		If rt\SetRoom <> -1 Then
+		If rt\SetRoom >= 0 Then
 			Local start% = MinPositions(rt\Shape, rt\zone[0])
 			SetRoom(rt\Name, rt\Shape, start+Floor(rt\SetRoom*Float(RoomAmounts(rt\Shape, rt\zone[0]))),start,MaxPositions(rt\Shape, rt\zone[0]))
 		EndIf

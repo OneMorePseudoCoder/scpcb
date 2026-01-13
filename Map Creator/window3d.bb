@@ -82,7 +82,7 @@ LoadMaterials("..\Data\materials.ini")
 ;Next
 ;SeedRnd Abs(Int(strtemp))
 
-Global RoomScale# = 8.0 / 2048.0
+Const RoomScale# = 8.0 / 2048.0
 Const ZONEAMOUNT = 3
 Global MapWidth% = GetINIInt("..\options.ini", "options", "map width"), MapHeight% = GetINIInt("..\options.ini", "options", "map height")
 Dim MapTemp%(MapWidth+1, MapHeight+1)
@@ -602,7 +602,7 @@ Type RoomTemplates
 	Field obj%, id%
 	Field objPath$
 	
-	Field zone%[5]
+	Field zone%[ZONEAMOUNT]
 	
 	Field Shape%, Name$
 	Field Commonness%, Large%
@@ -652,8 +652,8 @@ Function LoadRoomTemplates(file$)
 				Default
 			End Select
 			
-			For i = 0 To 4
-				rt\zone[i]= GetINIInt(file, TemporaryString, "zone"+(i+1))
+			For i = 1 To ZONEAMOUNT
+				rt\zone[i-1]= GetINIInt(file, TemporaryString, "zone"+(i+1))
 			Next
 			
 			rt\Commonness = Max(Min(GetINIInt(file, TemporaryString, "commonness"), 100), 0)
