@@ -8677,6 +8677,7 @@ Function InitNewGame()
 	BlurTimer = 100
 	Stamina = 100
 	
+	Playable = False
 	For i% = 0 To 70
 		FPSfactor = 1.0
 		FlushKeys()
@@ -8689,6 +8690,7 @@ Function InitNewGame()
 			DrawLoading(80+Int(Float(i)*0.27))
 		EndIf
 	Next
+	Playable = True
 	
 	FreeTextureCache
 	DrawLoading(100)
