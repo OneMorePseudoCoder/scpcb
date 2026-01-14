@@ -403,7 +403,7 @@ End Function
 Function LoadFont_Strict(file$, height)
 	File = DetermineModdedPath(File)
 	If FileType(file$)<>1 Then RuntimeErrorExt "Font " + file$ + " not found."
-	tmp = LoadFont(file, height, bold, italic, underline)  
+	tmp = LoadFont(file, height)
 	If tmp = 0 Then RuntimeErrorExt "Failed to load Font: " + file$ 
 	Return tmp
 End Function

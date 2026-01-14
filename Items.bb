@@ -79,11 +79,13 @@ Function CreateItemTemplate.ItemTemplates(name$, tempname$, objpath$, invimgpath
 	If it\invimg=0 Then
 		it\invimg = LoadImage_Strict(invimgpath)
 		it\invimgpath = invimgpath
+		ScaleImage(it\invimg, HUDScale, HUDScale)
 	EndIf
 	
 	If (invimgpath2 <> "") Then
 		If it\invimg2=0 Then
 			it\invimg2 = LoadImage_Strict(invimgpath2)
+			ScaleImage(it\invimg2, HUDScale, HUDScale)
 		EndIf
 	Else
 		it\invimg2 = 0

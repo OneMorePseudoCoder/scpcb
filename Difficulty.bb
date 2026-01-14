@@ -69,7 +69,7 @@ difficulties(CUSTOM)\r = 255
 difficulties(CUSTOM)\g = 255
 difficulties(CUSTOM)\b = 255
 
-SelectedDifficulty = difficulties(EUCLID)
+SelectedDifficulty = difficulties(SAFE)
 ;~IDEal Editor Parameters:
 ;~F#0
 ;~C#Blitz3D

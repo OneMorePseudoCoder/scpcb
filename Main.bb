@@ -7,7 +7,7 @@
 
 ;    See Credits.txt for a list of contributors
 
-Const VersionNumber$ = "1.3.12-pre5"
+Const VersionNumber$ = "1.3.12-pre6"
 Const CompatibleNumber$ = "1.3.12" ;Only change this if the version given isn't working with the current build version - ENDSHN
 
 InitErrorMsgs(10, True)
@@ -112,17 +112,10 @@ Global SFXVolume# = GetINIFloat(OptionFile, "audio", "sound volume")
 If LauncherEnabled And (Not IsRestart) Then
 	AspectRatioRatio = 1.0
 	UpdateLauncher()
-Else If Fullscreen
-	Local TotalGfxModes% = CountGfxModes3D()
-	Local samefound% = False
-	For i% = 1 To TotalGfxModes
-		If GraphicWidth = GfxModeWidth(i) And GraphicHeight = GfxModeHeight(i) Then samefound = True : Exit
-	Next
-	If Not samefound Then
-		; Exclusive fullscreen ONLY supports the reported resolutions
-		AspectRatioRatio = 1.0
-		UpdateLauncher()
-	End If
+Else If Fullscreen And (Not GfxModeExists(GraphicWidth, GraphicHeight, 16*Bit16Mode)) Then
+	; Exclusive fullscreen ONLY supports the reported resolutions
+	AspectRatioRatio = 1.0
+	UpdateLauncher()
 EndIf
 SetGfxDriver(SelectedGFXDriver)
 Global GFXDriverName$ = GFXDriverName(SelectedGFXDriver)
@@ -149,7 +142,8 @@ Else
 	End If
 EndIf
 
-Global MenuScale# = (GraphicHeight / 1024.0)
+Global MenuScale# = (Min(GraphicWidth, GraphicHeight) / 1024.0)
+Global HUDScale# = Max(MenuScale, 1)
 
 SetBuffer(BackBuffer())
 
@@ -196,19 +190,20 @@ InitLoadingScreens()
 ;don't match their "internal name" (i.e. their display name in applications
 ;like Word and such). As a workaround, I moved the files and renamed them so they
 ;can load without FastText.
-Font1% = LoadFont_Strict("GFX\font\cour\Courier New.ttf", Int(19 * (GraphicHeight / 1024.0)))
-Font2% = LoadFont_Strict("GFX\font\cour\Courier New.ttf", Int(52 * (GraphicHeight / 1024.0)))
-Font3% = LoadFont_Strict("GFX\font\DS-DIGI\DS-Digital.ttf", Int(22 * (GraphicHeight / 1024.0)))
-Font4% = LoadFont_Strict("GFX\font\DS-DIGI\DS-Digital.ttf", Int(60 * (GraphicHeight / 1024.0)))
-Font5% = LoadFont_Strict("GFX\font\Journal\Journal.ttf", Int(58 * (GraphicHeight / 1024.0)))
+Font1% = LoadFont_Strict("GFX\font\cour\Courier New.ttf", Int(19 * MenuScale))
+Font2% = LoadFont_Strict("GFX\font\cour\Courier New.ttf", Int(52 * MenuScale))
+Font3% = LoadFont_Strict("GFX\font\DS-DIGI\DS-Digital.ttf", Int(22 * MenuScale))
+Font4% = LoadFont_Strict("GFX\font\DS-DIGI\DS-Digital.ttf", Int(60 * MenuScale))
+Font5% = LoadFont_Strict("GFX\font\Journal\Journal.ttf", Int(58 * MenuScale))
 
 Global CreditsFont%,CreditsFont2%
 
-ConsoleFont% = LoadFont_Strict("GFX\font\cour\Courier New.ttf", Int(20 * (GraphicHeight / 1024.0)))
+ConsoleFont% = LoadFont_Strict("GFX\font\cour\Courier New.ttf", Int(20 * MenuScale))
 
 SetFont Font2
 
 Global BlinkMeterIMG% = LoadImage_Strict("GFX\blinkmeter.jpg")
+ScaleImage(BlinkMeterIMG, HUDScale, HUDScale)
 
 DrawLoading(0, True)
 
@@ -219,6 +214,8 @@ Global viewport_center_x% = RealGraphicWidth / 2, viewport_center_y% = RealGraph
 Global mouselook_x_inc# = 0.3 ; This sets both the sensitivity and direction (+/-) of the mouse on the X axis.
 Global mouselook_y_inc# = 0.3 ; This sets both the sensitivity and direction (+/-) of the mouse on the Y axis.
 Global mouse_x_speed_1#, mouse_y_speed_1#
+
+Global MoveInputCancelling% = GetINIInt(OptionFile, "options", "move input cancelling")
 
 Global KEY_RIGHT = GetINIInt(OptionFile, "binds", "Right key")
 Global KEY_LEFT = GetINIInt(OptionFile, "binds", "Left key")
@@ -231,7 +228,6 @@ Global KEY_INV = GetINIInt(OptionFile, "binds", "Inventory key")
 Global KEY_CROUCH = GetINIInt(OptionFile, "binds", "Crouch key")
 Global KEY_SAVE = GetINIInt(OptionFile, "binds", "Save key")
 Global KEY_CONSOLE = GetINIInt(OptionFile, "binds", "Console key")
-Global KEY_STOP_TIMER = GetINIInt(OptionFile, "binds", "Stop timer key")
 
 Global MouseSmooth# = GetINIFloat(OptionFile,"options", "mouse smoothing", 1.0)
 
@@ -910,6 +906,10 @@ Function UpdateConsole()
 						CreateConsoleMsg(itt\name + " spawned.")
 						it.Items = CreateItem(itt\name, itt\tempname, EntityX(Collider), EntityY(Camera,True), EntityZ(Collider))
 						EntityType(it\collider, HIT_ITEM)
+
+						If itt\name = "S-NAV Navigator Ultimate" Lor itt\tempname = "fineradio" Then
+							it\state = 101
+						EndIf
 					End If
 					;[End Block]
 				Case "itemlist", "items"
@@ -1079,6 +1079,7 @@ Function UpdateConsole()
 					NoClip = 0
 					
 					ShowEntity Collider
+					TranslateEntity Collider, 0, 0.5, 0
 					
 					KillTimer = 0
 					KillAnim = 0
@@ -1571,9 +1572,9 @@ Global HUDenabled% = GetINIInt("options.ini", "options", "HUD enabled")
 
 Global Camera%, CameraShake#, CurrCameraZoom#
 
-Global Brightness% = GetINIFloat("options.ini", "options", "brightness")
-Global CameraFogNear# = GetINIFloat("options.ini", "options", "camera fog near")
-Global CameraFogFar# = GetINIFloat("options.ini", "options", "camera fog far")
+Global Brightness% = GetModdedINIFloat(MapOptions, "facility", "brightness")
+Global CameraFogNear# = GetModdedINIFloat(MapOptions, "facility", "camera fog near")
+Global CameraFogFar# = GetModdedINIFloat(MapOptions, "facility", "camera fog far")
 
 Global StoredCameraFogFar# = CameraFogFar
 
@@ -2366,14 +2367,16 @@ Function UseDoor(d.Doors, showmsg%=True, playsfx%=True)
                     EndIf
 					MsgTimer = 70 * 5
 				Else
-					Local now% = MilliSecs()
-					If now - ElevatorButtonLastPressMillis > 200 Then
-						ElevatorButtonSpamCount = Max(0, ElevatorButtonSpamCount - (now - ElevatorButtonLastPressMillis) / 200)
-					Else
-						ElevatorButtonSpamCount = ElevatorButtonSpamCount + 1
-						If ElevatorButtonSpamCount >= 30 Then api_MessageBox(api_GetActiveWindow(), "Memory Access Violation!" + Chr(10) + "The program attempted to read or write to a protected memory address.", "I warned you!", 0)
+					If d\IsElevatorDoor <> 3 Then
+						Local now% = MilliSecs()
+						If now - ElevatorButtonLastPressMillis > 200 Then
+							ElevatorButtonSpamCount = Max(0, ElevatorButtonSpamCount - (now - ElevatorButtonLastPressMillis) / 200)
+						Else
+							ElevatorButtonSpamCount = ElevatorButtonSpamCount + 1
+							If ElevatorButtonSpamCount >= 30 Then api_MessageBox(api_GetActiveWindow(), "Memory Access Violation!" + Chr(10) + "The program attempted to read or write to a protected memory address.", "I warned you!", 0)
+						EndIf
+						ElevatorButtonLastPressMillis = now
 					EndIf
-					ElevatorButtonLastPressMillis = now
 
 					If d\IsElevatorDoor = 1 Then
 						Msg = "You called the elevator."
@@ -2842,8 +2845,6 @@ While IsRunning
 	FPSfactor = Min(ElapsedTime / 1000.0 * 70, 5.0)
 	FPSfactor2 = FPSfactor
 
-	If KeyHit(KEY_STOP_TIMER) Then TimerStopped = True
-	
 	If IsPaused() Then FPSfactor = 0
 	
 	If Framelimit > 0 Then
@@ -3291,17 +3292,11 @@ While IsRunning
 				Color 0,0,0
 				Text((GraphicWidth / 2)+1, (GraphicHeight / 2) + 201, Msg, True, False)
 				Color messageOpacity, messageOpacity, messageOpacity
-				If Left(Msg,14)="Blitz3D Error!" Then
-					Color 255,0,0
-				EndIf
 				Text((GraphicWidth / 2), (GraphicHeight / 2) + 200, Msg, True, False)
 			Else
 				Color 0,0,0
 				Text((GraphicWidth / 2)+1, (GraphicHeight * 0.94) + 1, Msg, True, False)
 				Color messageOpacity, messageOpacity, messageOpacity
-				If Left(Msg,14)="Blitz3D Error!" Then
-					Color 255,0,0
-				EndIf
 				Text((GraphicWidth / 2), (GraphicHeight * 0.94), Msg, True, False)
 			EndIf
 			MsgTimer=MsgTimer-FPSfactor2 
@@ -4053,6 +4048,8 @@ End Function
 
 ;--------------------------------------- player controls -------------------------------------------
 
+Global MoveX%, MoveZ%
+
 Function MovePlayer()
 	CatchErrors("Uncaught (MovePlayer)")
 	Local Sprint# = 1.0, Speed# = 0.018, i%, angle#
@@ -4142,9 +4139,8 @@ Function MovePlayer()
 		CrouchState = CurveValue(Crouch, CrouchState, 10.0)
 	EndIf
 	
-	If (Not NoClip) Then 
-		If ((KeyDown(KEY_DOWN) Xor KeyDown(KEY_UP)) Or (KeyDown(KEY_RIGHT) Xor KeyDown(KEY_LEFT)) And Playable) Or ForceMove>0 Then
-			
+	If (Not NoClip) Then
+		If ForceMove > 0 Lor Playable And (MoveX <> 0 Lor MoveZ <> 0) Then
 			If Crouch = 0 And (KeyDown(KEY_SPRINT)) And Stamina > 0.0 And (Not IsZombie) Then
 				Sprint = 2.5
 				Stamina = Stamina - FPSfactor * 0.4 * StaminaEffect
@@ -4234,8 +4230,35 @@ Function MovePlayer()
 		
 		temp = False
 		If (Not IsZombie%)
-			Local moveZ% = KeyDown(KEY_DOWN) - KeyDown(KEY_UP)
-			Local moveX% = KeyDown(KEY_LEFT) - KeyDown(KEY_RIGHT)
+			If MoveInputCancelling Then
+				MoveZ = KeyDown(KEY_DOWN) - KeyDown(KEY_UP)
+				MoveX = KeyDown(KEY_LEFT) - KeyDown(KEY_RIGHT)
+			Else
+				If KeyHit(KEY_DOWN) Then
+					MoveZ = 1
+				Else If KeyHit(KEY_UP)
+					MoveZ = -1
+				Else If MoveZ = 1 And (Not KeyDown(KEY_DOWN)) Then
+					MoveZ = -KeyDown(KEY_UP)
+				Else If MoveZ = -1 And (Not KeyDown(KEY_UP)) Then
+					MoveZ = KeyDown(KEY_DOWN)
+				Else If MoveZ = 0 Then
+					MoveZ = KeyDown(KEY_DOWN) - KeyDown(KEY_UP)
+				EndIf
+
+				If KeyHit(KEY_LEFT) Then
+					MoveX = 1
+				Else If KeyHit(KEY_RIGHT)
+					MoveX = -1
+				Else If MoveX = 1 And (Not KeyDown(KEY_LEFT)) Then
+					MoveX = -KeyDown(KEY_RIGHT)
+				Else If MoveX = -1 And (Not KeyDown(KEY_RIGHT)) Then
+					MoveX = KeyDown(KEY_LEFT)
+				Else If MoveX = 0 Then
+					MoveX = KeyDown(KEY_LEFT) - KeyDown(KEY_RIGHT)
+				EndIf
+			EndIf
+
 			If moveZ > 0 And Playable Then
 				temp = True
 				If moveX = 0 Then angle = 180 Else angle = 135 * moveX
@@ -4694,7 +4717,7 @@ Function DrawGUI()
 		
 		FreeEntity (temp)
 		
-		DrawImage(HandIcon, GraphicWidth / 2 + Sin(yawvalue) * (GraphicWidth / 3) - 32, GraphicHeight / 2 - Sin(pitchvalue) * (GraphicHeight / 3) - 32)
+		DrawImage(HandIcon, GraphicWidth / 2 + Sin(yawvalue) * (GraphicWidth / 3) - 32 * HUDScale, GraphicHeight / 2 - Sin(pitchvalue) * (GraphicHeight / 3) - 32 * HUDScale)
 		
 		If MouseUp1 Then
 			MouseUp1 = False
@@ -4717,28 +4740,28 @@ Function DrawGUI()
 		If pitchvalue > 90 And pitchvalue <= 180 Then pitchvalue = 90
 		If pitchvalue > 180 And pitchvalue < 270 Then pitchvalue = 270
 		
-		DrawImage(HandIcon2, GraphicWidth / 2 + Sin(yawvalue) * (GraphicWidth / 3) - 32, GraphicHeight / 2 - Sin(pitchvalue) * (GraphicHeight / 3) - 32)
+		DrawImage(HandIcon2, GraphicWidth / 2 + Sin(yawvalue) * (GraphicWidth / 3) - 32 * HUDScale, GraphicHeight / 2 - Sin(pitchvalue) * (GraphicHeight / 3) - 32 * HUDScale)
 	EndIf
 	
-	If DrawHandIcon Then DrawImage(HandIcon, GraphicWidth / 2 - 32, GraphicHeight / 2 - 32)
+	If DrawHandIcon Then DrawImage(HandIcon, GraphicWidth / 2 - 32 * HUDScale, GraphicHeight / 2 - 32 * HUDScale)
 	For i = 0 To 3
 		If DrawArrowIcon(i) Then
-			x = GraphicWidth / 2 - 32
-			y = GraphicHeight / 2 - 32		
+			x = GraphicWidth / 2 - 32 * HUDScale
+			y = GraphicHeight / 2 - 32 * HUDScale	
 			Select i
 				Case 0
-					y = y - 64 - 5
+					y = y - 64 * HUDScale - 5
 				Case 1
-					x = x + 64 + 5
+					x = x + 64 * HUDScale + 5
 				Case 2
-					y = y + 64 + 5
+					y = y + 64 * HUDScale + 5
 				Case 3
-					x = x - 5 - 64
+					x = x - 5 - 64 * HUDScale
 			End Select
 			DrawImage(HandIcon, x, y)
 			Color 0, 0, 0
-			Rect(x + 4, y + 4, 64 - 8, 64 - 8)
-			DrawImage(ArrowIMG(i), x + 21, y + 21)
+			Rect(x + 4, y + 4, 64 * HUDScale - 8, 64 * HUDScale - 8)
+			DrawImage(ArrowIMG(i), x + 21 * HUDScale, y + 21 * HUDScale)
 			DrawArrowIcon(i) = False
 		End If
 	Next
@@ -4748,44 +4771,36 @@ Function DrawGUI()
 	If HUDenabled Then
 		If SpeedRunMode Then DrawTimer()
 
-		Local width% = 204, height% = 20
-		x% = 80
-		y% = GraphicHeight - 95
-		
-		Color 255, 255, 255	
-		Rect (x, y, width, height, False)
-		For i = 1 To Int(((width - 2) * (BlinkTimer / (BLINKFREQ))) / 10)
-			DrawImage(BlinkMeterIMG, x + 3 + 10 * (i - 1), y + 3)
-		Next
+		Local width% = 204 * HUDScale
+		x% = 80 * HUDScale
+		y% = GraphicHeight - 95 * HUDScale
+
+		DrawBar(BlinkMeterIMG, x, y, width, BlinkTimer / BLINKFREQ)
 		Color 0, 0, 0
-		Rect(x - 50, y, 30, 30)
+		Rect(x - 50 * HUDScale, y, 30 * HUDScale, 30 * HUDScale)
 		
 		If EyeIrritation > 0 Then
 			Color 200, 0, 0
-			Rect(x - 50 - 3, y - 3, 30 + 6, 30 + 6)
+			Rect(x - 50 * HUDScale - 3, y - 3, 30 * HUDScale + 6, 30 * HUDScale + 6)
 		End If
 		
 		Color 255, 255, 255
-		Rect(x - 50 - 1, y - 1, 30 + 2, 30 + 2, False)
+		Rect(x - 50 * HUDScale - 1, y - 1, 30 * HUDScale + 2, 30 * HUDScale + 2, False)
 		
-		DrawImage BlinkIcon, x - 50, y
+		DrawImage BlinkIcon, x - 50 * HUDScale, y
 		
-		y = GraphicHeight - 55
-		Color 255, 255, 255
-		Rect (x, y, width, height, False)
-		For i = 1 To Int(((width - 2) * (Stamina / 100.0)) / 10)
-			DrawImage(StaminaMeterIMG, x + 3 + 10 * (i - 1), y + 3)
-		Next	
+		y = GraphicHeight - 55 * HUDScale
+		DrawBar(StaminaMeterIMG, x, y, width, Stamina / 100.0)
 		
 		Color 0, 0, 0
-		Rect(x - 50, y, 30, 30)
+		Rect(x - 50 * HUDScale, y, 30 * HUDScale, 30 * HUDScale)
 		
 		Color 255, 255, 255
-		Rect(x - 50 - 1, y - 1, 30 + 2, 30 + 2, False)
+		Rect(x - 50 * HUDScale - 1, y - 1, 30 * HUDScale + 2, 30 * HUDScale + 2, False)
 		If Crouch Then
-			DrawImage CrouchIcon, x - 50, y
+			DrawImage CrouchIcon, x - 50 * HUDScale, y
 		Else
-			DrawImage SprintIcon, x - 50, y
+			DrawImage SprintIcon, x - 50 * HUDScale, y
 		EndIf
 
 		If DebugHUD Then
@@ -5043,9 +5058,9 @@ Function DrawGUI()
 		SelectedDoor = Null
 		Local tempX% = 0
 		
-		width = 70
-		height = 70
-		spacing% = 35
+		width% = 70 * HUDScale
+		height% = 70 * HUDScale
+		spacing% = 35 * HUDScale
 		
 		x = GraphicWidth / 2 - (width * MaxItemAmount /2 + spacing * (MaxItemAmount / 2 - 1)) / 2
 		y = GraphicHeight / 2 - (height * OtherSize /5 + height * (OtherSize / 5 - 1)) / 2;height
@@ -5065,15 +5080,15 @@ Function DrawGUI()
 				Rect(x - 1, y - 1, width + 2, height + 2)
 			EndIf
 			
-			DrawFrame(x, y, width, height, (x Mod 64), (x Mod 64))
+			DrawFrame(x, y, width, height, (x Mod 64 * HUDScale), (x Mod 64 * HUDScale))
 			
 			If OtherOpen = Null Then Exit
 			
 			If OtherOpen\SecondInv[n] <> Null Then
-				If (SelectedItem <> OtherOpen\SecondInv[n] Or isMouseOn) Then DrawImage(OtherOpen\SecondInv[n]\invimg, x + width / 2 - 32, y + height / 2 - 32)
+				If (SelectedItem <> OtherOpen\SecondInv[n] Or isMouseOn) Then DrawImage(OtherOpen\SecondInv[n]\invimg, x + width / 2 - 32 * HUDScale, y + height / 2 - 32 * HUDScale)
 			EndIf
 			If OtherOpen\SecondInv[n] <> Null And SelectedItem <> OtherOpen\SecondInv[n] Then
-			;drawimage(OtherOpen\SecondInv[n].InvIMG, x + width / 2 - 32, y + height / 2 - 32)
+			;drawimage(OtherOpen\SecondInv[n].InvIMG, x + width / 2 - 32 * HUDScale, y + height / 2 - 32 * HUDScale)
 				If isMouseOn Then
 					SetFont Font1
 					Color 0,0,0
@@ -5237,9 +5252,9 @@ Function DrawGUI()
 	Else If InvOpen Then
 		SelectedDoor = Null
 		
-		width% = 70
-		height% = 70
-		spacing% = 35
+		width% = 70 * HUDScale
+		height% = 70 * HUDScale
+		spacing% = 35 * HUDScale
 		
 		x = GraphicWidth / 2 - (width * MaxItemAmount /2 + spacing * (MaxItemAmount / 2 - 1)) / 2
 		y = GraphicHeight / 2 - (height * MaxItemAmount /5 + height * (MaxItemAmount / 5 - 1)) / 2
@@ -5303,16 +5318,16 @@ Function DrawGUI()
 			EndIf
 			
 			Color 255, 255, 255
-			DrawFrame(x, y, width, height, (x Mod 64), (x Mod 64))
+			DrawFrame(x, y, width, height, (x Mod 64 * HUDScale), (x Mod 64 * HUDScale))
 			
 			If Inventory(n) <> Null Then
 				If (SelectedItem <> Inventory(n) Or isMouseOn) Then 
-					DrawImage(Inventory(n)\invimg, x + width / 2 - 32, y + height / 2 - 32)
+					DrawImage(Inventory(n)\invimg, x + width / 2 - 32 * HUDScale, y + height / 2 - 32 * HUDScale)
 				EndIf
 			EndIf
 			
 			If Inventory(n) <> Null And SelectedItem <> Inventory(n) Then
-				;drawimage(Inventory(n).InvIMG, x + width / 2 - 32, y + height / 2 - 32)
+				;drawimage(Inventory(n).InvIMG, x + width / 2 - 32 * HUDScale, y + height / 2 - 32 * HUDScale)
 				If isMouseOn Then
 					If SelectedItem = Null Then
 						If MouseHit1 Then
@@ -5808,14 +5823,7 @@ Function DrawGUI()
 							
 							DrawImage(SelectedItem\itemtemplate\invimg, GraphicWidth / 2 - ImageWidth(SelectedItem\itemtemplate\invimg) / 2, GraphicHeight / 2 - ImageHeight(SelectedItem\itemtemplate\invimg) / 2)
 							
-							width% = 300
-							height% = 20
-							x% = GraphicWidth / 2 - width / 2
-							y% = GraphicHeight / 2 + 80
-							Rect(x, y, width+4, height, False)
-							For  i% = 1 To Int((width - 2) * (SelectedItem\state / 100.0) / 10)
-								DrawImage(BlinkMeterIMG, x + 3 + 10 * (i - 1), y + 3)
-							Next
+							DrawBar(BlinkMeterIMG, GraphicWidth / 2, GraphicHeight / 2 + 80 * HUDScale, 300 * HUDScale, SelectedItem\state / 100.0, True)
 							
 							SelectedItem\state = Min(SelectedItem\state+(FPSfactor/5.0),100)			
 							
@@ -6522,14 +6530,7 @@ Function DrawGUI()
 						
 						DrawImage(SelectedItem\itemtemplate\invimg, GraphicWidth / 2 - ImageWidth(SelectedItem\itemtemplate\invimg) / 2, GraphicHeight / 2 - ImageHeight(SelectedItem\itemtemplate\invimg) / 2)
 						
-						width% = 300
-						height% = 20
-						x% = GraphicWidth / 2 - width / 2
-						y% = GraphicHeight / 2 + 80
-						Rect(x, y, width+4, height, False)
-						For  i% = 1 To Int((width - 2) * (SelectedItem\state / 100.0) / 10)
-							DrawImage(BlinkMeterIMG, x + 3 + 10 * (i - 1), y + 3)
-						Next
+						DrawBar(BlinkMeterIMG, GraphicWidth / 2, GraphicHeight / 2 + 80 * HUDScale, 300 * HUDScale, SelectedItem\state / 100.0, True)
 						
 						SelectedItem\state = Min(SelectedItem\state+(FPSfactor/4.0),100)
 						
@@ -6567,15 +6568,8 @@ Function DrawGUI()
 					
 					DrawImage(SelectedItem\itemtemplate\invimg, GraphicWidth / 2 - ImageWidth(SelectedItem\itemtemplate\invimg) / 2, GraphicHeight / 2 - ImageHeight(SelectedItem\itemtemplate\invimg) / 2)
 					
-					width% = 300
-					height% = 20
-					x% = GraphicWidth / 2 - width / 2
-					y% = GraphicHeight / 2 + 80
-					Rect(x, y, width+4, height, False)
-					For  i% = 1 To Int((width - 2) * (SelectedItem\state / 100.0) / 10)
-						DrawImage(BlinkMeterIMG, x + 3 + 10 * (i - 1), y + 3)
-					Next
-					
+					DrawBar(BlinkMeterIMG, GraphicWidth / 2, GraphicHeight / 2 + 80 * HUDScale, 300 * HUDScale, SelectedItem\state / 100.0, True)
+
 					SelectedItem\state = Min(SelectedItem\state+(FPSfactor/(2.0+(0.5*(SelectedItem\itemtemplate\tempname="finevest")))),100)
 					
 					If SelectedItem\state=100 Then
@@ -6831,12 +6825,11 @@ Function DrawGUI()
 								For i = 1 To Ceil(SelectedItem\state / 10.0)
 									DrawImage NavImages(4),xtemp+i*8-6,ytemp+4
 								Next
-								
-								SetFont Font3
+							EndIf
 						EndIf
-						EndIf
-						
 					EndIf
+
+					SetFont Font1
 					;[End Block]
 				;new Items in SCP:CB 1.3
 				Case "scp1499","super1499"
@@ -6852,14 +6845,7 @@ Function DrawGUI()
 					
 					DrawImage(SelectedItem\itemtemplate\invimg, GraphicWidth / 2 - ImageWidth(SelectedItem\itemtemplate\invimg) / 2, GraphicHeight / 2 - ImageHeight(SelectedItem\itemtemplate\invimg) / 2)
 					
-					width% = 300
-					height% = 20
-					x% = GraphicWidth / 2 - width / 2
-					y% = GraphicHeight / 2 + 80
-					Rect(x, y, width+4, height, False)
-					For  i% = 1 To Int((width - 2) * (SelectedItem\state / 100.0) / 10)
-						DrawImage(BlinkMeterIMG, x + 3 + 10 * (i - 1), y + 3)
-					Next
+					DrawBar(BlinkMeterIMG, GraphicWidth / 2, GraphicHeight / 2 + 80 * HUDScale, 300 * HUDScale, SelectedItem\state / 100.0, True)
 					
 					SelectedItem\state = Min(SelectedItem\state+(FPSfactor),100)
 					
@@ -7129,10 +7115,10 @@ Function DrawTimer()
 	Else
 		durText$ = "Pre-made save loaded"
 	EndIf
-	Local x% = GraphicWidth - StringWidth(durText) - 24
-	Local y% = 24
+	Local x% = GraphicWidth - StringWidth(durText) - 24 * HUDScale
+	Local y% = 24 * HUDScale
 	Color 0, 0, 0
-	Text(x + 3 * MenuScale, y + 3 * MenuScale, durText)
+	Text(x + 3 * HUDScale, y + 3 * HUDScale, durText)
 	If TimerStopped Then
 		Color 255, 0, 0
 	Else
@@ -7492,7 +7478,7 @@ Function DrawMenu()
 					
 					y = y + 30*MenuScale
 					Text(x, y, "Control configuration:")
-					y = y + 2*MenuScale
+					y = y + 10*MenuScale
 					
 					Text(x, y + 20 * MenuScale, "Move Forward")
 					InputBox(x + 200 * MenuScale, y + 20 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_UP,210)),5)		
@@ -7515,11 +7501,6 @@ Function DrawMenu()
 					InputBox(x + 200 * MenuScale, y + 180 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_SAVE,210)),11)	
 					Text(x, y + 200 * MenuScale, "Open/Close Console")
 					InputBox(x + 200 * MenuScale, y + 200 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_CONSOLE,210)),12)
-					
-					If SpeedRunMode Then
-						Text(x, y + 220 * MenuScale, "Stop Timer")
-						InputBox(x + 200 * MenuScale, y + 220 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_STOP_TIMER,210)),13)
-					EndIf
 
 					If MouseOn(x,y,300*MenuScale,220*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"controls")
@@ -7550,8 +7531,6 @@ Function DrawMenu()
 								KEY_SAVE = key
 							Case 12
 								KEY_CONSOLE = key
-							Case 13
-								KEY_STOP_TIMER = key
 						End Select
 						SelectedInputBox = 0
 					EndIf
@@ -7916,21 +7895,27 @@ Function LoadEntities()
 	ScaleImage PauseMenuIMG,MenuScale,MenuScale
 	
 	SprintIcon% = LoadImage_Strict("GFX\sprinticon.png")
+	ScaleImage(SprintIcon, HUDScale, HUDScale)
 	BlinkIcon% = LoadImage_Strict("GFX\blinkicon.png")
+	ScaleImage(BlinkIcon, HUDScale, HUDScale)
 	CrouchIcon% = LoadImage_Strict("GFX\sneakicon.png")
+	ScaleImage(CrouchIcon, HUDScale, HUDScale)
 	HandIcon% = LoadImage_Strict("GFX\handsymbol.png")
+	ScaleImage(HandIcon, HUDScale, HUDScale)
 	HandIcon2% = LoadImage_Strict("GFX\handsymbol2.png")
+	ScaleImage(HandIcon2, HUDScale, HUDScale)
 
 	StaminaMeterIMG% = LoadImage_Strict("GFX\staminameter.jpg")
+	ScaleImage(StaminaMeterIMG, HUDScale, HUDScale)
 
 	KeypadHUD =  LoadImage_Strict("GFX\keypadhud.jpg")
 
 	Panel294 = LoadImage_Strict("GFX\294panel.jpg")
 	
 	
-	Brightness% = GetINIFloat("options.ini", "options", "brightness")
-	CameraFogNear# = GetINIFloat("options.ini", "options", "camera fog near")
-	CameraFogFar# = GetINIFloat("options.ini", "options", "camera fog far")
+	Brightness% = GetModdedINIFloat(MapOptions, "facility", "brightness")
+	CameraFogNear# = GetModdedINIFloat(MapOptions, "facility", "camera fog near")
+	CameraFogFar# = GetModdedINIFloat(MapOptions, "facility", "camera fog far")
 	StoredCameraFogFar# = CameraFogFar
 	
 	;TextureLodBias
@@ -7950,7 +7935,6 @@ Function LoadEntities()
 	CameraRange(Camera, 0.05, CameraFogFar)
 	CameraFogMode (Camera, 1)
 	CameraFogRange (Camera, CameraFogNear, CameraFogFar)
-	CameraFogColor (Camera, GetINIInt("options.ini", "options", "fog r"), GetINIInt("options.ini", "options", "fog g"), GetINIInt("options.ini", "options", "fog b"))
 	AmbientLight Brightness, Brightness, Brightness
 	
 	ScreenTexs[0] = CreateTexture(512, 512, 1+256)
@@ -8483,8 +8467,6 @@ End Function
 Function InitNewGame()
 	CatchErrors("Uncaught (InitNewGame)")
 	Local i%, de.Decals, d.Doors, it.Items, r.Rooms, sc.SecurityCams, e.Events
-	
-	SetUpSeedErrorInfo()
 
 	DrawLoading(45)
 	
@@ -8622,6 +8604,7 @@ Function InitNewGame()
 	BlurTimer = 100
 	Stamina = 100
 	
+	Playable = False
 	For i% = 0 To 70
 		FPSfactor = 1.0
 		FlushKeys()
@@ -8634,6 +8617,7 @@ Function InitNewGame()
 			DrawLoading(80+Int(Float(i)*0.27))
 		EndIf
 	Next
+	Playable = True
 	
 	FreeTextureCache
 	DrawLoading(100)
@@ -8650,8 +8634,6 @@ End Function
 Function InitLoadGame()
 	CatchErrors("Uncaught (InitLoadGame)")
 	Local d.Doors, sc.SecurityCams, rt.RoomTemplates, e.Events
-	
-	SetUpSeedErrorInfo()
 
 	DrawLoading(80)
 	
@@ -11314,7 +11296,6 @@ Function SaveOptionsINI()
 	PutINIValue(OptionFile, "binds", "Crouch key", KEY_CROUCH)
 	PutINIValue(OptionFile, "binds", "Save key", KEY_SAVE)
 	PutINIValue(OptionFile, "binds", "Console key", KEY_CONSOLE)
-	PutINIValue(OptionFile, "binds", "Stop timer key", KEY_STOP_TIMER)
 	
 End Function
 

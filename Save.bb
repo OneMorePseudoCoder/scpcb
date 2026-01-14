@@ -511,9 +511,9 @@ Function LoadGame(file$)
 	
 	AccessCode = Int(ReadString(f))
 	
-	x = ReadFloat(f)
-	y = ReadFloat(f)
-	RotateEntity(Collider, x, y, 0, 0)
+	user_camera_pitch = ReadFloat(f)
+	user_camera_yaw = ReadFloat(f)
+	RotateEntity(Collider, user_camera_pitch, user_camera_yaw, 0, 0)
 	
 	strtemp = ReadString(f)
 	version = strtemp
@@ -590,6 +590,8 @@ Function LoadGame(file$)
 	Else
 		RandomSeed = ReadString(f)
 	EndIf
+
+	SetUpSeedErrorInfo()
 	
 	SecondaryLightOn = ReadFloat(f)
 	PrevSecondaryLightOn = ReadFloat(f)
@@ -604,6 +606,8 @@ Function LoadGame(file$)
 	
 	MapWidth = ReadInt(f)
 	MapHeight = ReadInt(f)
+	Dim MapTemp%(MapWidth+1, MapHeight+1)
+	Dim MapFound%(MapWidth+1, MapHeight+1)
 	For x = 0 To MapWidth 
 		For y = 0 To MapHeight
 			MapTemp( x, y) = ReadInt(f)
@@ -1346,9 +1350,9 @@ Function LoadGameQuick(file$)
 	
 	AccessCode = Int(ReadString(f))
 	
-	x = ReadFloat(f)
-	y = ReadFloat(f)
-	RotateEntity(Collider, x, y, 0, 0)
+	user_camera_pitch = ReadFloat(f)
+	user_camera_yaw = ReadFloat(f)
+	RotateEntity(Collider, user_camera_pitch, user_camera_yaw, 0, 0)
 	
 	strtemp = ReadString(f)
 	version = strtemp

@@ -662,6 +662,7 @@ Function Piece$(s$,entry,char$=" ")
 	Wend
 	For n=1 To entry-1
 		p=Instr(s,char)
+		If p=0 Then Return ""
 		s=Right(s,Len(s)-p)
 	Next
 	p=Instr(s,char)
@@ -1501,12 +1502,12 @@ Const MaxRoomDoors% = 32
 
 Const ROOM1% = 1, ROOM2% = 2, ROOM2C% = 3, ROOM3% = 4, ROOM4% = 5
 
-Global RoomTempID%
+Global RoomTempID% = 0
 Type RoomTemplates
 	Field obj%, id%
 	Field objPath$
 	
-	Field zone%[5]
+	Field zone%[ZONEAMOUNT]
 	
 	;Field ambience%
 	
@@ -1516,7 +1517,7 @@ Type RoomTemplates
 	
 	Field Shape%, Name$
 	Field Commonness%, Large%
-	Field SetRoom#
+	Field SetRoom#, SetRoomPriority%
 	Field DisableDecals%
 	
 	Field TempTriggerboxAmount
@@ -1531,7 +1532,7 @@ Type RoomTemplates
 	
 	Field UseLightCones%
 	
-	Field DisableOverlapCheck% = True
+	Field DisableOverlapCheck%
 	
 	Field MinX#, MinY#, MinZ#
 	Field MaxX#, MaxY#, MaxZ#
@@ -1555,10 +1556,12 @@ Type TempDoors
 	Field AllowRemoteControl%
 End Type
 
-Function CreateRoomTemplate.RoomTemplates(meshpath$)
+Function CreateRoomTemplate.RoomTemplates(name$)
 	Local rt.RoomTemplates = New RoomTemplates
 	
-	rt\objPath = meshpath
+	rt\SetRoom = -1
+
+	rt\Name = Lower(name)
 	
 	rt\id = RoomTempID
 	RoomTempID=RoomTempID+1
@@ -1575,40 +1578,39 @@ Function LoadRoomTemplates(file$)
 	Local f = OpenFile(file)
 	
 	While Not Eof(f)
-		TemporaryString = Trim(ReadLine(f))
-		If Left(TemporaryString,1) = "[" Then
-			TemporaryString = Mid(TemporaryString, 2, Len(TemporaryString) - 2)
-			StrTemp = GetINIString(file, TemporaryString, "mesh path")
-			
-			rt = CreateRoomTemplate(StrTemp)
-			rt\Name = Lower(TemporaryString)
-			
-			StrTemp = Lower(GetINIString(file, TemporaryString, "shape"))
-			
-			Select StrTemp
-				Case "room1", "1"
-					rt\Shape = ROOM1
-				Case "room2", "2"
-					rt\Shape = ROOM2
-				Case "room2c", "2c"
-					rt\Shape = ROOM2C
-				Case "room3", "3"
-					rt\Shape = ROOM3
-				Case "room4", "4"
-					rt\Shape = ROOM4
-				Default
-			End Select
-			
-			For i = 0 To 4
-				rt\zone[i]= GetINIInt(file, TemporaryString, "zone"+(i+1))
+		Local l$ = Trim(ReadLine(f))
+		If Left(l,1) = "[" Then
+			l = Mid(l, 2, Len(l) - 2)
+
+			rt = Null
+			For rtt.RoomTemplates = Each RoomTemplates
+				If rtt\Name = l Then rt = rtt : Exit
 			Next
-			
-			rt\Commonness = Max(Min(GetINIInt(file, TemporaryString, "commonness"), 100), 0)
-			rt\Large = GetINIInt(file, TemporaryString, "large")
-			rt\SetRoom = GetINIFloat(file, TemporaryString, "set room", -1)
-			rt\DisableDecals = GetINIInt(file, TemporaryString, "disabledecals")
-			rt\UseLightCones = GetINIInt(file, TemporaryString, "usevolumelighting")
-			rt\DisableOverlapCheck = GetINIInt(file, TemporaryString, "disableoverlapcheck")
+
+			If rt = Null Then rt = CreateRoomTemplate(l)
+		Else If l <> "" And Instr(l, ";") <> 1 Then
+			Local splitterPos% = Instr(l, "=")
+			Local key$ = Lower(Trim(Left(l, splitterPos - 1)))
+			Local value$ = Trim(Right(l, Len(l) - splitterPos))
+			Select key
+				Case "mesh path", "meshpath" rt\objPath = value
+				Case "shape"
+					Select Lower(value)
+						Case "room1", "1" rt\Shape = ROOM1
+						Case "room2", "2" rt\Shape = ROOM2
+						Case "room2c", "2c" rt\Shape = ROOM2C
+						Case "room3", "3" rt\Shape = ROOM3
+						Case "room4", "4" rt\Shape = ROOM4
+					End Select
+				Case "zone1", "zone2", "zone3" rt\zone[Int(Right(key, 1))-1] = Int(value)
+				Case "commonness" rt\Commonness = Max(Min(Int(value), 100), 0)
+				Case "large" rt\Large = ParseINIInt(value)
+				Case "set room", "setroom" rt\SetRoom = Float(value)
+				Case "set room priority", "setroompriority" rt\SetRoomPriority = Int(value)
+				Case "disable decals", "disabledecals" rt\DisableDecals = ParseINIInt(value)
+				Case "use volume lighting", "usevolumelighting" rt\UseLightCones = ParseINIInt(value)
+				Case "disable overlap check", "disableoverlapcheck" rt\DisableOverlapCheck = ParseINIInt(value)
+			End Select
 		EndIf
 	Wend
 	
@@ -1666,31 +1668,54 @@ Const ROOMS_DATA_PATH$ = "Data\rooms.ini"
 InitRoomTemplates()
 
 Function InitRoomTemplates()
+	Delete Each RoomTemplates
+
 	Local modRooms$
 	Local hasOverride%
+	Local lowest.ActiveMods = Last ActiveMods
 	For m.ActiveMods = Each ActiveMods
 		modRooms$ = m\Path + ROOMS_DATA_PATH
 		If FileType(m\Path + ROOMS_DATA_PATH) = 1 And FileType(m\Path + ROOMS_DATA_PATH + ".OVERRIDE") = 1 Then
 			hasOverride = True
+			lowest = m
 			Exit
 		EndIf
 	Next
 	; We load the vanilla templates first, so that they will also be placed within the map first (to be potentially overriden with mod rooms).
 	If Not hasOverride Then LoadRoomTemplates(ROOMS_DATA_PATH)
-	For m.ActiveMods = Each ActiveMods
-		modRooms$ = m\Path + ROOMS_DATA_PATH
+	While lowest<>Null
+		modRooms$ = lowest\Path + ROOMS_DATA_PATH
 		If FileType(modRooms) = 1 Then
 			LoadRoomTemplates(modRooms)
-			If FileType(m\Path + ROOMS_DATA_PATH + ".OVERRIDE") = 1 Then Exit
 		EndIf
+		lowest = Before lowest
+	Wend
+
+	Local sorted%
+	Repeat
+		Sorted = True
+		For rt.RoomTemplates = Each RoomTemplates
+			Local rtt.RoomTemplates = After rt
+			While rtt <> Null And rtt\SetRoomPriority > rt\SetRoomPriority
+			sorted = False
+				Insert rtt Before rt
+				rtt = After rt
+			Wend
+		Next
+	Until sorted
+
+	For rt.RoomTemplates = Each RoomTemplates
+		DebugLog(rt\Name + "  " + rt\SetRoomPriority + " " + rt\SetRoom)
 	Next
+
 End Function
 
-Global RoomScale# = 8.0 / 2048.0
+Const MapOptions$ = "Data\map.ini"
+Const RoomScale# = 8.0 / 2048.0
 Const ZONEAMOUNT = 3
-Global MapWidth% = GetINIInt("options.ini", "options", "map width"), MapHeight% = GetINIInt("options.ini", "options", "map height")
-Dim MapTemp%(MapWidth+1, MapHeight+1)
-Dim MapFound%(MapWidth+1, MapHeight+1)
+Global MapWidth%, MapHeight%
+Dim MapTemp%(0,0)
+Dim MapFound%(0,0)
 
 Global RoomAmbience%[20]
 
@@ -1991,13 +2016,14 @@ Function CreateRoom.Rooms(zone%, roomshape%, x#, y#, z#, angle%, name$)
 				Return r
 			EndIf
 		Next
+		RuntimeErrorExt("Room " + Chr(34) + name + Chr(34) + " not found!")
 	EndIf
 	
 	Local temp% = 0
 	For rt.RoomTemplates = Each RoomTemplates
 		
-		For i = 0 To 4
-			If rt\zone[i]=zone Then 
+		For i = 1 To ZONEAMOUNT
+			If rt\zone[i-1]=zone Then 
 				If rt\Shape = roomshape Then temp=temp+rt\Commonness : Exit
 			EndIf
 		Next
@@ -2007,8 +2033,8 @@ Function CreateRoom.Rooms(zone%, roomshape%, x#, y#, z#, angle%, name$)
 	Local RandomRoom% = Rand(temp)
 	temp = 0
 	For rt.RoomTemplates = Each RoomTemplates
-		For i = 0 To 4
-			If rt\zone[i]=zone And rt\Shape = roomshape Then
+		For i = 1 To ZONEAMOUNT
+			If rt\zone[i-1]=zone And rt\Shape = roomshape Then
 				temp=temp+rt\Commonness
 				If RandomRoom > temp - rt\Commonness And RandomRoom <= temp Then
 					r\RoomTemplate = rt
@@ -2029,7 +2055,7 @@ Function CreateRoom.Rooms(zone%, roomshape%, x#, y#, z#, angle%, name$)
 					
 					r\angle = angle
 					If angle <> 0 Then TurnEntity(r\obj, 0, angle, 0)
-					Return r	
+					Return r
 				End If
 			EndIf
 		Next
@@ -3180,7 +3206,7 @@ Function FillRoom(r.Rooms)
 			;PositionEntity (d\buttons[0], EntityX(d\buttons[0],True), EntityY(d\buttons[0],True), r\z + 288.0 * RoomScale, True)
 			;PositionEntity (d\buttons[1], EntityX(d\buttons[1],True), EntityY(d\buttons[1],True), r\z + 320.0 * RoomScale, True)
 			
-			sc.SecurityCams = CreateSecurityCam(r\x-312.0 * RoomScale, r\y + 414*RoomScale, r\z + 656*RoomScale, r)
+			sc.SecurityCams = CreateSecurityCam(r\x-312.0 * RoomScale, r\y + 448*RoomScale, r\z + 656*RoomScale, r)
 			sc\angle = 225
 			sc\turn = 45
 			TurnEntity(sc\CameraObj, 20, 0, 0)
@@ -4503,13 +4529,18 @@ Function FillRoom(r.Rooms)
 			EntityParent(it\collider, r\obj)
 			
 			d = CreateDoor(r\zone, r\x - 968.0 * RoomScale, -764.0 * RoomScale, r\z + 1392.0 * RoomScale, 0, r, False, False, 4)
-			d\AutoClose = False : d\open = False	
+			d\AutoClose = False : d\open = False
+			MoveEntity(d\buttons[0], 0, 0, 10)
+			MoveEntity(d\buttons[1], 0, 0, 10)
 			
 			d = CreateDoor(r\zone, r\x, 0, r\z - 464.0 * RoomScale, 0, r, False, False, 4)
-			d\AutoClose = False : d\open = False			
+			d\AutoClose = False : d\open = False
+			MoveEntity(d\buttons[1], 0, 0, 2)
 			
 			d = CreateDoor(r\zone, r\x - 624.0 * RoomScale, -1280.0 * RoomScale, r\z, 90, r, False, False, 4)
-			d\AutoClose = False : d\open = False	
+			d\AutoClose = False : d\open = False
+			MoveEntity(d\buttons[0], 0, 0, 2)
+			MoveEntity(d\buttons[1], 0, 0, 2)
 			
 			r\Objects[6] = LoadMesh_Strict("GFX\map\room1062.b3d")
 			
@@ -5969,9 +6000,6 @@ Function RemoveWaypoint(w.WayPoints)
 End Function
 
 
-Dim MapF(MapWidth+1, MapHeight+1), MapG(MapWidth+1, MapHeight+1), MapH(MapWidth+1, MapHeight+1)
-Dim MapState(MapWidth+1, MapHeight+1)
-Dim MapParent(MapWidth+1, MapHeight+1, 2)
 Function FindPath(n.NPCs, x#, y#, z#)
 	
 	DebugLog "findpath: "+n\NPCtype
@@ -6247,7 +6275,7 @@ Function UpdateScreens()
 	
 End Function
 
-Dim MapName$(MapWidth, MapHeight)
+Dim MapName$(0, 0)
 Dim MapRoomID%(ROOM4 + 1)
 Dim MapRoom$(ROOM4 + 1, 0)
 
@@ -7017,6 +7045,11 @@ Function CreateMap()
 	
 	SeedRnd GetRandomSeed()
 	
+	MapWidth% = GetModdedINIInt(MapOptions, "facility", "width")
+	MapHeight% = GetModdedINIInt(MapOptions, "facility", "height")
+	
+	Dim MapTemp%(MapWidth+1, MapHeight+1)
+	Dim MapFound%(MapWidth+1, MapHeight+1)
 	Dim MapName$(MapWidth, MapHeight)
 	
 	Dim MapRoomID%(ROOM4 + 1)
@@ -7127,10 +7160,11 @@ Function CreateMap()
 	
 	Local y_min%, y_max%, x_min%, x_max%
 	
+	Local forceRoom1 = GetModdedINIInt(MapOptions, "facility", "force room1")
+
 	;force more room1s (if needed)
 	For i = 0 To 2
-		;need more rooms if there are less than 5 of them
-		temp = -Room1Amount[i]+5
+		temp = -Room1Amount[i]+forceRoom1
 		
 		If temp > 0 Then
 			
@@ -7194,6 +7228,9 @@ Function CreateMap()
 		EndIf
 	Next
 	
+	Local forceRoom4 = GetModdedINIInt(MapOptions, "facility", "force room4")
+	Local forceRoom2c = GetModdedINIInt(MapOptions, "facility", "force room2c")
+
 	;force more room4s and room2Cs
 	For i = 0 To 2
 		
@@ -7202,50 +7239,56 @@ Function CreateMap()
 		x_min = 1
 		x_max = MapWidth - 2
 		
-		If Room4Amount[i]<1 Then ;we want at least 1 ROOM4
+		temp = -Room4Amount[i]+forceRoom4
+
+		If temp > 0 Then
 			DebugLog "forcing a ROOM4 into zone "+i
 			temp=0
 			
 			For y = y_min To y_max
 				For x = x_min To x_max
 					If MapTemp(x,y)=3 Then
-						Select 0 ;see if adding a ROOM1 is possible
+						placed=False
+						Select 0 ;see if adding a ROOM4 is possible
 							Case (MapTemp(x+1,y) Or MapTemp(x+1,y+1) Or MapTemp(x+1,y-1) Or MapTemp(x+2,y) Or x=x_max)
 								MapTemp(x+1,y)=1
-								temp=1
+								placed=True
 							Case (MapTemp(x-1,y) Or MapTemp(x-1,y+1) Or MapTemp(x-1,y-1) Or MapTemp(x-2,y) Or x=x_min)
 								MapTemp(x-1,y)=1
-								temp=1
+								placed=True
 							Case (MapTemp(x,y+1) Or MapTemp(x+1,y+1) Or MapTemp(x-1,y+1) Or MapTemp(x,y+2) Or (i=0 And y=y_max))
 								MapTemp(x,y+1)=1
-								temp=1
+								placed=True
 							Case (MapTemp(x,y-1) Or MapTemp(x+1,y-1) Or MapTemp(x-1,y-1) Or MapTemp(x,y-2) Or (i<2 And y=y_min))
 								MapTemp(x,y-1)=1
-								temp=1
+								placed=True
 						End Select
-						If temp=1 Then
+						If placed Then
 							MapTemp(x,y)=4 ;turn this room into a ROOM4
 							DebugLog "ROOM4 forced into slot ("+x+", "+y+")"
 							Room4Amount[i]=Room4Amount[i]+1
 							Room3Amount[i]=Room3Amount[i]-1
 							Room1Amount[i]=Room1Amount[i]+1
+							temp = temp - 1
 						EndIf
 					EndIf
-					If temp=1 Then Exit
+					If temp=0 Then Exit
 				Next
-				If temp=1 Then Exit
+				If temp=0 Then Exit
 			Next
 			
-			If temp=0 Then DebugLog "Couldn't place ROOM4 in zone "+i
+			If temp>0 Then DebugLog "Couldn't place all ROOM4s in zone "+i
 		EndIf
 		
-		If Room2CAmount[i]<1 Then ;we want at least 1 ROOM2C
+		temp = -Room2CAmount[i]+forceRoom2c
+
+		If temp>0 Then
 			DebugLog "forcing a ROOM2C into zone "+i
-			temp=0
-			
+
 			For y = y_max To y_min Step -1
 				For x = x_min To x_max
 					If MapTemp(x,y)=1 Then
+						placed=False
 						Select True ;see if adding some rooms is possible
 							Case MapTemp(x-1,y)>0
 								If (MapTemp(x+1,y-1)+MapTemp(x+1,y+1)+MapTemp(x+2,y))=0 And x<x_max Then
@@ -7254,75 +7297,76 @@ Function CreateMap()
 										MapTemp(x+1,y)=2
 										DebugLog "ROOM2C forced into slot ("+(x+1)+", "+(y)+")"
 										MapTemp(x+1,y-1)=1
-										temp=1
+										placed=True
 									Else If (MapTemp(x+1,y+2)+MapTemp(x+2,y+1))=0 And (y<y_max Or i>0) Then
 										MapTemp(x,y)=2
 										MapTemp(x+1,y)=2
 										DebugLog "ROOM2C forced into slot ("+(x+1)+", "+(y)+")"
 										MapTemp(x+1,y+1)=1
-										temp=1
+										placed=True
 									EndIf
 								EndIf
 							Case MapTemp(x+1,y)>0
-								If (MapTemp(x-1,y-1)+MapTemp(x-1,y+1)+MapTemp(x-2,y))=0 And x>x_min Then
-									If (MapTemp(x-1,y-2)+MapTemp(x-2,y-1))=0 And (y>y_min Or i=2) Then
+								If (x-2<0 Lor MapTemp(x-2,y)=0) And (MapTemp(x-1,y-1)+MapTemp(x-1,y+1))=0 And x>x_min Then
+									If (x-2<0 Lor MapTemp(x-2,y-1)=0) And MapTemp(x-1,y-2)=0 And (y>y_min Or i=2) Then
 										MapTemp(x,y)=2
 										MapTemp(x-1,y)=2
 										DebugLog "ROOM2C forced into slot ("+(x-1)+", "+(y)+")"
 										MapTemp(x-1,y-1)=1
-										temp=1
-									Else If (MapTemp(x-1,y+2)+MapTemp(x-2,y+1))=0 And (y<y_max Or i>0) Then
+										placed=True
+									Else If (x-2<0 Lor MapTemp(x-2,y+1)=0) And MapTemp(x-1,y+2)=0 And (y<y_max Or i>0) Then
 										MapTemp(x,y)=2
 										MapTemp(x-1,y)=2
 										DebugLog "ROOM2C forced into slot ("+(x-1)+", "+(y)+")"
 										MapTemp(x-1,y+1)=1
-										temp=1
+										placed=True
 									EndIf
 								EndIf
 							Case MapTemp(x,y-1)>0
 								If (MapTemp(x-1,y+1)+MapTemp(x+1,y+1)+MapTemp(x,y+2))=0 And (y<y_max Or i>0) Then
-									If (MapTemp(x-2,y+1)+MapTemp(x-1,y+2))=0 And x>x_min Then
+									If (x-2<0 Lor MapTemp(x-2,y+1)=0) And MapTemp(x-1,y+2)=0 And x>x_min Then
 										MapTemp(x,y)=2
 										MapTemp(x,y+1)=2
 										DebugLog "ROOM2C forced into slot ("+(x)+", "+(y+1)+")"
 										MapTemp(x-1,y+1)=1
-										temp=1
+										placed=True
 									Else If (MapTemp(x+2,y+1)+MapTemp(x+1,y+2))=0 And x<x_max Then
 										MapTemp(x,y)=2
 										MapTemp(x,y+1)=2
 										DebugLog "ROOM2C forced into slot ("+(x)+", "+(y+1)+")"
 										MapTemp(x+1,y+1)=1
-										temp=1
+										placed=True
 									EndIf
 								EndIf
 							Case MapTemp(x,y+1)>0
 								If (MapTemp(x-1,y-1)+MapTemp(x+1,y-1)+MapTemp(x,y-2))=0 And (y>y_min Or i=2) Then
-									If (MapTemp(x-2,y-1)+MapTemp(x-1,y-2))=0 And x>x_min Then
+									If (x-2<0 Lor MapTemp(x-2,y-1)=0) And MapTemp(x-1,y-2)=0 And x>x_min Then
 										MapTemp(x,y)=2
 										MapTemp(x,y-1)=2
 										DebugLog "ROOM2C forced into slot ("+(x)+", "+(y-1)+")"
 										MapTemp(x-1,y-1)=1
-										temp=1
+										placed=True
 									Else If (MapTemp(x+2,y-1)+MapTemp(x+1,y-2))=0 And x<x_max Then
 										MapTemp(x,y)=2
 										MapTemp(x,y-1)=2
 										DebugLog "ROOM2C forced into slot ("+(x)+", "+(y-1)+")"
 										MapTemp(x+1,y-1)=1
-										temp=1
+										placed=True
 									EndIf
 								EndIf
 						End Select
-						If temp=1 Then
+						If placed Then
 							Room2CAmount[i]=Room2CAmount[i]+1
 							Room2Amount[i]=Room2Amount[i]+1
+							temp = temp - 1
 						EndIf
 					EndIf
-					If temp=1 Then Exit
+					If temp=0 Then Exit
 				Next
-				If temp=1 Then Exit
+				If temp=0 Then Exit
 			Next
 			
-			If temp=0 Then DebugLog "Couldn't place ROOM2C in zone "+i
+			If temp>0 Then DebugLog "Couldn't place all ROOM2C in zone "+i
 		EndIf
 		
 	Next
@@ -7347,7 +7391,7 @@ Function CreateMap()
 	Dim MaxPositions%(ROOM4 + 1, ZONEAMOUNT)
 	For rs = ROOM1 To ROOM4
 		For z = 1 To ZONEAMOUNT
-			MinPositions(rs, z) = 1
+			MinPositions(rs, z) = 0
 			MaxPositions(rs, z) = RoomAmounts(rs, 1)-1
 			If z > 1 Then
 				MinPositions(rs, z) = MinPositions(rs, z) + RoomAmounts(rs, 1)
@@ -7359,44 +7403,14 @@ Function CreateMap()
 			EndIf
 		Next
 	Next
-
-	;zone 1 --------------------------------------------------------------------------------------------------
 	
 	MapRoom(ROOM1, 0) = "start"	
-
-	MapRoom(ROOM2, 0) = "room2closets"
-	MapRoom(ROOM2C, 0) = "lockroom"
-	MapRoom(ROOM2C, Floor(0.5*Float(Room2CAmount[0]))) = "room1162"
-	
-	MapRoom(ROOM3, Floor(Rnd(0.2,0.8)*Float(Room3Amount[0]))) = "room3storage"
-
-	MapRoom(ROOM4, Floor(0.3*Float(Room4Amount[0]))) = "room4info"
-	
-	;zone 2 --------------------------------------------------------------------------------------------------
-
-	MapRoom(ROOM2, Room2Amount[0]+Floor(0.1*Float(Room2Amount[1]))) = "room2nuke"
-	MapRoom(ROOM2C, Room2CAmount[0]+Floor(0.5*Float(Room2CAmount[1]))) = "room2cpit"
-
-	MapRoom(ROOM3, Room3Amount[0]+Floor(0.3*Float(Room3Amount[1]))) = "room513"
-	MapRoom(ROOM3, Room3Amount[0]+Floor(0.6*Float(Room3Amount[1]))) = "room966"
-	
-	;zone 3  --------------------------------------------------------------------------------------------------
 	
 	MapRoom(ROOM1, MaxPositions(ROOM1, 3)-1) = "exit1"
 	MapRoom(ROOM1, MaxPositions(ROOM1, 3)) = "gateaentrance"
-	MapRoom(ROOM1, MinPositions(ROOM1, 3)) = "room1lifts"
-	
-	MapRoom(ROOM2, MinPositions(ROOM2, 3)+Floor(0.1*Float(Room2Amount[2]))) = "room2poffices"
-	MapRoom(ROOM2C, Room2CAmount[0]+Room2CAmount[1]) = "room2ccont"	
-	MapRoom(ROOM2C, Room2CAmount[0]+Room2CAmount[1]+1) = "lockroom2"		
-	
-	MapRoom(ROOM3, Room3Amount[0]+Room3Amount[1]+Floor(0.3*Float(Room3Amount[2]))) = "room3servers"
-	MapRoom(ROOM3, Room3Amount[0]+Room3Amount[1]+Floor(0.7*Float(Room3Amount[2]))) = "room3servers2"
-	;MapRoom(ROOM3, Room3Amount[0]+Room3Amount[1]) = "room3gw"
-	MapRoom(ROOM3, Room3Amount[0]+Room3Amount[1]+Floor(0.5*Float(Room3Amount[2]))) = "room3offices"
 	
 	For rt.RoomTemplates = Each RoomTemplates
-		If rt\SetRoom <> -1 Then
+		If rt\SetRoom >= 0 Then
 			Local start% = MinPositions(rt\Shape, rt\zone[0])
 			SetRoom(rt\Name, rt\Shape, start+Floor(rt\SetRoom*Float(RoomAmounts(rt\Shape, rt\zone[0]))),start,MaxPositions(rt\Shape, rt\zone[0]))
 		EndIf
@@ -7716,31 +7730,41 @@ Function SetRoom(room_name$,room_type%,pos%,min_pos%,max_pos%) ;place a room wit
 	
 	If max_pos<min_pos Then DebugLog "Can't place "+room_name : Return False
 	
-	DebugLog "--- SETROOM: "+Upper(room_name)+" ---"
-	Local looped%,can_place%
-	looped = False
-	can_place = True
+	DebugLog "--- SETROOM: "+Upper(room_name)+" ---" + min_pos + " " + max_pos
+	Local placed% = False
+	If pos>=(min_pos+max_pos)/2 Then
+		placed = SetRoomUpper(room_name,room_type,pos,max_pos) Lor SetRoomLower(room_name,room_type,pos-1,min_pos)
+	Else
+		placed = SetRoomLower(room_name,room_type,pos,min_pos) Lor SetRoomUpper(room_name,room_type,pos+1,max_pos)
+	EndIf
+
+	If placed Then DebugLog "--------------" Else DebugLog "couldn't place "+room_name
+End Function
+
+Function SetRoomUpper(room_name$,room_type%,pos%,max_pos%)
+	If pos>max_pos Return False
 	While MapRoom(room_type,pos)<>""
 		DebugLog "found "+MapRoom(room_type,pos)
 		pos=pos+1
 		If pos>max_pos Then
-			If looped=False Then
-				pos=min_pos+1 : looped=True
-			Else
-				can_place=False
-				Exit
-			EndIf
+			Return False
 		EndIf
 	Wend
-	DebugLog room_name+" "+Str(pos)
-	If can_place=True Then
-		DebugLog "--------------"
-		MapRoom(room_type,pos)=room_name
-		Return True
-	Else
-		DebugLog "couldn't place "+room_name
-		Return False
-	EndIf
+	MapRoom(room_type,pos)=room_name
+	Return True
+End Function
+
+Function SetRoomLower(room_name$,room_type%,pos%,min_pos%)
+	If pos<max_pos Return False
+	While MapRoom(room_type,pos)<>""
+		DebugLog "found "+MapRoom(room_type,pos) + " " + pos
+		pos=pos-1
+		If pos<min_pos Then
+			Return False
+		EndIf
+	Wend
+	MapRoom(room_type,pos)=room_name
+	Return True
 End Function
 
 Function GetZone(y%)

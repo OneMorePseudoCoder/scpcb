@@ -414,6 +414,7 @@ Function UpdateEvents()
 									HideEntity Collider
 									PositionEntity Collider, x, 0.302, z	
 									DropSpeed = 0
+									Playable = False
 								Else
 									HideEntity Light
 									
@@ -424,6 +425,7 @@ Function UpdateEvents()
 									e\EventState3 = 15
 									Msg = "Pick up the paper on the desk."
 									MsgTimer=70*7
+									Playable = True
 								EndIf
 								
 								user_camera_pitch = 0
@@ -7628,6 +7630,8 @@ Function UpdateEvents()
 						Case 3
 							e\EventState2 = e\EventState2 + FPSfactor
 							
+							CanSave = False
+
 							BlurTimer = e\EventState2*2.0
 							
 							If (e\EventState2>250.0 And e\EventState2-FPSfactor <= 250.0) Then
@@ -8890,7 +8894,7 @@ Function UpdateDimension1499()
 										Exit
 									EndIf
 								Next
-								scale# = (GetINIFloat("DATA\NPCs.ini", "SCP-1499-1", "scale") / 4.0) * Rnd(0.8,1.0)
+								scale# = (GetModdedINIFloat("DATA\NPCs.ini", "SCP-1499-1", "scale") / 4.0) * Rnd(0.8,1.0)
 								ScaleEntity du\obj, scale#,scale#,scale#
 								EntityFX du\obj,1
 								du\anim = Rand(0,1)
@@ -8911,7 +8915,7 @@ Function UpdateDimension1499()
 										Exit
 									EndIf
 								Next
-								scale# = (GetINIFloat("DATA\NPCs.ini", "SCP-1499-1", "scale") / 4.0) * Rnd(0.8,1.0)
+								scale# = (GetModdedINIFloat("DATA\NPCs.ini", "SCP-1499-1", "scale") / 4.0) * Rnd(0.8,1.0)
 								ScaleEntity du\obj, scale#,scale#,scale#
 								EntityFX du\obj,1
 								du\anim = Rand(0,1)
@@ -9945,11 +9949,15 @@ Function UpdateEndings()
 											obj = CopyEntity(e\room\Objects[12])
 											PositionEntity obj, EntityX(e\room\obj,True)-4160*RoomScale, EntityY(e\room\Objects[11],True), EntityZ(e\room\obj,True)-1920*RoomScale
 											EntityParent obj,e\room\Objects[17]
-											
+
 											obj = CopyEntity(e\room\Objects[12])
 											PositionEntity obj, EntityX(e\room\obj,True)-4064*RoomScale, EntityY(e\room\Objects[11],True), EntityZ(e\room\obj,True)-2112*RoomScale
 											EntityParent obj,e\room\Objects[17]
-											
+
+											; Super bandaid fix where we turn the walls that close in on the player into balls (for what the collision is concerned).
+											EntityType e\room\Objects[13],HIT_PLAYER
+											EntityType e\room\Objects[14],HIT_PLAYER
+
 											e\SoundCHN = PlaySound2(LoadTempSound("SFX\Ending\GateA\Bell1.ogg"), Camera, e\room\Objects[12])
 											
 											p.Particles = CreateParticle(EntityX(e\room\Objects[11],True),EntityY(Camera,True), EntityZ(e\room\Objects[11],True), 4, 8.0, 0, 50)

@@ -12,7 +12,8 @@ ScaleImage(QuickLoadIcon, MenuScale, MenuScale)
 
 For i = 0 To 3
 	ArrowIMG(i) = LoadImage_Strict("GFX\menu\arrow.png")
-	RotateImage(ArrowIMG(i), 90 * i)
+	ScaleImage(ArrowIMG(i), HUDScale, HUDScale)
+	RotateImage(ArrowIMG(i), -90 * i)
 	HandleImage(ArrowIMG(i), 0, 0)
 Next
 
@@ -248,7 +249,7 @@ Function UpdateMainMenu()
 		
 		DrawFrame(x, y, width, height)
 		
-		If DrawButton(x + width + 20 * MenuScale, y, 580 * MenuScale - width - 20 * MenuScale, height, "BACK", False) Then 
+		If DrawButton(x + width + 20 * MenuScale, y, 580 * MenuScale - width - 20 * MenuScale, height, "BACK", False, False, UpdatingMod<>Null) Then 
 			Select MainMenuTab
 				Case 1
 					PutINIValue(OptionFile, "options", "intro enabled", IntroEnabled%)
@@ -414,6 +415,8 @@ Function UpdateMainMenu()
 				SetFont Font2
 				
 				If DrawButton(x + 420 * MenuScale, y + height + 20 * MenuScale, 160 * MenuScale, 70 * MenuScale, "START", False) Then
+					TimerStopped = True
+
 					If CurrSave = "" Then CurrSave = "untitled"
 					Local SaveName$ = CurrSave
 					
@@ -430,8 +433,10 @@ Function UpdateMainMenu()
 					If (Not HasNumericSeed) And RandomSeed = "" Then
 						RandomSeed = Abs(MilliSecs())
 					EndIf
-					
+
 					SeedRnd GetRandomSeed()
+
+					SetUpSeedErrorInfo()
 
 					LoadEntities()
 					LoadAllSounds()
@@ -859,7 +864,6 @@ Function UpdateMainMenu()
 				ElseIf MainMenuTab = 6 ;Controls
 					;[Block]
 					height = 270 * MenuScale
-					If SpeedRunMode Then height = height + 20 * MenuScale
 					DrawFrame(x, y, width, height)	
 					
 					y = y + 20*MenuScale
@@ -905,11 +909,6 @@ Function UpdateMainMenu()
 					InputBox(x + 160 * MenuScale, y + 80 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_RIGHT,210)),4)	
 					Text(x + 20 * MenuScale, y + 100 * MenuScale, "Quick Save")
 					InputBox(x + 160 * MenuScale, y + 100 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_SAVE,210)),11)
-					
-					If SpeedRunMode Then
-						Text(x + 20 * MenuScale, y + 120 * MenuScale, "Stop Timer")
-						InputBox(x + 160 * MenuScale, y + 120 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_STOP_TIMER,210)),13)
-					EndIf
 
 					Text(x + 280 * MenuScale, y + 20 * MenuScale, "Manual Blink")
 					InputBox(x + 470 * MenuScale, y + 20 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_BLINK,210)),7)				
@@ -951,8 +950,6 @@ Function UpdateMainMenu()
 								KEY_SAVE = key
 							Case 12
 								KEY_CONSOLE = key
-							Case 13
-								KEY_STOP_TIMER = key
 						End Select
 						SelectedInputBox = 0
 					EndIf
@@ -1371,18 +1368,18 @@ Function UpdateMainMenu()
 							SelectedMod = Null
 						EndIf
 					Else
-						If DrawButton(x + 10 * MenuScale, y, 150 * MenuScale, 30 * MenuScale, "Reload mods", False) Then
+						If DrawButton(x + 10 * MenuScale, y, 150 * MenuScale, 30 * MenuScale, "Reload mods", False, False, UpdatingMod<>Null) Then
 							SerializeMods()
 							ReloadMods()
 						EndIf
 
-						If DrawButton(x + 10 * MenuScale, y + 40 * MenuScale, 150 * MenuScale, 30 * MenuScale, "Reload game", False) Then
+						If DrawButton(x + 10 * MenuScale, y + 40 * MenuScale, 150 * MenuScale, 30 * MenuScale, "Reload game", False, False, UpdatingMod<>Null) Then
 							SerializeMods()
 							Restart()
 							Return
 						EndIf
 
-						If DrawButton(x + 10 * MenuScale, y + 80 * MenuScale, 150 * MenuScale, 50 * MenuScale, "", False) Then
+						If DrawButton(x + 10 * MenuScale, y + 80 * MenuScale, 150 * MenuScale, 50 * MenuScale, "", False, False, UpdatingMod<>Null) Then
 							ExecFile("Mods")
 						EndIf
 						Text(x + (10 + 150 / 2) * MenuScale, y + (80 + 50 / 2 - 10) * MenuScale, "Open local", True, True)
@@ -1396,6 +1393,11 @@ Function UpdateMainMenu()
 	
 	If SpeedRunMode And (Not TimerStopped) Then
 		DrawTimer()
+		If MainMenuOpen Then
+			If DrawButton(GraphicWidth - 150 * MenuScale - 24, 60 * MenuScale + 24, 150 * MenuScale, 30 * MenuScale, "Stop timer", False) Then
+				TimerStopped = True
+			EndIf
+		EndIf
 	EndIf
 
 	Color 255,255,255
@@ -1707,6 +1709,18 @@ Function GreatestCommonDivsior(u%, v%)
 End Function
 
 
+Function DrawBar(img%, x%, y%, width%, filled#, centerX% = False)
+	Local spacing = ImageWidth(img) + 2
+	width = Int(width / spacing) * spacing + 3
+	Local height = ImageHeight(img) + 6
+	If centerX Then x = x - width / 2
+	Color 255, 255, 255
+	Rect (x, y, width, height, False)
+	For i = 1 To Int(((width - 6) * filled) / spacing)
+		DrawImage(img, x + 3 + spacing * (i - 1), y + 3)
+	Next
+End Function
+
 Function DrawTiledImageRect(img%, srcX%, srcY%, srcwidth#, srcheight#, x%, y%, width%, height%)
 	
 	Local x2% = x
@@ -1866,14 +1880,7 @@ Function DrawLoading(percent%, shortloading=False)
 		
 		DrawImage SelectedLoadingScreen\img, x, y
 		
-		Local width% = 300, height% = 20
-		x% = GraphicWidth / 2 - width / 2
-		y% = GraphicHeight / 2 + 30 - 100
-		
-		Rect(x, y, width+4, height, False)
-		For  i% = 1 To Int((width - 2) * (percent / 100.0) / 10)
-			DrawImage(BlinkMeterIMG, x + 3 + 10 * (i - 1), y + 3)
-		Next
+		DrawBar(BlinkMeterIMG, GraphicWidth / 2, GraphicHeight / 2 - 70 * HUDScale, 300 * HUDScale, percent / 100.0, True)
 		
 		If SelectedLoadingScreen\title = "CWM" Then
 			
@@ -1893,7 +1900,7 @@ Function DrawLoading(percent%, shortloading=False)
 			For i = 0 To temp
 				strtemp$ = STRTEMP + RandomDefaultWidthChar(48,122,"?")
 			Next
-			Text(GraphicWidth / 2, GraphicHeight / 2 + 80, strtemp, True, True)
+			Text(GraphicWidth / 2, GraphicHeight / 2 + 80*HUDScale, strtemp, True, True)
 			
 			If percent = 0 Then 
 				If Rand(5)=1 Then
@@ -1939,20 +1946,20 @@ Function DrawLoading(percent%, shortloading=False)
 				strtemp$ = Replace(SelectedLoadingScreen\txt[0],Mid(SelectedLoadingScreen\txt[0],Rand(1,Len(strtemp)-1),1),RandomDefaultWidthChar(130,250,"?"))
 			Next		
 			SetFont Font1
-			RowText(strtemp, GraphicWidth / 2-200, GraphicHeight / 2 +120,400,300,True)		
+			RowText(strtemp, GraphicWidth / 2-200*HUDScale, GraphicHeight / 2 +120*HUDScale,400*HUDScale,300*HUDScale,True)		
 		Else
 			
 			Color 0,0,0
 			SetFont Font2
-			Text(GraphicWidth / 2 + 1, GraphicHeight / 2 + 80 + 1, SelectedLoadingScreen\title, True, True)
+			Text(GraphicWidth / 2 + 1 * HUDScale, GraphicHeight / 2 + (80+1)*HUDScale, SelectedLoadingScreen\title, True, True)
 			SetFont Font1
-			RowText(SelectedLoadingScreen\txt[LoadingScreenText], GraphicWidth / 2-200+1, GraphicHeight / 2 +120+1,400,300,True)
+			RowText(SelectedLoadingScreen\txt[LoadingScreenText], GraphicWidth / 2-(200+1)*HUDScale, GraphicHeight / 2 +(120+1)*HUDScale,400*HUDScale,300*HUDScale,True)
 			
 			Color 255,255,255
 			SetFont Font2
-			Text(GraphicWidth / 2, GraphicHeight / 2 +80, SelectedLoadingScreen\title, True, True)
+			Text(GraphicWidth / 2, GraphicHeight / 2 +80*HUDScale, SelectedLoadingScreen\title, True, True)
 			SetFont Font1
-			RowText(SelectedLoadingScreen\txt[LoadingScreenText], GraphicWidth / 2-200, GraphicHeight / 2 +120,400,300,True)
+			RowText(SelectedLoadingScreen\txt[LoadingScreenText], GraphicWidth / 2-200*HUDScale, GraphicHeight / 2 +120*HUDScale,400*HUDScale,300*HUDScale,True)
 			
 		EndIf
 
@@ -1961,13 +1968,13 @@ Function DrawLoading(percent%, shortloading=False)
 		EndIf
 		
 		Color 0,0,0
-		Text(GraphicWidth / 2 + 1, GraphicHeight / 2 - 100 + 1, "LOADING - " + percent + " %", True, True)
+		Text(GraphicWidth / 2 + 1 * HUDScale, GraphicHeight / 2 - 100 * HUDScale + 1 * HUDScale, "LOADING - " + percent + " %", True, True)
 		Color 255,255,255
-		Text(GraphicWidth / 2, GraphicHeight / 2 - 100, "LOADING - " + percent + " %", True, True)
+		Text(GraphicWidth / 2, GraphicHeight / 2 - 100 * HUDScale, "LOADING - " + percent + " %", True, True)
 		
 		If percent = 100 Then 
 			If firstloop And SelectedLoadingScreen\title <> "CWM" Then PlaySound_Strict LoadTempSound(("SFX\Horror\Horror8.ogg"))
-			Text(GraphicWidth / 2, GraphicHeight - 50, "PRESS ANY KEY TO CONTINUE", True, True)
+			Text(GraphicWidth / 2, GraphicHeight - 50 * HUDScale, "PRESS ANY KEY TO CONTINUE", True, True)
 		Else
 			FlushKeys()
 			FlushMouse()
@@ -2012,10 +2019,9 @@ Function InputBox$(x%, y%, width%, height%, Txt$, ID% = 0)
 
 	If SelectedInputBox = ID Then
 		If (MilliSecs() Mod 800) < 400 Then Rect (x + width / 2 + StringWidth(Txt) / 2 + 2, y + height / 2 - 17 * MenuScale / 2, 2, 17 * MenuScale)
-		Local key% = GetKey()
-		If key = 22 Then
+		If KeyDown(29) And KeyHit(47) Then
 			Txt = Txt + GetClipboardContents()
-		Else If key = 3 Then
+		Else If KeyDown(29) And KeyHit(46) Then
 			SetClipboardContents(Txt)
 		Else
 			Txt = TextInput(Txt)
@@ -2123,14 +2129,16 @@ Function SlideBar#(x%, y%, width%, value#, ID%)
 		value = Min(Max((ScaledMouseX() - x) * 100 / width, 0), 100)
 	EndIf
 
+	Local height% = ImageHeight(BlinkMeterIMG) + 6
+
 	Color 255,255,255
-	Rect(x, y, width + 14, 20,False)
+	Rect(x, y, width + 14, height,False)
 
 	DrawImage(BlinkMeterIMG, x + width * value / 100.0 +3, y+3)
 	
 	Color 170,170,170 
-	Text (x - 50 * MenuScale, y + 4*MenuScale, "LOW")					
-	Text (x + width + 38 * MenuScale, y+4*MenuScale, "HIGH")	
+	Text (x - 20 * MenuScale - StringWidth("LOW"), y + 3*MenuScale, "LOW")					
+	Text (x + width + 20 * MenuScale + 14, y+3*MenuScale, "HIGH")	
 	
 	Return value
 	
