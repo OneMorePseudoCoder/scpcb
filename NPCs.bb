@@ -214,7 +214,7 @@ Function CreateNPC.NPCs(NPCtype%, x#, y#, z#)
 			
 			n\Speed = 2.0 / 100
 			
-			MeshCullBox (n\obj, -MeshWidth(ClassDObj), -MeshHeight(ClassDObj), -MeshDepth(ClassDObj), MeshWidth(ClassDObj)*2, MeshHeight(ClassDObj)*2, MeshDepth(ClassDObj)*2)
+			MeshCullBox (n\obj, -MeshWidth(ClassDObj), -MeshHeight(ClassDObj), -MeshDepth(ClassDObj)*4, MeshWidth(ClassDObj)*2, MeshHeight(ClassDObj)*2, MeshDepth(ClassDObj)*8)
 			
 			n\CollRadius = 0.32
 			;[End Block]
@@ -301,7 +301,7 @@ Function CreateNPC.NPCs(NPCtype%, x#, y#, z#)
 				temp# = (GetModdedINIFloat("DATA\NPCs.ini", "SCP-049-2", "scale") / 2.5)
 				ScaleEntity n\obj, temp, temp, temp
 				
-				MeshCullBox (n\obj, -MeshWidth(n\obj), -MeshHeight(n\obj), -MeshDepth(n\obj), MeshWidth(n\obj)*2, MeshHeight(n\obj)*2, MeshDepth(n\obj)*2)
+				MeshCullBox (n\obj, -MeshWidth(n\obj), -MeshHeight(n\obj), -MeshDepth(n\obj)*1.5, MeshWidth(n\obj)*2, MeshHeight(n\obj)*2, MeshDepth(n\obj)*3)
 			EndIf
 			
 			n\Speed = (GetModdedINIFloat("DATA\NPCs.ini", "SCP-049-2", "speed") / 100.0)
@@ -580,7 +580,7 @@ Function CreateNPC.NPCs(NPCtype%, x#, y#, z#)
 			
 			n\Speed = 2.0 / 100
 			
-			MeshCullBox (n\obj, -MeshWidth(n\obj), -MeshHeight(n\obj), -MeshDepth(n\obj), MeshWidth(n\obj)*2, MeshHeight(n\obj)*2, MeshDepth(n\obj)*2)
+			MeshCullBox (n\obj, -MeshWidth(n\obj), -MeshHeight(n\obj), -MeshDepth(n\obj)*4, MeshWidth(n\obj)*2, MeshHeight(n\obj)*2, MeshDepth(n\obj)*8)
 			
 			SetNPCFrame n,11
 			
@@ -602,7 +602,7 @@ Function CreateNPC.NPCs(NPCtype%, x#, y#, z#)
 			
 			n\Speed = 2.0 / 100
 			
-			MeshCullBox (n\obj, -MeshWidth(ClerkOBJ), -MeshHeight(ClerkOBJ), -MeshDepth(ClerkOBJ), MeshWidth(ClerkOBJ)*2, MeshHeight(ClerkOBJ)*2, MeshDepth(ClerkOBJ)*2)
+			MeshCullBox (n\obj, -MeshWidth(ClerkOBJ), -MeshHeight(ClerkOBJ), -MeshDepth(ClerkOBJ)*4.5, MeshWidth(ClerkOBJ)*2, MeshHeight(ClerkOBJ)*2, MeshDepth(ClerkOBJ)*9)
 			
 			n\CollRadius = 0.32
 			;[End Block]
