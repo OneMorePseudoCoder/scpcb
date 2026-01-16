@@ -4220,7 +4220,7 @@ Function MovePlayer()
 				If CurrStepSFX=0 Then
 					temp = GetStepSound(Collider)
 					
-					If Sprint = 2.5 Then
+					If Sprint = 1.0 Then
 						PlayerSoundVolume = Max(4.0,PlayerSoundVolume)
 						tempchn% = PlaySound_Strict(StepSFX(temp, 0, Rand(0, 7)))
 					Else
@@ -4232,7 +4232,7 @@ Function MovePlayer()
 				ElseIf CurrStepSFX=2
 					tempchn% = PlaySound_Strict(Step2SFX(Rand(3,5)))
 				ElseIf CurrStepSFX=3
-					If Sprint = 2.5 Then
+					If Sprint = 1.0 Then
 						PlayerSoundVolume = Max(4.0,PlayerSoundVolume)
 						tempchn% = PlaySound_Strict(StepSFX(0, 0, Rand(0, 7)))
 					Else
