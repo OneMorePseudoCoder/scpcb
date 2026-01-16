@@ -5549,9 +5549,17 @@ Function FillRoom(r.Rooms)
 		If Not dt\AllowRemoteControl Then
 			door\AutoClose = False
 		EndIf
+		SnapForward(door\buttons[0], 10)
+		SnapForward(door\buttons[1], 10)
 	Next
 	
 	CatchErrors("FillRoom ("+r\RoomTemplate\Name+")")
+End Function
+
+Function SnapForward(entity%, dist#)
+	If EntityPick(entity, dist) Then
+		PositionEntity entity, PickedX(), PickedY(), PickedZ(), True
+	EndIf
 End Function
 
 Function UpdateRooms()
