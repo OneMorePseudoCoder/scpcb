@@ -896,19 +896,24 @@ Function GenForestGrid(fr.Forest)
 		EndIf
 	Wend
 	
-	If 0 Then
+	If DebugForestGen Then
 		Local x%, y%
 		Repeat
 			Cls()
+
+			Local tileSize = Max(Min(32 * HUDScale, Min(GraphicWidth / gridsize, (GraphicHeight - 50 * HUDScale) / gridsize)), 3)
+			Local totalWidth = gridsize * tileSize - 2, totalHeight = gridsize * tileSize - 2
+			Local xStart = GraphicWidth / 2 - totalWidth / 2, yStart = GraphicHeight / 2 - totalHeight / 2 - 50 * HUDScale
+
 			i=gridsize-1
 			For x=0 To gridsize-1
 				For y=0 To gridsize-1
 					If fr\grid[x+(y*gridsize)]=0 Then
 						Color(50,50,50)
-						Rect((i*32)*MenuScale,(y*32)*MenuScale,30*MenuScale,30*MenuScale)
+						Rect(xStart + i*tileSize,yStart + y*tileSize,tileSize-2,tileSize-2)
 					Else
 						Color(255,255,255)
-						Rect((i*32)*MenuScale,(y*32)*MenuScale,30*MenuScale,30*MenuScale)
+						Rect(xStart + i*tileSize,yStart + y*tileSize,tileSize-2,tileSize-2)
 					EndIf
 				Next
 				i=i-1
@@ -917,18 +922,23 @@ Function GenForestGrid(fr.Forest)
 			i=gridsize-1
 			For x=0 To gridsize-1
 				For y=0 To gridsize-1
-					If MouseOn((i*32)*MenuScale,(y*32)*MenuScale,32*MenuScale,32*MenuScale) Then
+					If MouseOn(xStart + i*tileSize,yStart + y*tileSize,tileSize,tileSize) Then
 						Color(255,0,0)
 					Else
 						Color(0,0,0)
 					EndIf
-					Text(((i*32)+2)*MenuScale,((y*32)+2)*MenuScale,fr\grid[x+(y*gridsize)])
+					Text(xStart + i*tileSize+2,yStart + y*tileSize+2,fr\grid[x+(y*gridsize)])
 				Next
 				i=i-1
 			Next
-			Flip()
+
 			If Fullscreen Then DrawImage(CursorIMG,ScaledMouseX(),ScaledMouseY())
-		Until (GetKey() <> 0 Or MouseHit(1))
+			Color(255, 255, 255)
+			Text(GraphicWidth / 2, GraphicHeight - 25 * HUDScale, "PRESS ANY KEY TO CONTINUE", True, True)
+			
+			Flip()
+		Until GetKey() <> 0
+		FlushKeys()
 	EndIf
 	
 	;change branches from -1s to 1s
@@ -7556,17 +7566,22 @@ Function CreateMap()
 		PreventRoomOverlap(r)
 	Next
 	
-	If 0 Then 
+	If DebugMapGen Then
 		Repeat
 			Cls
+
+			Local tileSize = Max(Min(32 * HUDScale, Min(GraphicWidth / MapWidth, (GraphicHeight - 50) / MapHeight)), 3)
+			Local totalWidth = MapWidth * tileSize - 2, totalHeight = MapHeight * tileSize - 2
+			Local xStart = GraphicWidth / 2 - totalWidth / 2, yStart = GraphicHeight / 2 - totalHeight / 2 - 50 * HUDScale
+
 			For x = 0 To MapWidth - 1
 				For y = 0 To MapHeight - 1
 					If MapTemp(x, y) = 0 Then
 						
 						zone=GetZone(y)
 						
-						Color 50*zone, 50*zone, 50*zone
-						Rect(x * 32, y * 32, 30, 30)
+						Color 25+50*zone, 25+50*zone, 25+50*zone
+						Rect(xStart + x * tileSize, yStart + y * tileSize, tileSize - 2, tileSize - 2)
 					Else
 						If MapTemp(x, y) = 255 Then
 							Color 0,200,0
@@ -7579,7 +7594,7 @@ Function CreateMap()
 						Else
 							Color 255, 255, 255
 						EndIf
-						Rect(x * 32, y * 32, 30, 30)
+						Rect(xStart + x * tileSize, yStart + y * tileSize, tileSize - 2, tileSize - 2)
 					End If
 				Next
 			Next	
@@ -7587,8 +7602,8 @@ Function CreateMap()
 			For x = 0 To MapWidth - 1
 				For y = 0 To MapHeight - 1
 					
-					If MouseX()>x*32 And MouseX()<x*32+32 Then
-						If MouseY()>y*32 And MouseY()<y*32+32 Then
+					If MouseX()>xStart + x*tileSize And MouseX()<xStart + x*tileSize+tileSize Then
+						If MouseY()>yStart + y*tileSize And MouseY()<yStart + y*tileSize+tileSize Then
 							Color 255, 0, 0
 						Else
 							Color 200, 200, 200
@@ -7598,13 +7613,18 @@ Function CreateMap()
 					EndIf
 					
 					If MapTemp(x, y) > 0 Then
-						Text x * 32 +2, (y) * 32 + 2,MapTemp(x, y) +" "+ MapName(x,y)
+						Text xStart + x * tileSize +2, yStart + y * tileSize + 2,MapTemp(x, y) +" "+ MapName(x,y)
 					End If
 				Next
-			Next			
+			Next
+
+			If Fullscreen Then DrawImage(CursorIMG,ScaledMouseX(),ScaledMouseY())
+			Color 255, 255, 255
+			Text(GraphicWidth / 2, GraphicHeight - 25 * HUDScale, "PRESS ANY KEY TO CONTINUE", True, True)
 			
 			Flip
-		Until KeyHit(28)		
+		Until GetKey() <> 0
+		FlushKeys()
 	EndIf
 	
 	

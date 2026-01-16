@@ -31,7 +31,7 @@ End Function
 Include "StrictLoads.bb"
 Include "KeyName.bb"
 
-Global OptionFile$ = "options.ini"
+Const OptionFile$ = "options.ini"
 
 Include "Blitz_File_FileName.bb"
 
@@ -61,7 +61,7 @@ Global EnableSFXRelease_Prev% = EnableSFXRelease%
 
 Global CanOpenConsole% = GetINIInt(OptionFile, "console", "enabled")
 
-Global DebugResourcePacks% = GetINIInt(OptionFile, "options", "resource pack debug")
+Global DebugResourcePacks% = GetINIInt(OptionFile, "debug", "resource pack strict load")
 
 Global UseNumericSeeds% = GetINIInt(OptionFile, "options", "numeric seeds")
 
@@ -2466,6 +2466,9 @@ Function RemoveDoor(d.Doors)
 End Function
 
 DrawLoading(40,True)
+
+Global DebugMapGen% = GetINIInt(OptionFile, "debug", "show map gen")
+Global DebugForestGen% = GetINIInt(OptionFile, "debug", "show forest gen")
 
 Include "MapSystem.bb"
 
@@ -11345,7 +11348,6 @@ Function SaveOptionsINI()
 	PutINIValue(OptionFile, "options", "texture details", TextureDetails%)
 	PutINIValue(OptionFile, "console", "enabled", CanOpenConsole%)
 	PutINIValue(OptionFile, "console", "auto opening", ConsoleOpening%)
-	PutINIValue(OptionFile, "options", "resource pack debug", DebugResourcePacks%)
 	PutINIValue(OptionFile, "options", "speed run mode", SpeedRunMode%)
 	PutINIValue(OptionFile, "options", "numeric seeds", UseNumericSeeds%)
 	PutINIValue(OptionFile, "options", "particle amount", ParticleAmount)
