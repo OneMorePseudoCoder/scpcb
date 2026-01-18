@@ -31,13 +31,41 @@ End Function
 Include "StrictLoads.bb"
 Include "KeyName.bb"
 
-Global OptionFile$ = "options.ini"
+Global OptionFile$ = InitOptionsDir()
+Const OptionDefaultFile$ = "defaults.ini"
+
+Function InitOptionsDir$()
+	Local dir$ = GetEnv("AppData") + "\Undertow Games"
+	If FileType(dir) <> 2 Then CreateDir(dir)
+	dir = dir + "\SCP - Containment Breach"
+	If FileType(dir) <> 2 Then CreateDir(dir)
+	dir = dir + "\options.ini"
+	If FileType(dir) <> 1 Then
+		Local f% = WriteFile(dir)
+		CloseFile(f)
+	EndIf
+	Return dir
+End Function
+
+Function GetOptionString$(section$, key$)
+	Local opt$ = GetINIString(OptionFile, section, key)
+	If opt = "" Then Return GetINIString(OptionDefaultFile, section, key)
+	Return opt
+End Function
+
+Function GetOptionInt%(section$, key$)
+	Return ParseINIInt(GetOptionString(section, key))
+End Function
+
+Function GetOptionFloat#(section$, key$)
+	Return Float(GetOptionString(section, key))
+End Function
 
 Include "Blitz_File_FileName.bb"
 
 Include "DevilParticleSystem.bb"
 
-Global SteamActive% = GetINIInt(OptionFile, "options", "enable steam")
+Global SteamActive% = GetOptionInt("general", "enable steam")
 If SteamActive Then
 	If Steam_Init() <> 0 Then RuntimeErrorExt("Steam failed to initialize")
 EndIf
@@ -56,43 +84,43 @@ Global ConsoleFont%
 Global MenuWhite%, MenuBlack%
 Global ButtonSFX% = LoadSound_Strict("SFX\Interact\Button.ogg")
 
-Global EnableSFXRelease% = GetINIInt(OptionFile, "audio", "sfx release")
+Global EnableSFXRelease% = GetOptionInt("audio", "sfx release")
 Global EnableSFXRelease_Prev% = EnableSFXRelease%
 
-Global CanOpenConsole% = GetINIInt(OptionFile, "console", "enabled")
+Global CanOpenConsole% = GetOptionInt("console", "enabled")
 
-Global DebugResourcePacks% = GetINIInt(OptionFile, "options", "resource pack debug")
+Global DebugResourcePacks% = GetOptionInt("debug", "resource pack strict load")
 
-Global UseNumericSeeds% = GetINIInt(OptionFile, "options", "numeric seeds")
+Global UseNumericSeeds% = GetOptionInt("general", "numeric seeds")
 
 Dim ArrowIMG(4)
 
 ;[Block]
 
-Global LauncherWidth%= Min(GetINIInt(OptionFile, "launcher", "launcher width"), 1024)
-Global LauncherHeight% = Min(GetINIInt(OptionFile, "launcher", "launcher height"), 768)
-Global LauncherEnabled% = GetINIInt(OptionFile, "launcher", "launcher enabled")
+Global LauncherWidth%= Min(GetOptionInt("launcher", "launcher width"), 1024)
+Global LauncherHeight% = Min(GetOptionInt("launcher", "launcher height"), 768)
+Global LauncherEnabled% = GetOptionInt("launcher", "launcher enabled")
 
-Global GraphicWidth% = GetINIInt(OptionFile, "options", "width"), GraphicHeight% = GetINIInt(OptionFile, "options", "height")
+Global GraphicWidth% = GetOptionInt("graphics", "width"), GraphicHeight% = GetOptionInt("graphics", "height")
 If GraphicWidth <= 0 Then GraphicWidth = DesktopWidth()
 If GraphicHeight <= 0 Then GraphicHeight = DesktopHeight()
 
-Global Depth% = 0, Fullscreen% = GetINIInt(OptionFile, "options", "fullscreen")
+Global Depth% = 0, Fullscreen% = GetOptionInt("graphics", "fullscreen")
 
-Global SelectedGFXDriver% = Min(Max(GetINIInt(OptionFile, "options", "gfx driver"), 1), CountGfxDrivers())
+Global SelectedGFXDriver% = Min(Max(GetOptionInt("graphics", "gfx driver"), 1), CountGfxDrivers())
 
-Global ShowFPS = GetINIInt(OptionFile, "options", "show FPS")
+Global ShowFPS = GetOptionInt("graphics", "show FPS")
 
 Global WireframeState
 Global HalloweenTex
 
-Global BorderlessWindowed% = GetINIInt(OptionFile, "options", "borderless windowed")
+Global BorderlessWindowed% = GetOptionInt("graphics", "borderless windowed")
 Global RealGraphicWidth%,RealGraphicHeight%
 Global AspectRatioRatio#
 
-Global EnableRoomLights% = GetINIInt(OptionFile, "options", "room lights enabled")
+Global EnableRoomLights% = GetOptionInt("graphics", "room lights enabled")
 
-Global TextureDetails% = GetINIInt(OptionFile, "options", "texture details")
+Global TextureDetails% = GetOptionInt("graphics", "texture details")
 Global TextureFloat#
 Select TextureDetails%
 	Case 0
@@ -106,8 +134,8 @@ Select TextureDetails%
 	Case 4
 		TextureFloat# = -0.8
 End Select
-Global ConsoleOpening% = GetINIInt(OptionFile, "console", "auto opening")
-Global SFXVolume# = GetINIFloat(OptionFile, "audio", "sound volume")
+Global ConsoleOpening% = GetOptionInt("console", "auto opening")
+Global SFXVolume# = GetOptionFloat("audio", "sound volume")
 
 If LauncherEnabled And (Not IsRestart) Then
 	AspectRatioRatio = 1.0
@@ -150,18 +178,35 @@ SetBuffer(BackBuffer())
 Global CurTime%, PrevTime%, LoopDelay%, FPSfactor#, FPSfactor2#, PrevFPSFactor#
 Local CheckFPS%, ElapsedLoops%, FPS%
 
-Global Framelimit% = GetINIInt(OptionFile, "options", "framelimit")
-Global Vsync% = GetINIInt(OptionFile, "options", "vsync")
+Global Framelimit% = GetOptionInt("graphics", "framelimit")
+Global Vsync% = GetOptionInt("graphics", "vsync")
 
-Global Opt_AntiAlias = GetINIInt(OptionFile, "options", "antialias")
+Global Opt_AntiAlias = GetOptionInt("graphics", "antialias")
 
 Global CurrFrameLimit# = (Framelimit%-19)/100.0
 
-Global ScreenGamma# = GetINIFloat(OptionFile, "options", "screengamma")
+Global ScreenGamma# = GetOptionFloat("graphics", "screengamma")
 ;If Fullscreen Then UpdateScreenGamma()
 
-Global FOV% = GetINIInt(OptionFile, "options", "fov")
+Global FOV% = GetOptionInt("graphics", "fov")
 Const DEFAULT_FOV% = 59
+
+Global HUDStartX%, HUDEndX%, HUDStartY%, HUDEndY%
+Global HUDOffsetScale# = GetOptionFloat("graphics", "hud offset")
+
+UpdateHUDOffsets()
+
+Function UpdateHUDOffsets()
+	If GraphicWidth > GraphicHeight Then
+		HUDStartY = 0 : HUDEndY = GraphicHeight
+		HUDStartX = Int(HUDOffsetScale * GraphicWidth / 2)
+		HUDEndX = GraphicWidth - HUDStartX
+	Else
+		HUDStartX = 0 : HUDEndX = GraphicWidth
+		HUDStartY = Int(HUDOffsetScale * GraphicHeight / 2)
+		HUDEndY = GraphicHeight - HUDStartY
+	EndIf
+End Function
 
 Const HIT_MAP% = 1, HIT_PLAYER% = 2, HIT_ITEM% = 3, HIT_APACHE% = 4, HIT_178% = 5, HIT_DEAD% = 6
 SeedRnd MilliSecs()
@@ -215,21 +260,21 @@ Global mouselook_x_inc# = 0.3 ; This sets both the sensitivity and direction (+/
 Global mouselook_y_inc# = 0.3 ; This sets both the sensitivity and direction (+/-) of the mouse on the Y axis.
 Global mouse_x_speed_1#, mouse_y_speed_1#
 
-Global MoveInputCancelling% = GetINIInt(OptionFile, "options", "move input cancelling")
+Global MoveInputCancelling% = GetOptionInt("general", "move input cancelling")
 
-Global KEY_RIGHT = GetINIInt(OptionFile, "binds", "Right key")
-Global KEY_LEFT = GetINIInt(OptionFile, "binds", "Left key")
-Global KEY_UP = GetINIInt(OptionFile, "binds", "Up key")
-Global KEY_DOWN = GetINIInt(OptionFile, "binds", "Down key")
+Global KEY_RIGHT = GetOptionInt("binds", "Right key")
+Global KEY_LEFT = GetOptionInt("binds", "Left key")
+Global KEY_UP = GetOptionInt("binds", "Up key")
+Global KEY_DOWN = GetOptionInt("binds", "Down key")
 
-Global KEY_BLINK = GetINIInt(OptionFile, "binds", "Blink key")
-Global KEY_SPRINT = GetINIInt(OptionFile, "binds", "Sprint key")
-Global KEY_INV = GetINIInt(OptionFile, "binds", "Inventory key")
-Global KEY_CROUCH = GetINIInt(OptionFile, "binds", "Crouch key")
-Global KEY_SAVE = GetINIInt(OptionFile, "binds", "Save key")
-Global KEY_CONSOLE = GetINIInt(OptionFile, "binds", "Console key")
+Global KEY_BLINK = GetOptionInt("binds", "Blink key")
+Global KEY_SPRINT = GetOptionInt("binds", "Sprint key")
+Global KEY_INV = GetOptionInt("binds", "Inventory key")
+Global KEY_CROUCH = GetOptionInt("binds", "Crouch key")
+Global KEY_SAVE = GetOptionInt("binds", "Save key")
+Global KEY_CONSOLE = GetOptionInt("binds", "Console key")
 
-Global MouseSmooth# = GetINIFloat(OptionFile,"options", "mouse smoothing", 1.0)
+Global MouseSmooth# = GetOptionFloat("controls", "mouse smoothing")
 
 Global Mesh_MinX#, Mesh_MinY#, Mesh_MinZ#
 Global Mesh_MaxX#, Mesh_MaxY#, Mesh_MaxZ#
@@ -273,7 +318,7 @@ Global PlayerZone%, PlayerRoom.Rooms
 
 Global GrabbedEntity%
 
-Global InvertMouse% = GetINIInt(OptionFile, "options", "invert mouse y")
+Global InvertMouse% = GetOptionInt("controls", "invert mouse y")
 Global MouseHit1%, MouseDown1%, MouseHit2%, DoubleClick%, LastMouseHit1%, LastMouseHit1X%, LastMouseHit1Y%, MouseUp1%
 
 Global GodMode%, NoClip%, NoClipSpeed# = 2.0
@@ -319,7 +364,7 @@ Dim RadioCHN%(8)
 
 Dim OldAiPics%(5)
 
-Global SpeedRunMode% = GetINIInt(OptionFile, "options", "speed run mode")
+Global SpeedRunMode% = GetOptionInt("general", "speed run mode")
 Global PlayTime%, TimerStopped% = True
 Global ConsoleFlush%
 Global ConsoleFlushSnd% = 0, ConsoleMusFlush% = 0, ConsoleMusPlay% = 0
@@ -1079,7 +1124,8 @@ Function UpdateConsole()
 					NoClip = 0
 					
 					ShowEntity Collider
-					TranslateEntity Collider, 0, 0.5, 0
+					TranslateEntity Collider, 0, 1.5, 0
+					RotateEntity Collider, EntityPitch(Collider), EntityYaw(Collider), 0
 					
 					KillTimer = 0
 					KillAnim = 0
@@ -1567,8 +1613,8 @@ Global BlurVolume#, BlurTimer#
 
 Global LightBlink#, LightFlash#
 
-Global BumpEnabled% = GetINIInt("options.ini", "options", "bump mapping enabled")
-Global HUDenabled% = GetINIInt("options.ini", "options", "HUD enabled")
+Global BumpEnabled% = GetOptionInt("graphics", "bump mapping enabled")
+Global HUDenabled% = GetOptionInt("graphics", "HUD enabled")
 
 Global Camera%, CameraShake#, CurrCameraZoom#
 
@@ -1578,7 +1624,7 @@ Global CameraFogFar# = GetModdedINIFloat(MapOptions, "facility", "camera fog far
 
 Global StoredCameraFogFar# = CameraFogFar
 
-Global MouseSens# = GetINIFloat("options.ini", "options", "mouse sensitivity")
+Global MouseSens# = GetOptionFloat("controls", "mouse sensitivity")
 
 Include "dreamfilter.bb"
 
@@ -1622,7 +1668,7 @@ Music(23) = "Ending"
 Music(24) = "Credits"
 Music(25) = "SaveMeFrom"
 
-Global MusicVolume# = GetINIFloat(OptionFile, "audio", "music volume")
+Global MusicVolume# = GetOptionFloat("audio", "music volume")
 ;Global MusicCHN% = StreamSound_Strict("SFX\Music\"+Music(2)+".ogg", MusicVolume, CurrMusicStream)
 
 Global CurrMusicStream, MusicCHN
@@ -1772,8 +1818,8 @@ Global NVGImages = LoadAnimImage("GFX\battery.png",64,64,0,2)
 Global Wearing1499% = False
 Global AmbientLightRoomTex%, AmbientLightRoomVal%
 
-Global EnableUserTracks% = GetINIInt(OptionFile, "audio", "enable user tracks")
-Global UserTrackMode% = GetINIInt(OptionFile, "audio", "user track setting")
+Global EnableUserTracks% = GetOptionInt("audio", "enable user tracks")
+Global UserTrackMode% = GetOptionInt("audio", "user track setting")
 Global UserTrackCheck% = 0, UserTrackCheck2% = 0
 Global UserTrackMusicAmount% = 0, CurrUserTrack%, UserTrackFlag% = False
 Dim UserTrackName$(256)
@@ -1804,7 +1850,7 @@ Global room2gw_z# = 0.0
 
 Global menuroomscale# = 8.0 / 2048.0
 
-Global ParticleAmount% = GetINIInt(OptionFile,"options","particle amount")
+Global ParticleAmount% = GetOptionInt("graphics","particle amount")
 
 Dim NavImages(5)
 For i = 0 To 3
@@ -2457,6 +2503,9 @@ Function RemoveDoor(d.Doors)
 End Function
 
 DrawLoading(40,True)
+
+Global DebugMapGen% = GetOptionInt("debug", "show map gen")
+Global DebugForestGen% = GetOptionInt("debug", "show forest gen")
 
 Include "MapSystem.bb"
 
@@ -3150,10 +3199,7 @@ While IsRunning
 				darkA = Max(darkA, Min(Abs(FallTimer / 400.0), 1.0))				
 			EndIf
 			
-			If SelectedItem <> Null Then
-				If SelectedItem\itemtemplate\tempname = "navigator" Or SelectedItem\itemtemplate\tempname = "nav" Then darkA = Max(darkA, 0.5)
-			End If
-			If SelectedScreen <> Null Then darkA = Max(darkA, 0.5)
+			If SelectedScreen <> Null Lor (Not InvOpen) And SelectedItem <> Null And (SelectedItem\itemtemplate\tempname = "navigator" Lor SelectedItem\itemtemplate\tempname = "nav") Then darkA = Max(darkA, 0.5)
 			
 			EntityAlpha(Dark, darkA)	
 		EndIf
@@ -4170,7 +4216,7 @@ Function MovePlayer()
 				If CurrStepSFX=0 Then
 					temp = GetStepSound(Collider)
 					
-					If Sprint = 2.5 Then
+					If Sprint = 1.0 Then
 						PlayerSoundVolume = Max(4.0,PlayerSoundVolume)
 						tempchn% = PlaySound_Strict(StepSFX(temp, 0, Rand(0, 7)))
 					Else
@@ -4182,7 +4228,7 @@ Function MovePlayer()
 				ElseIf CurrStepSFX=2
 					tempchn% = PlaySound_Strict(Step2SFX(Rand(3,5)))
 				ElseIf CurrStepSFX=3
-					If Sprint = 2.5 Then
+					If Sprint = 1.0 Then
 						PlayerSoundVolume = Max(4.0,PlayerSoundVolume)
 						tempchn% = PlaySound_Strict(StepSFX(0, 0, Rand(0, 7)))
 					Else
@@ -4772,8 +4818,8 @@ Function DrawGUI()
 		If SpeedRunMode Then DrawTimer()
 
 		Local width% = 204 * HUDScale
-		x% = 80 * HUDScale
-		y% = GraphicHeight - 95 * HUDScale
+		x% = HUDStartX + 80 * HUDScale
+		y% = HUDEndY - 95 * HUDScale
 
 		DrawBar(BlinkMeterIMG, x, y, width, BlinkTimer / BLINKFREQ)
 		Color 0, 0, 0
@@ -4789,7 +4835,7 @@ Function DrawGUI()
 		
 		DrawImage BlinkIcon, x - 50 * HUDScale, y
 		
-		y = GraphicHeight - 55 * HUDScale
+		y = HUDEndY - 55 * HUDScale
 		DrawBar(StaminaMeterIMG, x, y, width, Stamina / 100.0)
 		
 		Color 0, 0, 0
@@ -6148,8 +6194,8 @@ Function DrawGUI()
 					
 					strtemp$ = ""
 					
-					x = GraphicWidth - ImageWidth(SelectedItem\itemtemplate\img) ;+ 120
-					y = GraphicHeight - ImageHeight(SelectedItem\itemtemplate\img) ;- 30
+					x = HUDEndX - ImageWidth(SelectedItem\itemtemplate\img) ;+ 120
+					y = HUDEndY - ImageHeight(SelectedItem\itemtemplate\img) ;- 30
 					
 					DrawImage(SelectedItem\itemtemplate\img, x, y)
 					
@@ -6631,8 +6677,8 @@ Function DrawGUI()
 					
 					If SelectedItem\state <= 100 Then SelectedItem\state = Max(0, SelectedItem\state - FPSfactor * 0.005)
 					
-					x = GraphicWidth - ImageWidth(SelectedItem\itemtemplate\img)*0.5+20
-					y = GraphicHeight - ImageHeight(SelectedItem\itemtemplate\img)*0.4-85
+					x = HUDEndX - ImageWidth(SelectedItem\itemtemplate\img)*0.5+20
+					y = HUDEndY - ImageHeight(SelectedItem\itemtemplate\img)*0.4-85
 					width = 287
 					height = 256
 					
@@ -7052,8 +7098,6 @@ Function DrawGUI()
 			EndIf
 			
 			If MouseHit2 Then
-				EntityAlpha Dark, 0.0
-				
 				IN$ = SelectedItem\itemtemplate\tempname
 				If IN$ = "scp1025" Then
 					If SelectedItem\itemtemplate\img<>0 Then FreeImage(SelectedItem\itemtemplate\img)
@@ -7115,8 +7159,8 @@ Function DrawTimer()
 	Else
 		durText$ = "Pre-made save loaded"
 	EndIf
-	Local x% = GraphicWidth - StringWidth(durText) - 24 * HUDScale
-	Local y% = 24 * HUDScale
+	Local x% = HUDEndX - StringWidth(durText) - 24 * HUDScale
+	Local y% = HUDStartY + 24 * HUDScale
 	Color 0, 0, 0
 	Text(x + 3 * HUDScale, y + 3 * HUDScale, durText)
 	If TimerStopped Then
@@ -7295,15 +7339,6 @@ Function DrawMenu()
 					;[Block]
 					y=y+50*MenuScale
 					
-					Color 100,100,100
-					Text(x, y, "Enable bump mapping:")	
-					BumpEnabled = DrawTick(x + 270 * MenuScale, y + MenuScale, BumpEnabled, True)
-					If MouseOn(x + 270 * MenuScale, y + MenuScale, 20*MenuScale,20*MenuScale) And OnSliderID=0
-						DrawOptionsTooltip(tx,ty,tw,th,"bump")
-					EndIf
-					
-					y=y+30*MenuScale
-					
 					Color 255,255,255
 					Text(x, y, "VSync:")
 					Vsync% = DrawTick(x + 270 * MenuScale, y + MenuScale, Vsync%)
@@ -7322,31 +7357,11 @@ Function DrawMenu()
 					
 					y=y+30*MenuScale
 					
-					Color 255,255,255
-					Text(x, y, "Enable room lights:")
-					EnableRoomLights = DrawTick(x + 270 * MenuScale, y + MenuScale, EnableRoomLights)
-					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
-						DrawOptionsTooltip(tx,ty,tw,th,"roomlights")
-					EndIf
-					
-					y=y+30*MenuScale
-					
 					ScreenGamma = (SlideBar(x + 270*MenuScale, y+6*MenuScale, 100*MenuScale, ScreenGamma*50.0, 1)/50.0)
 					Color 255,255,255
-					Text(x, y, "Screen gamma")
+					Text(x, y, "Screen gamma:")
 					If (MouseOn(x+270*MenuScale,y+6*MenuScale,100*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=1
 						DrawOptionsTooltip(tx,ty,tw,th,"gamma",ScreenGamma)
-					EndIf
-					
-					;y = y + 50*MenuScale
-					
-					y=y+50*MenuScale
-					
-					Color 255,255,255
-					Text(x, y, "Particle amount:")
-					ParticleAmount = Slider3(x+270*MenuScale,y+6*MenuScale,100*MenuScale,ParticleAmount,2,"MINIMAL","REDUCED","FULL")
-					If (MouseOn(x + 270 * MenuScale, y-6*MenuScale, 100*MenuScale+14, 20) And OnSliderID=0) Or OnSliderID=2
-						DrawOptionsTooltip(tx,ty,tw,th,"particleamount",ParticleAmount)
 					EndIf
 					
 					y=y+50*MenuScale
@@ -7370,6 +7385,16 @@ Function DrawMenu()
 					If (MouseOn(x+270*MenuScale,y-6*MenuScale,100*MenuScale+14,20) And OnSliderID=0) Or OnSliderID=3
 						DrawOptionsTooltip(tx,ty,tw,th+100*MenuScale,"texquality")
 					EndIf
+
+					y=y+50*MenuScale
+
+					HUDOffsetScale = SlideBar(x + 270*MenuScale, y+6*MenuScale,100*MenuScale, HUDOffsetScale*100, 5)/100
+					Color 255,255,255
+					Text(x, y, "HUD offset:")
+					If (MouseOn(x+270*MenuScale,y+6*MenuScale,100*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=5
+						DrawOptionsTooltip(tx,ty,tw,th,"hudoffset")
+					EndIf
+					UpdateHUDOffsets()
 
 					y=y+50*MenuScale
 
@@ -7787,7 +7812,7 @@ Function DrawMenu()
 				
 				If DrawButton(x, y, 390*MenuScale, 60*MenuScale, "Achievements") Then AchievementsMenu = 1
 				y = y + 75*MenuScale
-				If DrawButton(x, y, 390*MenuScale, 60*MenuScale, "Options") Then OptionsMenu = 1
+				If DrawButton(x, y, 390*MenuScale, 60*MenuScale, "Options") Then OptionsMenu = 1 : OnSliderID = 66
 				y = y + 75*MenuScale
 			Else
 				y = y+104*MenuScale
@@ -7947,7 +7972,7 @@ Function LoadEntities()
 	FogTexture = LoadTexture_Strict("GFX\fog.jpg", 1)
 	
 	Fog = CreateSprite(ark_blur_cam)
-	ScaleSprite(Fog, 1.0, Float(GraphicHeight) / Float(GraphicWidth))
+	ScaleSprite(Fog, 1.0, Max(Float(GraphicHeight) / Float(GraphicWidth), 0.8))
 	EntityTexture(Fog, FogTexture)
 	EntityBlend (Fog, 2)
 	EntityOrder Fog, -1000
@@ -7955,7 +7980,7 @@ Function LoadEntities()
 	
 	GasMaskTexture = LoadTexture_Strict("GFX\GasmaskOverlay.jpg", 1)
 	GasMaskOverlay = CreateSprite(ark_blur_cam)
-	ScaleSprite(GasMaskOverlay, 1.0, Float(GraphicHeight) / Float(GraphicWidth))
+	ScaleSprite(GasMaskOverlay, 1.0, Max(Float(GraphicHeight) / Float(GraphicWidth), 0.8))
 	EntityTexture(GasMaskOverlay, GasMaskTexture)
 	EntityBlend (GasMaskOverlay, 2)
 	EntityFX(GasMaskOverlay, 1)
@@ -7965,7 +7990,7 @@ Function LoadEntities()
 	
 	InfectTexture = LoadTexture_Strict("GFX\InfectOverlay.jpg", 1)
 	InfectOverlay = CreateSprite(ark_blur_cam)
-	ScaleSprite(InfectOverlay, 1.0, Float(GraphicHeight) / Float(GraphicWidth))
+	ScaleSprite(InfectOverlay, 1.0, Max(Float(GraphicHeight) / Float(GraphicWidth), 0.8))
 	EntityTexture(InfectOverlay, InfectTexture)
 	EntityBlend (InfectOverlay, 3)
 	EntityFX(InfectOverlay, 1)
@@ -7976,7 +8001,7 @@ Function LoadEntities()
 	
 	NVTexture = LoadTexture_Strict("GFX\NightVisionOverlay.jpg", 1)
 	NVOverlay = CreateSprite(ark_blur_cam)
-	ScaleSprite(NVOverlay, 1.0, Float(GraphicHeight) / Float(GraphicWidth))
+	ScaleSprite(NVOverlay, 1.0, Max(Float(GraphicHeight) / Float(GraphicWidth), 0.8))
 	EntityTexture(NVOverlay, NVTexture)
 	EntityBlend (NVOverlay, 2)
 	EntityFX(NVOverlay, 1)
@@ -7984,7 +8009,7 @@ Function LoadEntities()
 	MoveEntity(NVOverlay, -0.0005, 0.0005, 1.0)
 	HideEntity(NVOverlay)
 	NVBlink = CreateSprite(ark_blur_cam)
-	ScaleSprite(NVBlink, 1.0, Float(GraphicHeight) / Float(GraphicWidth))
+	ScaleSprite(NVBlink, 1.0, Max(Float(GraphicHeight) / Float(GraphicWidth), 0.8))
 	EntityColor(NVBlink,0,0,0)
 	EntityFX(NVBlink, 1)
 	EntityOrder NVBlink, -1005
@@ -8001,7 +8026,7 @@ Function LoadEntities()
 	SetBuffer BackBuffer()
 	
 	Dark = CreateSprite(ark_blur_cam)
-	ScaleSprite(Dark, 1.0, Float(GraphicHeight) / Float(GraphicWidth))
+	ScaleSprite(Dark, 1.0, Max(Float(GraphicHeight) / Float(GraphicWidth), 0.8))
 	EntityTexture(Dark, DarkTexture)
 	EntityBlend (Dark, 1)
 	EntityOrder Dark, -1002
@@ -8018,7 +8043,7 @@ Function LoadEntities()
 	TeslaTexture = LoadTexture_Strict("GFX\map\tesla.jpg", 1+2)
 	
 	Light = CreateSprite(ark_blur_cam)
-	ScaleSprite(Light, 1.0, Float(GraphicHeight) / Float(GraphicWidth))
+	ScaleSprite(Light, 1.0, Max(Float(GraphicHeight) / Float(GraphicWidth), 0.8))
 	EntityTexture(Light, LightTexture)
 	EntityBlend (Light, 1)
 	EntityOrder Light, -1002
@@ -8534,12 +8559,16 @@ Function InitNewGame()
 				de.Decals = CreateDecal(Rand(2, 3), EntityX(r\obj)+Rnd(- 2,2), 0.003, EntityZ(r\obj)+Rnd(-2,2), 90, Rand(360), 0)
 				de\Size = Rnd(0.1, 0.4) : ScaleSprite(de\obj, de\Size, de\Size)
 				EntityAlpha(de\obj, Rnd(0.85, 0.95))
+				SnapForward(de\obj, 5)
+				TranslateEntity(de\obj, 0, 0.003, 0)
 			EndIf
 			
 			If Rand(4) = 1 Then
 				de.Decals = CreateDecal(0, EntityX(r\obj)+Rnd(- 2,2), 0.003, EntityZ(r\obj)+Rnd(-2,2), 90, Rand(360), 0)
 				de\Size = Rnd(0.5, 0.7) : EntityAlpha(de\obj, 0.7) : de\ID = 1 : ScaleSprite(de\obj, de\Size, de\Size)
 				EntityAlpha(de\obj, Rnd(0.7, 0.85))
+				SnapForward(de\obj, 5)
+				TranslateEntity(de\obj, 0, 0.003, 0)
 			EndIf
 		EndIf
 		
@@ -9952,11 +9981,11 @@ Function Use914(item.Items, setting$, x#, y#, z#)
 					d.Decals = CreateDecal(0, x, 8*RoomScale+0.010, z, 90, Rand(360), 0)
 					d\Size = 0.2 : EntityAlpha(d\obj, 0.8) : ScaleSprite(d\obj, d\Size, d\Size)
 				Case "1:1"
-					it2 = CreateItem("Cigarette", "cigarette", x + 1.5, y + 0.5, z + 1.0)
+					it2 = CreateItem("Cigarette", "cigarette", x, y, z)
 				Case "fine"
-					it2 = CreateItem("Joint", "420s", x + 1.5, y + 0.5, z + 1.0)
+					it2 = CreateItem("Joint", "420s", x, y, z)
 				Case "very fine"
-					it2 = CreateItem("Smelly Joint", "420s", x + 1.5, y + 0.5, z + 1.0)
+					it2 = CreateItem("Smelly Joint", "420s", x, y, z)
 			End Select
 			
 			RemoveItem(item)
@@ -10751,69 +10780,6 @@ Function WrapAngle#(angle#)
 	Return angle
 End Function
 
-Function GetAngle#(x1#, y1#, x2#, y2#)
-	Return ATan2( y2 - y1, x2 - x1 )
-End Function
-
-Function CircleToLineSegIsect% (cx#, cy#, r#, l1x#, l1y#, l2x#, l2y#)
-	
-	;Palauttaa:
-	;  True (1) kun:
-	;      Ympyrä [keskipiste = (cx, cy): säde = r]
-	;      leikkaa janan, joka kulkee pisteiden (l1x, l1y) & (l2x, l2y) kaitta
-	;  False (0) muulloin
-	
-	;Ympyrän keskipisteen ja (ainakin toisen) janan päätepisteen etäisyys < r
-	;-> leikkaus
-	If Distance(cx, cy, l1x, l1y) <= r Then
-		Return True
-	EndIf
-	
-	If Distance(cx, cy, l2x, l2y) <= r Then
-		Return True
-	EndIf	
-	
-	;Vektorit (janan vektori ja vektorit janan päätepisteistä ympyrän keskipisteeseen)
-	Local SegVecX# = l2x - l1x
-	Local SegVecY# = l2y - l1y
-	
-	Local PntVec1X# = cx - l1x
-	Local PntVec1Y# = cy - l1y
-	
-	Local PntVec2X# = cx - l2x
-	Local PntVec2Y# = cy - l2y
-	
-	;Em. vektorien pistetulot
-	Local dp1# = SegVecX * PntVec1X + SegVecY * PntVec1Y
-	Local dp2# = -SegVecX * PntVec2X - SegVecY * PntVec2Y
-	
-	;Tarkistaa onko toisen pistetulon arvo 0
-	;tai molempien merkki sama
-	If dp1 = 0 Or dp2 = 0 Then
-	ElseIf (dp1 > 0 And dp2 > 0) Or (dp1 < 0 And dp2 < 0) Then
-	Else
-		;Ei kumpikaan -> ei leikkausta
-		Return False
-	EndIf
-	
-	;Janan päätepisteiden kautta kulkevan suoran ;yhtälö; (ax + by + c = 0)
-	Local a# = (l2y - l1y) / (l2x - l1x)
-	Local b# = -1
-	Local c# = -(l2y - l1y) / (l2x - l1x) * l1x + l1y
-	
-	;Ympyrän keskipisteen etäisyys suorasta
-	Local d# = Abs(a * cx + b * cy + c) / Sqr(a * a + b * b)
-	
-	;Ympyrä on liian kaukana
-	;-> ei leikkausta
-	If d > r Then Return False
-	
-	;Local kateetin_pituus# = Cos(angle) * hyp
-	
-	;Jos päästään tänne saakka, ympyrä ja jana leikkaavat (tai ovat sisäkkäin)
-	Return True
-End Function
-
 Function point_direction#(x1#,z1#,x2#,z2#)
 	Local dx#, dz#
 	dx = x1 - x2
@@ -10839,23 +10805,6 @@ Function angleDist#(a0#,a1#)
 		bb = b
 	EndIf
 	Return bb
-End Function
-
-Function Inverse#(number#)
-	
-	Return Float(1.0-number#)
-	
-End Function
-
-Function Rnd_Array#(numb1#,numb2#,Array1#,Array2#)
-	Local whatarray% = Rand(1,2)
-	
-	If whatarray% = 1
-		Return Rnd(Array1#,numb1#)
-	Else
-		Return Rnd(numb2#,Array2#)
-	EndIf
-	
 End Function
 
 ;--------------------------------------- decals -------------------------------------------------------
@@ -11258,27 +11207,24 @@ End Function
 ;Save options to .ini.
 Function SaveOptionsINI()
 	
-	PutINIValue(OptionFile, "options", "mouse sensitivity", MouseSens)
-	PutINIValue(OptionFile, "options", "invert mouse y", InvertMouse)
-	PutINIValue(OptionFile, "options", "bump mapping enabled", BumpEnabled)			
-	PutINIValue(OptionFile, "options", "HUD enabled", HUDenabled)
-	PutINIValue(OptionFile, "options", "screengamma", ScreenGamma)
-	PutINIValue(OptionFile, "options", "antialias", Opt_AntiAlias)
-	PutINIValue(OptionFile, "options", "vsync", Vsync)
-	PutINIValue(OptionFile, "options", "show FPS", ShowFPS)
-	PutINIValue(OptionFile, "options", "framelimit", Framelimit%)
-	PutINIValue(OptionFile, "options", "achievement popup enabled", AchvMSGenabled%)
+	PutINIValue(OptionFile, "controls", "mouse sensitivity", MouseSens)
+	PutINIValue(OptionFile, "controls", "invert mouse y", InvertMouse)
+	PutINIValue(OptionFile, "graphics", "HUD enabled", HUDenabled)
+	PutINIValue(OptionFile, "graphics", "screengamma", ScreenGamma)
+	PutINIValue(OptionFile, "graphics", "antialias", Opt_AntiAlias)
+	PutINIValue(OptionFile, "graphics", "vsync", Vsync)
+	PutINIValue(OptionFile, "graphics", "show FPS", ShowFPS)
+	PutINIValue(OptionFile, "graphics", "framelimit", Framelimit%)
+	PutINIValue(OptionFile, "general", "achievement popup enabled", AchvMSGenabled%)
 	PutINIValue(OptionFile, "launcher", "launcher enabled", LauncherEnabled%)
-	PutINIValue(OptionFile, "options", "room lights enabled", EnableRoomLights%)
-	PutINIValue(OptionFile, "options", "texture details", TextureDetails%)
+	PutINIValue(OptionFile, "graphics", "texture details", TextureDetails%)
 	PutINIValue(OptionFile, "console", "enabled", CanOpenConsole%)
 	PutINIValue(OptionFile, "console", "auto opening", ConsoleOpening%)
-	PutINIValue(OptionFile, "options", "resource pack debug", DebugResourcePacks%)
-	PutINIValue(OptionFile, "options", "speed run mode", SpeedRunMode%)
-	PutINIValue(OptionFile, "options", "numeric seeds", UseNumericSeeds%)
-	PutINIValue(OptionFile, "options", "particle amount", ParticleAmount)
-	PutINIValue(OptionFile, "options", "mouse smoothing", MouseSmooth)
-	PutINIValue(OptionFile, "options", "fov", FOV)
+	PutINIValue(OptionFile, "general", "speed run mode", SpeedRunMode%)
+	PutINIValue(OptionFile, "general", "numeric seeds", UseNumericSeeds%)
+	PutINIValue(OptionFile, "controls", "mouse smoothing", MouseSmooth)
+	PutINIValue(OptionFile, "graphics", "hud offset", HUDOffsetScale)
+	PutINIValue(OptionFile, "graphics", "fov", FOV)
 	
 	PutINIValue(OptionFile, "audio", "music volume", MusicVolume)
 	PutINIValue(OptionFile, "audio", "sound volume", PrevSFXVolume)
@@ -11378,8 +11324,8 @@ Function Graphics3DExt%(width%,height%,depth%=32,mode%=2)
 		SMALLEST_POWER_TWO = SMALLEST_POWER_TWO * 2.0
 	Wend
 	InitFastResize()
-	AntiAlias GetINIInt(OptionFile,"options","antialias")
-	;TextureAnisotropy% (GetINIInt(OptionFile,"options","anisotropy"),-1)
+	AntiAlias GetOptionInt("graphics","antialias")
+	;TextureAnisotropy% (GetOptionInt("graphics","anisotropy"),-1)
 End Function
 
 Function ApplyBorderlessResizing()
@@ -11468,10 +11414,10 @@ Function RenderWorld2()
 			Local plusY% = 0
 			If hasBattery=1 Then plusY% = 40
 			
-			Text GraphicWidth/2,(20+plusY)*MenuScale,"REFRESHING DATA IN",True,False
+			Text GraphicWidth/2,HUDStartY+(20+plusY)*MenuScale,"REFRESHING DATA IN",True,False
 			
-			Text GraphicWidth/2,(60+plusY)*MenuScale,Max(f2s(NVTimer/60.0,1),0.0),True,False
-			Text GraphicWidth/2,(100+plusY)*MenuScale,"SECONDS",True,False
+			Text GraphicWidth/2,HUDStartY+(60+plusY)*MenuScale,Max(f2s(NVTimer/60.0,1),0.0),True,False
+			Text GraphicWidth/2,HUDStartY+(100+plusY)*MenuScale,"SECONDS",True,False
 			
 			temp% = CreatePivot() : temp2% = CreatePivot()
 			PositionEntity temp, EntityX(Collider), EntityY(Collider), EntityZ(Collider)
@@ -11515,25 +11461,25 @@ Function RenderWorld2()
 			
 			Color 0,0,55
 			For k=0 To 10
-				Rect 45,GraphicHeight*0.5-(k*20),54,10,True
+				Rect HUDStartX+45,GraphicHeight*0.5-(k*20),54,10,True
 			Next
 			Color 0,0,255
 			For l=0 To Floor((power%+50)*0.01)
-				Rect 45,GraphicHeight*0.5-(l*20),54,10,True
+				Rect HUDStartX+45,GraphicHeight*0.5-(l*20),54,10,True
 			Next
-			DrawImage NVGImages,40,GraphicHeight*0.5+30,1
+			DrawImage NVGImages,HUDStartX+40,GraphicHeight*0.5+30,1
 			
 			Color 255,255,255
 		ElseIf WearingNightVision=1 And hasBattery<>0
 			Color 0,55,0
 			For k=0 To 10
-				Rect 45,GraphicHeight*0.5-(k*20),54,10,True
+				Rect HUDStartX+45,GraphicHeight*0.5-(k*20),54,10,True
 			Next
 			Color 0,255,0
 			For l=0 To Floor((power%+50)*0.01)
-				Rect 45,GraphicHeight*0.5-(l*20),54,10,True
+				Rect HUDStartX+45,GraphicHeight*0.5-(l*20),54,10,True
 			Next
-			DrawImage NVGImages,40,GraphicHeight*0.5+30,0
+			DrawImage NVGImages,HUDStartX+40,GraphicHeight*0.5+30,0
 		EndIf
 	EndIf
 	
@@ -11865,51 +11811,11 @@ End Function
 
 Function PlayStartupVideos()
 
-	If GetINIInt("options.ini","options","play startup video") = 0 Lor IsRestart Then Return
+	If GetOptionInt("general","play startup video") = 0 Lor IsRestart Then Return
 
 	PlayMovie("GFX\menu\startup_Undertow")
 	PlayMovie("GFX\menu\startup_TSS")
 
-End Function
-
-Function ProjectImage(img, w#, h#, Quad%, Texture%)
-	
-	Local img_w# = ImageWidth(img)
-	Local img_h# = ImageHeight(img)
-	If img_w > 2048 Then img_w = 2048
-	If img_h > 2048 Then img_h = 2048
-	If img_w < 1 Then img_w = 1
-	If img_h < 1 Then img_h = 1
-	
-	If w > 2048 Then w = 2048
-	If h > 2048 Then h = 2048
-	If w < 1 Then w = 1
-	If h < 1 Then h = 1
-	
-	Local w_rel# = w# / img_w#
-	Local h_rel# = h# / img_h#
-	Local g_rel# = 2048.0 / Float(RealGraphicWidth)
-	Local dst_x = 1024 - (img_w / 2.0)
-	Local dst_y = 1024 - (img_h / 2.0)
-	CopyRect 0, 0, img_w, img_h, dst_x, dst_y, ImageBuffer(img), TextureBuffer(Texture)
-	ScaleEntity Quad, w_rel * g_rel, h_rel * g_rel, 0.0001
-	RenderWorld()
-	
-End Function
-
-Function CreateQuad()
-	
-	mesh = CreateMesh()
-	surf = CreateSurface(mesh)
-	v0 = AddVertex(surf,-1.0, 1.0, 0, 0, 0)
-	v1 = AddVertex(surf, 1.0, 1.0, 0, 1, 0)
-	v2 = AddVertex(surf, 1.0,-1.0, 0, 1, 1)
-	v3 = AddVertex(surf,-1.0,-1.0, 0, 0, 1)
-	AddTriangle(surf, v0, v1, v2)
-	AddTriangle(surf, v0, v2, v3)
-	UpdateNormals mesh
-	Return mesh
-	
 End Function
 
 Function CanUseItem(canUseWithHazmat%, canUseWithGasMask%, canUseWithEyewear%)
@@ -12002,21 +11908,6 @@ Function Update096ElevatorEvent#(e.Events,EventState#,d.Doors,elevatorobj%)
 		EventState = EventState + FPSfactor * 1.4
 	EndIf
 	Return EventState
-	
-End Function
-
-Function RotateEntity90DegreeAngles(entity%)
-	Local angle = WrapAngle(entity)
-	
-	If angle < 45.0 Then
-		Return 0
-	ElseIf angle >= 45.0 And angle < 135 Then
-		Return 90
-	ElseIf angle >= 135 And angle < 225 Then
-		Return 180
-	Else
-		Return 270
-	EndIf
 	
 End Function
 

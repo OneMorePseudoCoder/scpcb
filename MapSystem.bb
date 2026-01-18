@@ -203,6 +203,8 @@ Function LoadRMesh(file$,rt.RoomTemplates)
 	EndIf
 	
 	file=StripFilename(file)
+	; Modded rooms must try loading textures starting from the vanilla root.
+	If Left(file, 5) = "Mods\" Then file = Right(file, Len(file) - Instr(file, "\", 6))
 	
 	Local count%,count2%
 	
@@ -896,19 +898,24 @@ Function GenForestGrid(fr.Forest)
 		EndIf
 	Wend
 	
-	If 0 Then
+	If DebugForestGen Then
 		Local x%, y%
 		Repeat
 			Cls()
+
+			Local tileSize = Max(Min(32 * HUDScale, Min(GraphicWidth / gridsize, (GraphicHeight - 50 * HUDScale) / gridsize)), 3)
+			Local totalWidth = gridsize * tileSize - 2, totalHeight = gridsize * tileSize - 2
+			Local xStart = GraphicWidth / 2 - totalWidth / 2, yStart = GraphicHeight / 2 - totalHeight / 2 - 50 * HUDScale
+
 			i=gridsize-1
 			For x=0 To gridsize-1
 				For y=0 To gridsize-1
 					If fr\grid[x+(y*gridsize)]=0 Then
 						Color(50,50,50)
-						Rect((i*32)*MenuScale,(y*32)*MenuScale,30*MenuScale,30*MenuScale)
+						Rect(xStart + i*tileSize,yStart + y*tileSize,tileSize-2,tileSize-2)
 					Else
 						Color(255,255,255)
-						Rect((i*32)*MenuScale,(y*32)*MenuScale,30*MenuScale,30*MenuScale)
+						Rect(xStart + i*tileSize,yStart + y*tileSize,tileSize-2,tileSize-2)
 					EndIf
 				Next
 				i=i-1
@@ -917,18 +924,23 @@ Function GenForestGrid(fr.Forest)
 			i=gridsize-1
 			For x=0 To gridsize-1
 				For y=0 To gridsize-1
-					If MouseOn((i*32)*MenuScale,(y*32)*MenuScale,32*MenuScale,32*MenuScale) Then
+					If MouseOn(xStart + i*tileSize,yStart + y*tileSize,tileSize,tileSize) Then
 						Color(255,0,0)
 					Else
 						Color(0,0,0)
 					EndIf
-					Text(((i*32)+2)*MenuScale,((y*32)+2)*MenuScale,fr\grid[x+(y*gridsize)])
+					Text(xStart + i*tileSize+2,yStart + y*tileSize+2,fr\grid[x+(y*gridsize)])
 				Next
 				i=i-1
 			Next
-			Flip()
+
 			If Fullscreen Then DrawImage(CursorIMG,ScaledMouseX(),ScaledMouseY())
-		Until (GetKey() <> 0 Or MouseHit(1))
+			Color(255, 255, 255)
+			Text(GraphicWidth / 2, GraphicHeight - 25 * HUDScale, "PRESS ANY KEY TO CONTINUE", True, True)
+			
+			Flip()
+		Until GetKey() <> 0
+		FlushKeys()
 	EndIf
 	
 	;change branches from -1s to 1s
@@ -2013,6 +2025,7 @@ Function CreateRoom.Rooms(zone%, roomshape%, x#, y#, z#, angle%, name$)
 				
 				r\angle = angle
 				If angle <> 0 Then TurnEntity(r\obj, 0, angle, 0)
+				CalculateRoomExtents(r)
 				Return r
 			EndIf
 		Next
@@ -2055,6 +2068,7 @@ Function CreateRoom.Rooms(zone%, roomshape%, x#, y#, z#, angle%, name$)
 					
 					r\angle = angle
 					If angle <> 0 Then TurnEntity(r\obj, 0, angle, 0)
+					CalculateRoomExtents(r)
 					Return r
 				End If
 			EndIf
@@ -5047,7 +5061,7 @@ Function FillRoom(r.Rooms)
 				r\Objects[2] = CreatePivot(r\obj)
 				PositionEntity (r\Objects[2], r\x - 156.825*RoomScale, -37.3458*RoomScale, r\z+121.364*RoomScale, True)
 				
-				de.Decals = CreateDecal(3,  r\x - 156.825*RoomScale, -37.3458*RoomScale, r\z+121.364*RoomScale,90,Rnd(360),0)
+				de.Decals = CreateDecal(3,  r\x - 156.825*RoomScale, 0.02, r\z+121.364*RoomScale,90,Rnd(360),0)
 				de\Size = 0.5
 				ScaleSprite(de\obj, de\Size,de\Size)
 				EntityParent de\obj, r\obj
@@ -5553,9 +5567,17 @@ Function FillRoom(r.Rooms)
 		If Not dt\AllowRemoteControl Then
 			door\AutoClose = False
 		EndIf
+		SnapForward(door\buttons[0], 10)
+		SnapForward(door\buttons[1], 10)
 	Next
 	
 	CatchErrors("FillRoom ("+r\RoomTemplate\Name+")")
+End Function
+
+Function SnapForward(entity%, dist#)
+	If EntityPick(entity, dist) Then
+		PositionEntity entity, PickedX(), PickedY(), PickedZ(), True
+	EndIf
 End Function
 
 Function UpdateRooms()
@@ -7032,6 +7054,9 @@ End Function
 Function CreateMap()
 	DebugLog ("Generating a map using the seed "+GetRandomSeed())
 	
+	MapWidth% = GetModdedINIInt(MapOptions, "facility", "width")
+	MapHeight% = GetModdedINIInt(MapOptions, "facility", "height")
+
 	I_Zone\Transition[0] = Floor(MapHeight * (2.0 / 3.0)) + 1
 	I_Zone\Transition[1] = Floor(MapHeight * (1.0 / 3.0)) + 1
 	I_Zone\HasCustomForest = False
@@ -7044,9 +7069,6 @@ Function CreateMap()
 	Local zone%
 	
 	SeedRnd GetRandomSeed()
-	
-	MapWidth% = GetModdedINIInt(MapOptions, "facility", "width")
-	MapHeight% = GetModdedINIInt(MapOptions, "facility", "height")
 	
 	Dim MapTemp%(MapWidth+1, MapHeight+1)
 	Dim MapFound%(MapWidth+1, MapHeight+1)
@@ -7411,8 +7433,14 @@ Function CreateMap()
 	
 	For rt.RoomTemplates = Each RoomTemplates
 		If rt\SetRoom >= 0 Then
-			Local start% = MinPositions(rt\Shape, rt\zone[0])
-			SetRoom(rt\Name, rt\Shape, start+Floor(rt\SetRoom*Float(RoomAmounts(rt\Shape, rt\zone[0]))),start,MaxPositions(rt\Shape, rt\zone[0]))
+			For i% = 0 To ZONEAMOUNT-1
+				zone% = rt\zone[i]
+				If zone <> 0 Then
+					Local start% = MinPositions(rt\Shape, zone)
+					SetRoom(rt\Name, rt\Shape, start+Floor(rt\SetRoom*Float(RoomAmounts(rt\Shape, zone))),start,MaxPositions(rt\Shape, zone))
+				EndIf
+			Next
+
 		EndIf
 	Next
 
@@ -7439,7 +7467,6 @@ Function CreateMap()
 				Else ;If zone = 3
 					r = CreateRoom(zone, ROOM2, x * 8, 0, y * 8, 0, "checkpoint2")
 				EndIf
-				CalculateRoomExtents(r)
 			ElseIf MapTemp(x, y) > 0
 				Local angle%
 
@@ -7518,44 +7545,44 @@ Function CreateMap()
 						r = CreateRoom(zone, ROOM4, x * 8, 0, y * 8, 0, MapName(x, y))
 						MapRoomID(ROOM4)=MapRoomID(ROOM4)+1
 				End Select
-				CalculateRoomExtents(r)
 			EndIf
 		Next
 	Next		
 	
 	r = CreateRoom(0, ROOM1, (MapWidth-1) * 8, 500, 8, 0, "gatea")
-	CalculateRoomExtents(r)
 	MapRoomID(ROOM1)=MapRoomID(ROOM1)+1
 	
 	r = CreateRoom(0, ROOM1, (MapWidth-1) * 8, 0, (MapHeight-1) * 8, 0, "pocketdimension")
-	CalculateRoomExtents(r)
 	MapRoomID(ROOM1)=MapRoomID(ROOM1)+1	
 	
 	If IntroEnabled
 		r = CreateRoom(0, ROOM1, 8, 0, (MapHeight-1) * 8, 0, "173")
-		CalculateRoomExtents(r)
 		MapRoomID(ROOM1)=MapRoomID(ROOM1)+1
 	EndIf
 	
 	r = CreateRoom(0, ROOM1, 8, 800, 0, 0, "dimension1499")
-	CalculateRoomExtents(r)
 	MapRoomID(ROOM1)=MapRoomID(ROOM1)+1
 	
 	For r.Rooms = Each Rooms
 		PreventRoomOverlap(r)
 	Next
 	
-	If 0 Then 
+	If DebugMapGen Then
 		Repeat
 			Cls
+
+			Local tileSize = Max(Min(32 * HUDScale, Min(GraphicWidth / MapWidth, (GraphicHeight - 50) / MapHeight)), 3)
+			Local totalWidth = MapWidth * tileSize - 2, totalHeight = MapHeight * tileSize - 2
+			Local xStart = GraphicWidth / 2 - totalWidth / 2, yStart = GraphicHeight / 2 - totalHeight / 2 - 50 * HUDScale
+
 			For x = 0 To MapWidth - 1
 				For y = 0 To MapHeight - 1
 					If MapTemp(x, y) = 0 Then
 						
 						zone=GetZone(y)
 						
-						Color 50*zone, 50*zone, 50*zone
-						Rect(x * 32, y * 32, 30, 30)
+						Color 25+50*zone, 25+50*zone, 25+50*zone
+						Rect(xStart + x * tileSize, yStart + y * tileSize, tileSize - 2, tileSize - 2)
 					Else
 						If MapTemp(x, y) = 255 Then
 							Color 0,200,0
@@ -7568,7 +7595,7 @@ Function CreateMap()
 						Else
 							Color 255, 255, 255
 						EndIf
-						Rect(x * 32, y * 32, 30, 30)
+						Rect(xStart + x * tileSize, yStart + y * tileSize, tileSize - 2, tileSize - 2)
 					End If
 				Next
 			Next	
@@ -7576,8 +7603,8 @@ Function CreateMap()
 			For x = 0 To MapWidth - 1
 				For y = 0 To MapHeight - 1
 					
-					If MouseX()>x*32 And MouseX()<x*32+32 Then
-						If MouseY()>y*32 And MouseY()<y*32+32 Then
+					If MouseX()>xStart + x*tileSize And MouseX()<xStart + x*tileSize+tileSize Then
+						If MouseY()>yStart + y*tileSize And MouseY()<yStart + y*tileSize+tileSize Then
 							Color 255, 0, 0
 						Else
 							Color 200, 200, 200
@@ -7587,13 +7614,18 @@ Function CreateMap()
 					EndIf
 					
 					If MapTemp(x, y) > 0 Then
-						Text x * 32 +2, (y) * 32 + 2,MapTemp(x, y) +" "+ MapName(x,y)
+						Text xStart + x * tileSize +2, yStart + y * tileSize + 2,MapTemp(x, y) +" "+ MapName(x,y)
 					End If
 				Next
-			Next			
+			Next
+
+			If Fullscreen Then DrawImage(CursorIMG,ScaledMouseX(),ScaledMouseY())
+			Color 255, 255, 255
+			Text(GraphicWidth / 2, GraphicHeight - 25 * HUDScale, "PRESS ANY KEY TO CONTINUE", True, True)
 			
 			Flip
-		Until KeyHit(28)		
+		Until GetKey() <> 0
+		FlushKeys()
 	EndIf
 	
 	
@@ -7920,7 +7952,7 @@ Function UpdateRoomLights(cam%)
 									
 									dist# = (EntityDistance(cam%,r\LightSpritesPivot[i])+0.5)/7.5
 									dist# = Max(Min(dist#,1.0),0.0)
-									alpha# = Float(Inverse(dist#))
+									alpha# = Float(1.0 - dist)
 									
 									If alpha# > 0.0 Then
 										EntityAlpha r\LightSprites2[i],Max(3*(Brightness/255)*(r\LightIntensity[i]/2),1)*alpha#

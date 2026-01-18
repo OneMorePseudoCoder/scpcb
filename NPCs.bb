@@ -214,7 +214,7 @@ Function CreateNPC.NPCs(NPCtype%, x#, y#, z#)
 			
 			n\Speed = 2.0 / 100
 			
-			MeshCullBox (n\obj, -MeshWidth(ClassDObj), -MeshHeight(ClassDObj), -MeshDepth(ClassDObj), MeshWidth(ClassDObj)*2, MeshHeight(ClassDObj)*2, MeshDepth(ClassDObj)*2)
+			MeshCullBox (n\obj, -MeshWidth(ClassDObj), -MeshHeight(ClassDObj), -MeshDepth(ClassDObj)*4, MeshWidth(ClassDObj)*2, MeshHeight(ClassDObj)*2, MeshDepth(ClassDObj)*8)
 			
 			n\CollRadius = 0.32
 			;[End Block]
@@ -301,7 +301,7 @@ Function CreateNPC.NPCs(NPCtype%, x#, y#, z#)
 				temp# = (GetModdedINIFloat("DATA\NPCs.ini", "SCP-049-2", "scale") / 2.5)
 				ScaleEntity n\obj, temp, temp, temp
 				
-				MeshCullBox (n\obj, -MeshWidth(n\obj), -MeshHeight(n\obj), -MeshDepth(n\obj), MeshWidth(n\obj)*2, MeshHeight(n\obj)*2, MeshDepth(n\obj)*2)
+				MeshCullBox (n\obj, -MeshWidth(n\obj), -MeshHeight(n\obj), -MeshDepth(n\obj)*1.5, MeshWidth(n\obj)*2, MeshHeight(n\obj)*2, MeshDepth(n\obj)*3)
 			EndIf
 			
 			n\Speed = (GetModdedINIFloat("DATA\NPCs.ini", "SCP-049-2", "speed") / 100.0)
@@ -580,7 +580,7 @@ Function CreateNPC.NPCs(NPCtype%, x#, y#, z#)
 			
 			n\Speed = 2.0 / 100
 			
-			MeshCullBox (n\obj, -MeshWidth(n\obj), -MeshHeight(n\obj), -MeshDepth(n\obj), MeshWidth(n\obj)*2, MeshHeight(n\obj)*2, MeshDepth(n\obj)*2)
+			MeshCullBox (n\obj, -MeshWidth(n\obj), -MeshHeight(n\obj), -MeshDepth(n\obj)*4, MeshWidth(n\obj)*2, MeshHeight(n\obj)*2, MeshDepth(n\obj)*8)
 			
 			SetNPCFrame n,11
 			
@@ -602,7 +602,7 @@ Function CreateNPC.NPCs(NPCtype%, x#, y#, z#)
 			
 			n\Speed = 2.0 / 100
 			
-			MeshCullBox (n\obj, -MeshWidth(ClerkOBJ), -MeshHeight(ClerkOBJ), -MeshDepth(ClerkOBJ), MeshWidth(ClerkOBJ)*2, MeshHeight(ClerkOBJ)*2, MeshDepth(ClerkOBJ)*2)
+			MeshCullBox (n\obj, -MeshWidth(ClerkOBJ), -MeshHeight(ClerkOBJ), -MeshDepth(ClerkOBJ)*4.5, MeshWidth(ClerkOBJ)*2, MeshHeight(ClerkOBJ)*2, MeshDepth(ClerkOBJ)*9)
 			
 			n\CollRadius = 0.32
 			;[End Block]
@@ -2011,6 +2011,12 @@ Function UpdateNPCs()
 							ElseIf dist > HideDistance*0.8 And n\State3 > 0 Then
 								n\State = 2
 								n\State3 = 0
+								n\PathStatus = 0
+								n\PathTimer = 0.0
+								n\PathLocation = 0
+								n\State2 = 0
+								n\PrevState = 0
+								
 								For r.Rooms = Each Rooms
 									If EntityDistance(r\obj,n\Collider)<4.0 Then
 										TeleportEntity(n\Collider,EntityX(r\obj),0.1,EntityZ(r\obj),n\CollRadius,True)
@@ -4119,7 +4125,7 @@ Function UpdateNPCs()
 								;echo/stare/walk around periodically
 								;If n\Frame>1014.0 Then
 								If n\Frame>213.0
-									If Rand(3)=1 And dist<4 Then
+									If Rand(3)=1 And dist<4 And (Not NoTarget) Then
 										n\State = Rand(1,4)
 									Else
 										n\State = Rand(5,6)								
@@ -4127,7 +4133,7 @@ Function UpdateNPCs()
 								EndIf
 								
 								;echo if player gets close
-								If dist<2.0 Then 
+								If dist<2.0 And (Not NoTarget) Then 
 									n\State=Rand(1,4)
 								EndIf 							
 							EndIf
@@ -4217,7 +4223,7 @@ Function UpdateNPCs()
 								AnimateNPC(n, 580, 628, n\CurrSpeed*25.0)
 								
 								;chasing the player
-								If n\State = 8 And dist<32 Then
+								If n\State = 8 And dist<32 And (Not NoTarget) Then
 									If n\PathTimer <= 0 Then
 										n\PathStatus = FindPath (n, EntityX(Collider,True), EntityY(Collider,True), EntityZ(Collider,True))
 										n\PathTimer = 40*10
@@ -4282,7 +4288,7 @@ Function UpdateNPCs()
 									If MilliSecs() > n\State2 And dist<16.0 Then
 										HideEntity n\Collider
 										EntityPick(n\Collider, 1.5)
-										If PickedEntity() <> 0 Then
+										If PickedEntity() <> 0 And (Not NoTarget) Then
 											If WearingNightVision<> 0 Then GiveAchievement(Achv966)
 											n\Angle = EntityYaw(n\Collider)+Rnd(80,110)
 										EndIf
