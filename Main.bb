@@ -107,8 +107,6 @@ If GraphicHeight <= 0 Then GraphicHeight = DesktopHeight()
 
 Global Depth% = 0, Fullscreen% = GetOptionInt("graphics", "fullscreen")
 
-Global SelectedGFXDriver% = Min(Max(GetOptionInt("graphics", "gfx driver"), 1), CountGfxDrivers())
-
 Global ShowFPS = GetOptionInt("graphics", "show FPS")
 
 Global WireframeState
@@ -145,8 +143,7 @@ Else If Fullscreen And (Not GfxModeExists(GraphicWidth, GraphicHeight, 32)) Then
 	AspectRatioRatio = 1.0
 	UpdateLauncher()
 EndIf
-SetGfxDriver(SelectedGFXDriver)
-Global GFXDriverName$ = GFXDriverName(SelectedGFXDriver)
+Global GFXDriverName$ = GFXDriverName(1)
 	
 ;New "fake fullscreen" - ENDSHN Psst, it's called borderless windowed mode --Love Mark,
 If BorderlessWindowed

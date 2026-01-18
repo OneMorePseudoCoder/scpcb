@@ -1572,28 +1572,6 @@ Function UpdateLauncher()
 		Next
 		
 		;-----------------------------------------------------------------
-		Color 255, 255, 255
-		x = 30
-		y = 369
-		Rect(x - 10, y, 340, 95)
-		Text(x - 10, y - 25, "Graphics:")
-		
-		y=y+10
-		For i = 1 To gfxDriverCount
-			Color 0, 0, 0
-			txt$ = EllipsisLeft(GfxDrivers(i), 30)
-			txtW% = StringWidth(txt)
-			If SelectedGFXDriver = i Then Rect(x - 4, y - 4, txtW + 8, height, False)
-			Text(x, y, txt)
-			If MouseOn(x - 4, y - 4, txtW + 8, height) Then
-				Color 100, 100, 100
-				Rect(x - 4, y - 4, txtW + 8, height, False)
-				If MouseHit1 Then SelectedGFXDriver = i
-			EndIf
-			
-			y=y+20
-		Next
-		
 		Fullscreen = DrawTick(40 + 430 - 15, 260 - 55 + 5 - 8, Fullscreen)
 		If Fullscreen Then BorderlessWindowed = False
 		BorderlessWindowed = DrawTick(40 + 430 - 15, 260 - 55 + 35, BorderlessWindowed)
