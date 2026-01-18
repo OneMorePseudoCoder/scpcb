@@ -1577,9 +1577,6 @@ Function UpdateLauncher()
 		BorderlessWindowed = DrawTick(40 + 430 - 15, 260 - 55 + 35, BorderlessWindowed)
 		If BorderlessWindowed Then Fullscreen = False
 
-		lock% = False
-
-		If BorderlessWindowed Or (Not Fullscreen) Then lock% = True
 		LauncherEnabled = DrawTick(40 + 430 - 15, 260 - 55 + 95 + 8, LauncherEnabled)
 
 		Text(40 + 430 + 15, 262 - 55 + 5 - 8, "Fullscreen")
