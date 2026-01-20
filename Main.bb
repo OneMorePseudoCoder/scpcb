@@ -6179,6 +6179,7 @@ Function DrawGUI()
 					
 					If SelectedItem\itemtemplate\img=0 Then
 						SelectedItem\itemtemplate\img=LoadImage_Strict(SelectedItem\itemtemplate\imgpath)	
+						ScaleImage(SelectedItem\itemtemplate\img, HUDScale, HUDScale)
 					EndIf
 					
 					;radiostate(5) = has the "use the number keys" -message been shown yet (true/false)
@@ -6425,20 +6426,20 @@ Function DrawGUI()
 									If ChannelPlaying(RadioCHN(5)) = False Then RadioCHN(5) = PlaySound_Strict(RadioStatic)
 							End Select 
 							
-							x=x+66
-							y=y+419
+							x=x+66*HUDScale
+							y=y+419*HUDScale
 							
 							Color (30,30,30)
 							
 							If SelectedItem\state <= 100 Then
 								;Text (x - 60, y - 20, "BATTERY")
 								For i = 0 To 4
-									Rect(x, y+8*i, 43 - i * 6, 4, Ceil(SelectedItem\state / 20.0) > 4 - i )
+									Rect(x, y+8*i*HUDScale, (43 - i * 6)*HUDScale, 4*HUDScale, Ceil(SelectedItem\state / 20.0) > 4 - i )
 								Next
 							EndIf	
 							
 							SetFont Font3
-							Text(x+60, y, "CHN")						
+							Text(x+60*HUDScale, y, "CHN")						
 							
 							If SelectedItem\itemtemplate\tempname = "veryfineradio" Then ;"KOODIKANAVA"
 								ResumeChannel(RadioCHN(0))
@@ -6465,7 +6466,7 @@ Function DrawGUI()
 								Next
 								
 								SetFont Font4
-								Text(x+97, y+16, Rand(0,9),True,True)
+								Text(x+97*HUDScale, y+16*HUDScale, Rand(0,9),True,True)
 								
 							Else
 								For i = 2 To 6
@@ -6481,13 +6482,13 @@ Function DrawGUI()
 								Next
 								
 								SetFont Font4
-								Text(x+97, y+16, Int(SelectedItem\state2+1),True,True)
+								Text(x+97*HUDScale, y+16*HUDScale, Int(SelectedItem\state2+1),True,True)
 							EndIf
 							
 							SetFont Font3
 							If strtemp <> "" Then
 								strtemp = Right(Left(strtemp, (Int(MilliSecs()/300) Mod Len(strtemp))),10)
-								Text(x+32, y+33, strtemp)
+								Text(x+32*HUDScale, y+33*HUDScale, strtemp)
 							EndIf
 							
 							SetFont Font1
