@@ -1852,8 +1852,11 @@ Global ParticleAmount% = GetOptionInt("graphics","particle amount")
 Dim NavImages(5)
 For i = 0 To 3
 	NavImages(i) = LoadImage_Strict("GFX\navigator\roomborder"+i+".png")
+	ScaleImage(NavImages(i), HUDScale, HUDScale)
 Next
+Global NavSize% = ImageWidth(NavImages(0))
 NavImages(4) = LoadImage_Strict("GFX\navigator\batterymeter.png")
+ScaleImage(NavImages(4), HUDScale, HUDScale)
 
 Global NavBG%
 
@@ -6669,19 +6672,20 @@ Function DrawGUI()
 					;[Block]
 					
 					If SelectedItem\itemtemplate\img=0 Then
-						SelectedItem\itemtemplate\img=LoadImage_Strict(SelectedItem\itemtemplate\imgpath)	
+						SelectedItem\itemtemplate\img=LoadImage_Strict(SelectedItem\itemtemplate\imgpath)
+						ScaleImage(SelectedItem\itemtemplate\img, HUDScale, HUDScale)
 					EndIf
 					
 					If SelectedItem\state <= 100 Then SelectedItem\state = Max(0, SelectedItem\state - FPSfactor * 0.005)
 					
-					x = HUDEndX - ImageWidth(SelectedItem\itemtemplate\img)*0.5+20
-					y = HUDEndY - ImageHeight(SelectedItem\itemtemplate\img)*0.4-85
-					width = 287
-					height = 256
+					x = HUDEndX - ImageWidth(SelectedItem\itemtemplate\img)*0.5+20*HUDScale
+					y = HUDEndY - ImageHeight(SelectedItem\itemtemplate\img)*0.4-85*HUDScale
+					width = 287*HUDScale
+					height = 256*HUDScale
 					
 					Local PlayerX,PlayerZ
 					
-					DrawImage(SelectedItem\itemtemplate\img, x - ImageWidth(SelectedItem\itemtemplate\img) / 2, y - ImageHeight(SelectedItem\itemtemplate\img) / 2 + 85)
+					DrawImage(SelectedItem\itemtemplate\img, x - ImageWidth(SelectedItem\itemtemplate\img) / 2, y - ImageHeight(SelectedItem\itemtemplate\img) / 2 + 85*HUDScale)
 					
 					SetFont Font3
 					
@@ -6702,8 +6706,8 @@ Function DrawGUI()
 					If (Not NavWorks) Then
 						If (MilliSecs() Mod 1000) > 300 Then
 							Color(200, 0, 0)
-							Text(x, y + height / 2 - 80, "ERROR 06", True)
-							Text(x, y + height / 2 - 60, "LOCATION UNKNOWN", True)						
+							Text(x, y + height / 2 - 80 * HUDScale, "ERROR 06", True)
+							Text(x, y + height / 2 - 60 * HUDScale, "LOCATION UNKNOWN", True)						
 						EndIf
 					Else
 						
@@ -6714,45 +6718,50 @@ Function DrawGUI()
 							
 							SetBuffer TextureBuffer(NavBG)
 							Local xx = x-ImageWidth(SelectedItem\itemtemplate\img)/2
-							Local yy = y-ImageHeight(SelectedItem\itemtemplate\img)/2+85
+							Local yy = y-ImageHeight(SelectedItem\itemtemplate\img)/2+85*HUDScale
 							DrawImage(SelectedItem\itemtemplate\img, xx, yy)
+							xx = xx + 80 * HUDScale
+							yy = yy + 70 * HUDScale
+							Local screenWidth% = 270*HUDScale
+
+							Local roomHalf% = NavSize / 2
 							
-							x = x - 12 + (((EntityX(Collider)-4.0)+8.0) Mod 8.0)*3
-							y = y + 12 - (((EntityZ(Collider)-4.0)+8.0) Mod 8.0)*3
+							x = x - roomHalf + (((EntityX(Collider)-4.0)+8.0) Mod 8.0)*3*HUDScale
+							y = y + roomHalf - (((EntityZ(Collider)-4.0)+8.0) Mod 8.0)*3*HUDScale
 							For x2 = Max(0, PlayerX - 6) To Min(MapWidth, PlayerX + 6)
 								For z2 = Max(0, PlayerZ - 6) To Min(MapHeight, PlayerZ + 6)
 									
 									If CoffinDistance > 16.0 Or Rnd(16.0)<CoffinDistance Then 
 										If MapTemp(x2, z2)>0 And (MapFound(x2, z2) > 0 Or SelectedItem\itemtemplate\name = "S-NAV 310 Navigator" Or SelectedItem\itemtemplate\name = "S-NAV Navigator Ultimate") Then
-											Local drawx% = x + (PlayerX - 1 - x2) * 24 , drawy% = y - (PlayerZ - 1 - z2) * 24
+											Local drawx% = x + (PlayerX - 1 - x2) * NavSize , drawy% = y - (PlayerZ - 1 - z2) * NavSize
 											
 											If x2+1<=MapWidth Then
 												If MapTemp(x2+1,z2)=False
-													DrawImage NavImages(3),drawx-12,drawy-12
+													DrawImage NavImages(3),drawx-roomHalf,drawy-roomHalf
 												EndIf
 											Else
-												DrawImage NavImages(3),drawx-12,drawy-12
+												DrawImage NavImages(3),drawx-roomHalf,drawy-roomHalf
 											EndIf
 											If x2-1>=0 Then
 												If MapTemp(x2-1,z2)=False
-													DrawImage NavImages(1),drawx-12,drawy-12
+													DrawImage NavImages(1),drawx-roomHalf,drawy-roomHalf
 												EndIf
 											Else
-												DrawImage NavImages(1),drawx-12,drawy-12
+												DrawImage NavImages(1),drawx-roomHalf,drawy-roomHalf
 											EndIf
 											If z2-1>=0 Then
 												If MapTemp(x2,z2-1)=False
-													DrawImage NavImages(0),drawx-12,drawy-12
+													DrawImage NavImages(0),drawx-roomHalf,drawy-roomHalf
 												EndIf
 											Else
-												DrawImage NavImages(0),drawx-12,drawy-12
+												DrawImage NavImages(0),drawx-roomHalf,drawy-roomHalf
 											EndIf
 											If z2+1<=MapHeight Then
 												If MapTemp(x2,z2+1)=False
-													DrawImage NavImages(2),drawx-12,drawy-12
+													DrawImage NavImages(2),drawx-roomHalf,drawy-roomHalf
 												EndIf
 											Else
-												DrawImage NavImages(2),drawx-12,drawy-12
+												DrawImage NavImages(2),drawx-roomHalf,drawy-roomHalf
 											EndIf
 										EndIf
 									EndIf
@@ -6761,13 +6770,13 @@ Function DrawGUI()
 							Next
 							
 							SetBuffer BackBuffer()
-							DrawBufferRect TextureBuffer(NavBG),xx+80,yy+70,270,230,xx+80,yy+70,270,230
+							DrawBufferRect TextureBuffer(NavBG),xx,yy,screenWidth,230*HUDScale,xx,yy,screenWidth,230*HUDScale
 							Color 30,30,30
 							If SelectedItem\itemtemplate\name = "S-NAV Navigator" Then Color(100, 0, 0)
-							Rect xx+80,yy+70,270,230,False
+							Rect xx,yy,screenWidth,230*HUDScale,False
 							
-							x = GraphicWidth - ImageWidth(SelectedItem\itemtemplate\img)*0.5+20
-							y = GraphicHeight - ImageHeight(SelectedItem\itemtemplate\img)*0.4-85
+							x = GraphicWidth - ImageWidth(SelectedItem\itemtemplate\img)*0.5+20*HUDScale
+							y = GraphicHeight - ImageHeight(SelectedItem\itemtemplate\img)*0.4-85*HUDScale
 							
 							If SelectedItem\itemtemplate\name = "S-NAV Navigator" Then 
 								Color(100, 0, 0)
@@ -6776,13 +6785,13 @@ Function DrawGUI()
 							EndIf
 							If (MilliSecs() Mod 1000) > 300 Then
 								If SelectedItem\itemtemplate\name <> "S-NAV 310 Navigator" And SelectedItem\itemtemplate\name <> "S-NAV Navigator Ultimate" Then
-									Text(x - width/2 + 10, y - height/2 + 10, "MAP DATABASE OFFLINE")
+									Text(x - width/2 + 10*HUDScale, y - height/2 + 10*HUDScale, "MAP DATABASE OFFLINE")
 								EndIf
 								
 								yawvalue = EntityYaw(Collider)-90
-								x1 = x+Cos(yawvalue)*6 : y1 = y-Sin(yawvalue)*6
-								x2 = x+Cos(yawvalue-140)*5 : y2 = y-Sin(yawvalue-140)*5				
-								x3 = x+Cos(yawvalue+140)*5 : y3 = y-Sin(yawvalue+140)*5
+								x1 = x+Cos(yawvalue)*6*HUDScale : y1 = y-Sin(yawvalue)*6*HUDScale
+								x2 = x+Cos(yawvalue-140)*5*HUDScale : y2 = y-Sin(yawvalue-140)*5*HUDScale
+								x3 = x+Cos(yawvalue+140)*5*HUDScale : y3 = y-Sin(yawvalue+140)*5*HUDScale
 								
 								Line x1,y1,x2,y2
 								Line x1,y1,x3,y3
@@ -6796,8 +6805,8 @@ Function DrawGUI()
 									dist = Ceil(dist / 8.0) * 8.0
 									If dist < 8.0 * 4 Then
 										Color 100, 0, 0
-										Oval(x - dist * 3, y - 7 - dist * 3, dist * 3 * 2, dist * 3 * 2, False)
-										Text(x - width / 2 + 10, y - height / 2 + 30, "SCP-173")
+										Oval(x - dist * 3 * HUDScale, y - 7 - dist * 3 * HUDScale, dist * 3 * 2 * HUDScale, dist * 3 * 2 * HUDScale, False)
+										Text(x - width / 2 + 10*HUDScale, y - height / 2 + 30*HUDScale, "SCP-173")
 										SCPs_found% = SCPs_found% + 1
 									EndIf
 								EndIf
@@ -6805,8 +6814,8 @@ Function DrawGUI()
 									dist# = EntityDistance(Camera, Curr106\obj)
 									If dist < 8.0 * 4 Then
 										Color 100, 0, 0
-										Oval(x - dist * 1.5, y - 7 - dist * 1.5, dist * 3, dist * 3, False)
-										Text(x - width / 2 + 10, y - height / 2 + 30 + (20*SCPs_found), "SCP-106")
+										Oval(x - dist * 1.5 * HUDScale, y - 7 - dist * 1.5 * HUDScale, dist * 3 * HUDScale, dist * 3 * HUDScale, False)
+										Text(x - width / 2 + 10*HUDScale, y - height / 2 + (30 + (20*SCPs_found))*HUDScale, "SCP-106")
 										SCPs_found% = SCPs_found% + 1
 									EndIf
 								EndIf
@@ -6814,8 +6823,8 @@ Function DrawGUI()
 									dist# = EntityDistance(Camera, Curr096\obj)
 									If dist < 8.0 * 4 Then
 										Color 100, 0, 0
-										Oval(x - dist * 1.5, y - 7 - dist * 1.5, dist * 3, dist * 3, False)
-										Text(x - width / 2 + 10, y - height / 2 + 30 + (20*SCPs_found), "SCP-096")
+										Oval(x - dist * 1.5 * HUDScale, y - 7 - dist * 1.5 * HUDScale, dist * 3 * HUDScale, dist * 3 * HUDScale, False)
+										Text(x - width / 2 + 10*HUDScale, y - height / 2 + (30 + (20*SCPs_found))*HUDScale, "SCP-096")
 										SCPs_found% = SCPs_found% + 1
 									EndIf
 								EndIf
@@ -6825,8 +6834,8 @@ Function DrawGUI()
 										If dist < 8.0 * 4 Then
 											If (Not np\HideFromNVG) Then
 												Color 100, 0, 0
-												Oval(x - dist * 1.5, y - 7 - dist * 1.5, dist * 3, dist * 3, False)
-												Text(x - width / 2 + 10, y - height / 2 + 30 + (20*SCPs_found), "SCP-049")
+												Oval(x - dist * 1.5 * HUDScale, y - 7 - dist * 1.5 * HUDScale, dist * 3 * HUDScale, dist * 3 * HUDScale, False)
+												Text(x - width / 2 + 10*HUDScale, y - height / 2 + (30 + (20*SCPs_found))*HUDScale, "SCP-049")
 												SCPs_found% = SCPs_found% + 1
 											EndIf
 										EndIf
@@ -6837,8 +6846,8 @@ Function DrawGUI()
 									If CoffinDistance < 8.0 Then
 										dist = Rnd(4.0, 8.0)
 										Color 100, 0, 0
-										Oval(x - dist * 1.5, y - 7 - dist * 1.5, dist * 3, dist * 3, False)
-										Text(x - width / 2 + 10, y - height / 2 + 30 + (20*SCPs_found), "SCP-895")
+										Oval(x - dist * 1.5 * HUDScale, y - 7 - dist * 1.5 * HUDScale, dist * 3 * HUDScale, dist * 3 * HUDScale, False)
+										Text(x - width / 2 + 10*HUDScale, y - height / 2 + (30 + (20*SCPs_found))*HUDScale, "SCP-895")
 									EndIf
 								EndIf
 							End If
@@ -6861,12 +6870,12 @@ Function DrawGUI()
 								;Next
 								;SetFont Font3
 								
-								xtemp = x - width/2 + 196
-								ytemp = y - height/2 + 10
-								Rect xtemp,ytemp,80,20,False
+								xtemp = xx + screenWidth - 80*HUDScale
+								ytemp = yy - 20*HUDScale
+								Rect xtemp,ytemp,80*HUDScale,20*HUDScale,False
 								
 								For i = 1 To Ceil(SelectedItem\state / 10.0)
-									DrawImage NavImages(4),xtemp+i*8-6,ytemp+4
+									DrawImage NavImages(4),xtemp+(i*8-6)*HUDScale,ytemp+4*HUDScale
 								Next
 							EndIf
 						EndIf
