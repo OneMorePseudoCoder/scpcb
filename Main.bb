@@ -1810,7 +1810,11 @@ Global NoTarget% = False
 
 Global GuaranteedOmni% = False
 
-Global NVGImages = LoadAnimImage("GFX\battery.png",64,64,0,2)
+Global NVGImages[2]
+NVGImages[0] = LoadImage_Strict("GFX\battery_green.png")
+ScaleImage(NVGImages[0], HUDScale, HUDScale)
+NVGImages[1] = LoadImage_Strict("GFX\battery_blue.png")
+ScaleImage(NVGImages[1], HUDScale, HUDScale)
 
 Global Wearing1499% = False
 Global AmbientLightRoomTex%, AmbientLightRoomVal%
@@ -11421,10 +11425,10 @@ Function RenderWorld2()
 			Local plusY% = 0
 			If hasBattery=1 Then plusY% = 40
 			
-			Text GraphicWidth/2,HUDStartY+(20+plusY)*MenuScale,"REFRESHING DATA IN",True,False
+			Text GraphicWidth/2,HUDStartY+(20+plusY)*HUDScale,"REFRESHING DATA IN",True,False
 			
-			Text GraphicWidth/2,HUDStartY+(60+plusY)*MenuScale,Max(f2s(NVTimer/60.0,1),0.0),True,False
-			Text GraphicWidth/2,HUDStartY+(100+plusY)*MenuScale,"SECONDS",True,False
+			Text GraphicWidth/2,HUDStartY+(60+plusY)*HUDScale,Max(f2s(NVTimer/60.0,1),0.0),True,False
+			Text GraphicWidth/2,HUDStartY+(100+plusY)*HUDScale,"SECONDS",True,False
 			
 			temp% = CreatePivot() : temp2% = CreatePivot()
 			PositionEntity temp, EntityX(Collider), EntityY(Collider), EntityZ(Collider)
@@ -11458,7 +11462,7 @@ Function RenderWorld2()
 						
 						If (Not IsNVGBlinking%)
 						Text GraphicWidth / 2 + xvalue * (GraphicWidth / 2),GraphicHeight / 2 - yvalue * (GraphicHeight / 2),np\NVName,True,True
-						Text GraphicWidth / 2 + xvalue * (GraphicWidth / 2),GraphicHeight / 2 - yvalue * (GraphicHeight / 2) + 30.0 * MenuScale,f2s(dist,1)+" m",True,True
+						Text GraphicWidth / 2 + xvalue * (GraphicWidth / 2),GraphicHeight / 2 - yvalue * (GraphicHeight / 2) + 30.0 * HUDScale,f2s(dist,1)+" m",True,True
 					EndIf
 				EndIf
 				EndIf
@@ -11468,25 +11472,25 @@ Function RenderWorld2()
 			
 			Color 0,0,55
 			For k=0 To 10
-				Rect HUDStartX+45,GraphicHeight*0.5-(k*20),54,10,True
+				Rect HUDStartX+45*HUDScale,GraphicHeight*0.5-(k*20)*HUDScale,54*HUDScale,10*HUDScale,True
 			Next
 			Color 0,0,255
 			For l=0 To Floor((power%+50)*0.01)
-				Rect HUDStartX+45,GraphicHeight*0.5-(l*20),54,10,True
+				Rect HUDStartX+45*HUDScale,GraphicHeight*0.5-(l*20)*HUDScale,54*HUDScale,10*HUDScale,True
 			Next
-			DrawImage NVGImages,HUDStartX+40,GraphicHeight*0.5+30,1
+			DrawImage NVGImages[1],HUDStartX+40*HUDScale,GraphicHeight*0.5+30*HUDScale
 			
 			Color 255,255,255
 		ElseIf WearingNightVision=1 And hasBattery<>0
 			Color 0,55,0
 			For k=0 To 10
-				Rect HUDStartX+45,GraphicHeight*0.5-(k*20),54,10,True
+				Rect HUDStartX+45*HUDScale,GraphicHeight*0.5-(k*20)*HUDScale,54*HUDScale,10*HUDScale,True
 			Next
 			Color 0,255,0
 			For l=0 To Floor((power%+50)*0.01)
-				Rect HUDStartX+45,GraphicHeight*0.5-(l*20),54,10,True
+				Rect HUDStartX+45*HUDScale,GraphicHeight*0.5-(l*20)*HUDScale,54*HUDScale,10*HUDScale,True
 			Next
-			DrawImage NVGImages,HUDStartX+40,GraphicHeight*0.5+30,0
+			DrawImage NVGImages[0],HUDStartX+40*HUDScale,GraphicHeight*0.5+30*HUDScale
 		EndIf
 	EndIf
 	
@@ -11501,7 +11505,7 @@ Function RenderWorld2()
 			Color 255,0,0
 			SetFont Font3
 			
-			Text GraphicWidth/2,20*MenuScale,"WARNING: LOW BATTERY",True,False
+			Text GraphicWidth/2,20*HUDScale,"WARNING: LOW BATTERY",True,False
 			Color 255,255,255
 		EndIf
 	EndIf
