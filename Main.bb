@@ -78,7 +78,7 @@ Global ShouldRestart% = False
 Include "ModManager.bb"
 ReloadMods()
 
-Global Font1%, Font2%, Font3%, Font4%, Font5%
+Global Font1%, Font2%, Font3%, Font4%, Font5%, Font6%
 Global ConsoleFont%
 
 Global MenuWhite%, MenuBlack%
@@ -228,19 +228,16 @@ Global SelectedLoadingScreen.LoadingScreens, LoadingScreenAmount% = 0, LoadingSc
 Global LoadingBack% = LoadImage_Strict("Loadingscreens\loadingback.jpg")
 InitLoadingScreens()
 
-;For some reason, Blitz3D doesn't load fonts that have filenames that
-;don't match their "internal name" (i.e. their display name in applications
-;like Word and such). As a workaround, I moved the files and renamed them so they
-;can load without FastText.
 Font1% = LoadFont_Strict("GFX\font\cour\Courier New.ttf", Int(19 * MenuScale))
 Font2% = LoadFont_Strict("GFX\font\cour\Courier New.ttf", Int(52 * MenuScale))
-Font3% = LoadFont_Strict("GFX\font\DS-DIGI\DS-Digital.ttf", Int(22 * MenuScale))
-Font4% = LoadFont_Strict("GFX\font\DS-DIGI\DS-Digital.ttf", Int(60 * MenuScale))
+Font3% = LoadFont_Strict("GFX\font\DS-DIGI\DS-Digital.ttf", Int(15 * HUDScale))
+Font4% = LoadFont_Strict("GFX\font\DS-DIGI\DS-Digital.ttf", Int(42 * HUDScale))
 Font5% = LoadFont_Strict("GFX\font\Journal\Journal.ttf", Int(58 * MenuScale))
+Font6% = LoadFont_Strict("GFX\font\DS-DIGI\DS-Digital.ttf", Int(25 * MenuScale))
 
 Global CreditsFont%,CreditsFont2%
 
-ConsoleFont% = LoadFont_Strict("GFX\font\cour\Courier New.ttf", Int(20 * MenuScale))
+ConsoleFont% = Font1
 
 SetFont Font2
 

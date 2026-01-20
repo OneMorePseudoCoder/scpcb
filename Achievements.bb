@@ -55,7 +55,7 @@ End Function
 Function AchievementTooltip(achvno%)
     Local scale# = GraphicHeight/768.0
     
-    SetFont Font3
+    SetFont Font6
     Local width = StringWidth(AchievementStrings(achvno))
     SetFont Font1
     If (StringWidth(AchievementDescs(achvno))>width) Then
@@ -69,7 +69,7 @@ Function AchievementTooltip(achvno%)
     Rect(ScaledMouseX()+(20*MenuScale),ScaledMouseY()+(20*MenuScale),width,height,True)
     Color 150,150,150
     Rect(ScaledMouseX()+(20*MenuScale),ScaledMouseY()+(20*MenuScale),width,height,False)
-    SetFont Font3
+    SetFont Font6
     Text(ScaledMouseX()+(20*MenuScale)+(width/2),ScaledMouseY()+(35*MenuScale), AchievementStrings(achvno), True, True)
     SetFont Font1
     Text(ScaledMouseX()+(20*MenuScale)+(width/2),ScaledMouseY()+(55*MenuScale), AchievementDescs(achvno), True, True)
