@@ -8006,7 +8006,7 @@ Function LoadEntities()
 	MaskImage(KeypadHUD, 255,0,255)
 
 	Panel294 = LoadImage_Strict("GFX\294panel.jpg")
-	MaskImage(Panel294, 255,0,255)
+	ScaleImage(Panel294, HUDScale, HUDScale)
 	
 	
 	Brightness% = GetModdedINIFloat(MapOptions, "facility", "brightness")
@@ -10240,12 +10240,12 @@ Function Use294()
 	temp = True
 	If PlayerRoom\SoundCHN<>0 Then temp = False
 	
-	Text x+905, y+185, Right(Input294,13), True,True
+	Text x+903*HUDScale, y+185*HUDScale, Right(Input294,10), True,True
 	
 	If temp Then
 		If MouseHit1 Then
-			xtemp = Floor((ScaledMouseX()-x-228) / 35.5)
-			ytemp = Floor((ScaledMouseY()-y-342) / 36.5)
+			xtemp = Floor((ScaledMouseX()-x-228*HUDScale) / 35.5 / HUDScale)
+			ytemp = Floor((ScaledMouseY()-y-342*HUDScale) / 36.5 / HUDScale)
 			
 			temp = False
 			
