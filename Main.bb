@@ -895,6 +895,7 @@ Function UpdateConsole()
 					;[Block]
 					Injuries = 0
 					Bloodloss = 0
+					ResetDiseases()
 					;[End Block]
 				Case "teleport"
 					;[Block]
@@ -5838,16 +5839,7 @@ Function DrawGUI()
 						EndIf
 						MsgTimer = 70*7
 						
-						DeathTimer = 0
-						Infect = 0
-						Stamina = 100
-						For i = 0 To 5
-							SCP1025state[i]=0
-						Next
-						If StaminaEffect > 1.0 Then
-							StaminaEffect = 1.0
-							StaminaEffectTimer = 0.0
-						EndIf
+						ResetDiseases()
 						
 						RemoveItem(SelectedItem)
 						SelectedItem = Null
@@ -7211,6 +7203,19 @@ Function DrawGUI()
 	If PrevInvOpen And (Not InvOpen) Then MoveMouse viewport_center_x, viewport_center_y
 	
 	CatchErrors("DrawGUI")
+End Function
+
+Function ResetDiseases()
+	DeathTimer = 0
+	Infect = 0
+	Stamina = 100
+	For i = 0 To 5
+		SCP1025state[i]=0
+	Next
+	If StaminaEffect > 1.0 Then
+		StaminaEffect = 1.0
+		StaminaEffectTimer = 0.0
+	EndIf
 End Function
 
 Function DrawTimer()
