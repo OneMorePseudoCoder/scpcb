@@ -2789,11 +2789,12 @@ Collisions HIT_DEAD, HIT_MAP, 2, 2
 DrawLoading(90, True)
 
 ;----------------------------------- meshes and textures ----------------------------------------------------------------
-
+Include "Effects.bb"
 Global ResizeTexture%
 
 Function InitFastResize()
 	ResizeTexture = CreateTexture(SMALLEST_POWER_TWO, SMALLEST_POWER_TWO, 1 + 2 + 256 + 1024)
+	InitPostProcess()
 End Function
 
 Global FogTexture%, Fog%
@@ -3365,6 +3366,7 @@ While IsRunning
 	End If
 	
 	ApplyBorderlessResizing()
+	UpdatePostProcess()
 	
 	CatchErrors("Main loop / uncaught")
 
@@ -10775,9 +10777,6 @@ Function CurveAngle#(val#, old#, smooth#)
    Return WrapAngle(old + diff * (1.0 / smooth * FPSfactor))
 End Function
 
-
-
-
 Function WrapAngle#(angle#)
 	If angle = INFINITY Then Return 0.0
 	While angle < 0
@@ -10814,6 +10813,10 @@ Function angleDist#(a0#,a1#)
 		bb = b
 	EndIf
 	Return bb
+End Function
+
+Function lerp#(a#, b#, f#)
+    Return a * (1.0 - f) + (b * f)
 End Function
 
 ;--------------------------------------- decals -------------------------------------------------------
