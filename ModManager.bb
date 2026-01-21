@@ -29,7 +29,7 @@ Function InstantiateMod.Mods(id$, path$)
     Local ini% = OpenFile(modIni)
     While Not Eof(ini)
         Local l$ = Trim(ReadLine(ini))
-        If l <> "" And Instr(l, "#") <> 1 Then
+        If l <> "" And Instr(l, "#") <> 1 And Instr(l, ";") <> 1 Then
             Local splitterPos = Instr(l, "=")
             Local key$ = Trim(Left(l, splitterPos - 1))
             Local value$ = Trim(Right(l, Len(l) - splitterPos))
@@ -101,7 +101,7 @@ Function ReloadMods()
         Local firstSorted.Mods = First Mods
         While Not Eof(mods)
             l$ = Trim(ReadLine(mods))
-            If l <> "" And Instr(l, "#") <> 1 Then
+            If l <> "" And Instr(l, "#") <> 1 And Instr(l, ";") <> 1 Then
                 splitterPos = Instr(l, "=")
                 key$ = Trim(Left(l, splitterPos - 1))
                 value$ = Trim(Right(l, Len(l) - splitterPos))

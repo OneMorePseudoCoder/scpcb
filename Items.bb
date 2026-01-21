@@ -127,7 +127,7 @@ Function InitItemTemplatesFromFile(file$)
 	Local f% = OpenFile(file)
 	While Not Eof(f)
 		Local l$ = Trim(ReadLine(f))
-		If l <> "" And Instr(l, "#") <> 1 Then
+		If l <> "" And Instr(l, "#") <> 1 And Instr(l, ";") <> 1 Then
 			Local splitterPos = Instr(l, "=")
 			If splitterPos = 0 And Instr(l, "[") = 1 Then
 				If name <> "" Then
