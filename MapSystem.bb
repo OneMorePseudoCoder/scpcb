@@ -7425,8 +7425,8 @@ Function CreateMap()
 	
 	MapRoom(ROOM1, 0) = "start"	
 	
-	MapRoom(ROOM1, MaxPositions(ROOM1, 3)-1) = "exit1"
-	MapRoom(ROOM1, MaxPositions(ROOM1, 3)) = "gateaentrance"
+	MapRoom(ROOM1, MaxPositions(ROOM1, 3)-2) = "exit1"
+	MapRoom(ROOM1, MaxPositions(ROOM1, 3)-1) = "gateaentrance"
 	
 	For rt.RoomTemplates = Each RoomTemplates
 		If rt\SetRoom >= 0 Then
