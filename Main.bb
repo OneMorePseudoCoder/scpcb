@@ -7953,7 +7953,7 @@ Function LoadEntities()
 	
 	;TextureLodBias
 	
-	AmbientLightRoomTex% = CreateTexture(2,2,257)
+	AmbientLightRoomTex% = CreateTexture(1,1,1+256+1024)
 	TextureBlend AmbientLightRoomTex,5
 	SetBuffer(TextureBuffer(AmbientLightRoomTex))
 	ClsColor 0,0,0
@@ -7970,8 +7970,9 @@ Function LoadEntities()
 	CameraFogRange (Camera, CameraFogNear, CameraFogFar)
 	AmbientLight Brightness, Brightness, Brightness
 	
-	ScreenTexs[0] = CreateTexture(512, 512, 1+256)
-	ScreenTexs[1] = CreateTexture(512, 512, 1+256)
+	ScreenTexs[0] = CreateTexture(512, 512, 1+256+1024)
+	ScreenTexs[1] = CreateTexture(512, 512, 1+256+1024)
+	ScreenTexs[2] = CreateTexture(512, 512, 8192)
 	
 	CreateBlurImage()
 	CameraProjMode ark_blur_cam,0
