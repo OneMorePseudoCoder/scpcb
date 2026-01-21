@@ -10250,7 +10250,7 @@ Function Use294()
 	If PlayerRoom\SoundCHN<>0 Then temp = False
 	
 	Color 255, 255, 255
-	Text x+903*HUDScale, y+185*HUDScale, Right(Input294,10), True,True
+	Text x+903*HUDScale, y+185*HUDScale, Right(Input294,13), True,True
 	
 	If temp Then
 		If MouseHit1 Then
