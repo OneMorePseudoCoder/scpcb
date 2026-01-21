@@ -10631,7 +10631,7 @@ End Function
 Function UpdateInfect()
 	Local temp#, i%, r.Rooms
 	
-	Local teleportForInfect% = True
+	Local teleportForInfect% = Not GodMode
 	
 	If PlayerRoom\RoomTemplate\Name = "room860"
 		For e.Events = Each Events
