@@ -31,20 +31,26 @@ End Function
 Include "StrictLoads.bb"
 Include "KeyName.bb"
 
-Global OptionFile$ = InitOptionsDir()
+Global DataDir$ = InitDataDir()
+Global OptionFile$ = InitOptionsFile()
+Global ModsFile$ = DataDir + "\mods.ini"
 Const OptionDefaultFile$ = "defaults.ini"
 
-Function InitOptionsDir$()
+Function InitDataDir$()
 	Local dir$ = GetEnv("AppData") + "\Undertow Games"
 	If FileType(dir) <> 2 Then CreateDir(dir)
 	dir = dir + "\SCP - Containment Breach"
 	If FileType(dir) <> 2 Then CreateDir(dir)
-	dir = dir + "\options.ini"
-	If FileType(dir) <> 1 Then
-		Local f% = WriteFile(dir)
+	Return dir
+End Function
+
+Function InitOptionsFile$()
+	Local file$ = DataDir + "\options.ini"
+	If FileType(file) <> 1 Then
+		Local f% = WriteFile(file)
 		CloseFile(f)
 	EndIf
-	Return dir
+	Return file
 End Function
 
 Function GetOptionString$(section$, key$)
@@ -461,12 +467,7 @@ Function UpdateConsole()
 			EndIf
 		EndIf
 		
-		mouseScroll = MouseZSpeed()
-		If mouseScroll=1 Then
-			ConsoleScroll = ConsoleScroll - 15*MenuScale
-		ElseIf mouseScroll=-1 Then
-			ConsoleScroll = ConsoleScroll + 15*MenuScale
-		EndIf
+		ConsoleScroll = ConsoleScroll - 15*MenuScale * MouseZSpeed()
 		
 		Local reissuePos%
 		If KeyHit(200) Then
@@ -889,6 +890,7 @@ Function UpdateConsole()
 					;[Block]
 					Injuries = 0
 					Bloodloss = 0
+					ResetDiseases()
 					;[End Block]
 				Case "teleport"
 					;[Block]
@@ -1555,13 +1557,13 @@ Function UpdateConsole()
 				If TempY >= y And TempY < y + height - 20*MenuScale Then
 					If cm=ConsoleReissue Then
 						Color cm\r/4,cm\g/4,cm\b/4
-						Rect x,TempY-2*MenuScale,width-30*MenuScale,24*MenuScale,True
+						Rect x+3*MenuScale,TempY-2*MenuScale,width-30*MenuScale,24*MenuScale,True
 					EndIf
 					Color cm\r,cm\g,cm\b
 					If cm\isCommand Then
-						Text(x + 20*MenuScale, TempY, "> "+cm\txt)
+						Text(x + 20*MenuScale, TempY+5*MenuScale, "> "+cm\txt)
 					Else
-						Text(x + 20*MenuScale, TempY, cm\txt)
+						Text(x + 20*MenuScale, TempY+5*MenuScale, cm\txt)
 					EndIf
 				EndIf
 				TempY = TempY - 15*MenuScale
@@ -1814,6 +1816,7 @@ NVGImages[1] = LoadImage_Strict("GFX\battery_blue.png")
 ScaleImage(NVGImages[1], HUDScale, HUDScale)
 
 Global Wearing1499% = False
+Global AmbientLight%, AmbientLightNVG%
 Global AmbientLightRoomTex%, AmbientLightRoomVal%
 
 Global EnableUserTracks% = GetOptionInt("audio", "enable user tracks")
@@ -1887,8 +1890,6 @@ Global HandIcon%
 Global HandIcon2%
 
 Global StaminaMeterIMG%
-
-Global KeypadHUD
 
 Global Panel294, Using294%, Input294$
 
@@ -3062,9 +3063,9 @@ While IsRunning
 				EndIf
 				UpdateScreens()
 				TimeCheckpointMonitors()
-				Update294()
 				UpdateRoomLights(Camera)
 			EndIf
+			Update294()
 			UpdateDecals()
 			UpdateMTF()
 			UpdateNPCs()
@@ -4590,17 +4591,17 @@ Function MouseLook()
 		ShowEntity(NVOverlay)
 		If WearingNightVision=2 Then
 			EntityColor(NVOverlay, 0,100,255)
-			AmbientLightRooms(15)
+			AmbientLightRooms(AmbientLightNVG)
 		ElseIf WearingNightVision=3 Then
 			EntityColor(NVOverlay, 255,0,0)
-			AmbientLightRooms(15)
+			AmbientLightRooms(AmbientLightNVG)
 		Else
 			EntityColor(NVOverlay, 0,255,0)
-			AmbientLightRooms(15)
+			AmbientLightRooms(AmbientLightNVG)
 		EndIf
 		EntityTexture(Fog, FogNVTexture)
 	Else
-		AmbientLightRooms(0)
+		AmbientLightRooms(AmbientLight)
 		HideEntity(NVOverlay)
 		EntityTexture(Fog, FogTexture)
 	EndIf
@@ -4964,9 +4965,14 @@ Function DrawGUI()
 			CameraProject(Camera, EntityX(ClosestButton,True),EntityY(ClosestButton,True)-MeshHeight(ButtonOBJ)*0.015,EntityZ(ClosestButton,True))
 			scale# = (ProjectedY()-projy)/462.0
 			
-			x = GraphicWidth/2-ImageWidth(KeypadHUD)*scale/2
-			y = GraphicHeight/2-ImageHeight(KeypadHUD)*scale/2		
+			x = GraphicWidth/2-317*scale/2
+			y = GraphicHeight/2-462*scale/2
 			
+			Select True
+				Case WearingNightVision=1 Color 0,255,0
+				Case WearingNightVision=2 Color 0,0,255
+				Case WearingNightVision=3 Color 255,0,0
+			End Select
 			SetFont Font3
 			If KeypadMSG <> "" Then 
 				KeypadTimer = KeypadTimer-FPSfactor2
@@ -4982,6 +4988,8 @@ Function DrawGUI()
 				SetFont Font4
 				Text GraphicWidth/2, y+124*scale, KeypadInput,True,True	
 			EndIf
+
+			SetFont Font1
 			
 			x = x+44*scale
 			y = y+249*scale
@@ -5793,16 +5801,7 @@ Function DrawGUI()
 						EndIf
 						MsgTimer = 70*7
 						
-						DeathTimer = 0
-						Infect = 0
-						Stamina = 100
-						For i = 0 To 5
-							SCP1025state[i]=0
-						Next
-						If StaminaEffect > 1.0 Then
-							StaminaEffect = 1.0
-							StaminaEffectTimer = 0.0
-						EndIf
+						ResetDiseases()
 						
 						RemoveItem(SelectedItem)
 						SelectedItem = Null
@@ -6078,7 +6077,7 @@ Function DrawGUI()
 						BlurTimer = Max(BlurTimer + GetINIInt2(iniStr, loc, "blur")*70, 0);*temp
 						CameraShakeTimer = Max(CameraShakeTimer + GetINIString2(iniStr, loc, "camerashake"), 0)
 						
-						temp = GetINIInt2(iniStr, loc, "vomit")*70
+						temp = GetINIInt2(iniStr, loc, "vomit")
 						If temp > 0 Then
 							If VomitTimer = 0 Then
 								VomitTimer = temp
@@ -6779,8 +6778,8 @@ Function DrawGUI()
 							If SelectedItem\itemtemplate\name = "S-NAV Navigator" Then Color(100, 0, 0)
 							Rect xx,yy,screenWidth,230*HUDScale,False
 							
-							x = GraphicWidth - ImageWidth(SelectedItem\itemtemplate\img)*0.5+20*HUDScale
-							y = GraphicHeight - ImageHeight(SelectedItem\itemtemplate\img)*0.4-85*HUDScale
+							x = HUDEndX - ImageWidth(SelectedItem\itemtemplate\img)*0.5+20*HUDScale
+							y = HUDEndY - ImageHeight(SelectedItem\itemtemplate\img)*0.4-85*HUDScale
 							
 							If SelectedItem\itemtemplate\name = "S-NAV Navigator" Then 
 								Color(100, 0, 0)
@@ -7157,6 +7156,19 @@ Function DrawGUI()
 	If PrevInvOpen And (Not InvOpen) Then MoveMouse viewport_center_x, viewport_center_y
 	
 	CatchErrors("DrawGUI")
+End Function
+
+Function ResetDiseases()
+	DeathTimer = 0
+	Infect = 0
+	Stamina = 100
+	For i = 0 To 5
+		SCP1025state[i]=0
+	Next
+	If StaminaEffect > 1.0 Then
+		StaminaEffect = 1.0
+		StaminaEffectTimer = 0.0
+	EndIf
 End Function
 
 Function DrawTimer()
@@ -7943,9 +7955,8 @@ Function LoadEntities()
 	StaminaMeterIMG% = LoadImage_Strict("GFX\staminameter.jpg")
 	ScaleImage(StaminaMeterIMG, HUDScale, HUDScale)
 
-	KeypadHUD =  LoadImage_Strict("GFX\keypadhud.jpg")
-
 	Panel294 = LoadImage_Strict("GFX\294panel.jpg")
+	ScaleImage(Panel294, HUDScale, HUDScale)
 	
 	
 	Brightness% = GetModdedINIFloat(MapOptions, "facility", "brightness")
@@ -7955,7 +7966,10 @@ Function LoadEntities()
 	
 	;TextureLodBias
 	
-	AmbientLightRoomTex% = CreateTexture(1,1,1+256+1024)
+	AmbientLightRoomTex% = CreateTexture(2,2,1+256+1024)
+	AmbientLight = GetModdedINIInt(MapOptions, "facility", "ambient light")
+	AmbientLightNVG = GetModdedINIInt(MapOptions, "facility", "ambient light nvg")
+
 	TextureBlend AmbientLightRoomTex,5
 	SetBuffer(TextureBuffer(AmbientLightRoomTex))
 	ClsColor 0,0,0
@@ -10182,12 +10196,13 @@ Function Use294()
 	temp = True
 	If PlayerRoom\SoundCHN<>0 Then temp = False
 	
-	Text x+905, y+185, Right(Input294,13), True,True
+	Color 255, 255, 255
+	Text x+903*HUDScale, y+185*HUDScale, Right(Input294,13), True,True
 	
 	If temp Then
 		If MouseHit1 Then
-			xtemp = Floor((ScaledMouseX()-x-228) / 35.5)
-			ytemp = Floor((ScaledMouseY()-y-342) / 36.5)
+			xtemp = Floor((ScaledMouseX()-x-228*HUDScale) / 35.5 / HUDScale)
+			ytemp = Floor((ScaledMouseY()-y-342*HUDScale) / 36.5 / HUDScale)
 			
 			temp = False
 			
@@ -10568,7 +10583,7 @@ End Function
 Function UpdateInfect()
 	Local temp#, i%, r.Rooms
 	
-	Local teleportForInfect% = True
+	Local teleportForInfect% = Not GodMode
 	
 	If PlayerRoom\RoomTemplate\Name = "room860"
 		For e.Events = Each Events

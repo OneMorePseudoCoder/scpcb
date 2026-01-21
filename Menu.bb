@@ -3,12 +3,10 @@ Global MenuText% = LoadImage_Strict("GFX\menu\scptext.jpg")
 Global Menu173% = LoadImage_Strict("GFX\menu\173back.jpg")
 MenuWhite = LoadImage_Strict("GFX\menu\menuwhite.jpg")
 MenuBlack = LoadImage_Strict("GFX\menu\menublack.jpg")
-Global QuickLoadIcon% = LoadImage_Strict("GFX\menu\QuickLoading.png")
 
 ScaleImage(MenuBack, MenuScale, MenuScale)
 ScaleImage(MenuText, MenuScale, MenuScale)
 ScaleImage(Menu173, MenuScale, MenuScale)
-ScaleImage(QuickLoadIcon, MenuScale, MenuScale)
 
 For i = 0 To 3
 	ArrowIMG(i) = LoadImage_Strict("GFX\menu\arrow.png")
@@ -1782,6 +1780,7 @@ Function DrawLoading(percent%, shortloading=False)
 			If ls\id = temp Then
 				If ls\img=0 Then
 					ls\img = LoadImage_Strict("Loadingscreens\"+ls\imgpath)
+					ScaleImage(ls\img, MenuScale, MenuScale)
 					MaskImage(ls\img, 0, 0, 0)
 				EndIf
 				SelectedLoadingScreen = ls 
@@ -2289,28 +2288,17 @@ Function DrawTooltip(message$)
 End Function
 
 Global QuickLoadPercent% = -1
-Global QuickLoadPercent_DisplayTimer# = 0
 Global QuickLoad_CurrEvent.Events
 
 Function DrawQuickLoading()
 	
 	If QuickLoadPercent > -1
-		MidHandle QuickLoadIcon
-		DrawImage QuickLoadIcon,GraphicWidth-90,GraphicHeight-150
-		Color 255,255,255
-		SetFont Font1
-		Text GraphicWidth-100,GraphicHeight-90,"LOADING: "+QuickLoadPercent+"%",1
 		If QuickLoadPercent > 99
-			If QuickLoadPercent_DisplayTimer < 70
-				QuickLoadPercent_DisplayTimer# = Min(QuickLoadPercent_DisplayTimer+FPSfactor,70)
-			Else
-				QuickLoadPercent = -1
-			EndIf
+			QuickLoadPercent = -1
 		EndIf
 		QuickLoadEvents()
 	Else
 		QuickLoadPercent = -1
-		QuickLoadPercent_DisplayTimer# = 0
 		QuickLoad_CurrEvent = Null
 	EndIf
 	
@@ -2421,7 +2409,7 @@ Function DrawOptionsTooltip(x%,y%,width%,height%,option$,value#=0,ingame%=False)
 		Case "consoleerror"
 			txt = Chr(34)+"Open console on error"+Chr(34)+" is self-explanatory."
 		Case "speedrunmode"
-			txt = "Displays a timer and changes how play time is tracked to conform to the requirements of speed running. Timer can be stopped by pressing " + KeyName(KEY_STOP_TIMER) + "."
+			txt = "Displays a timer and changes how play time is tracked to conform to the requirements of speed running."
 		Case "numericseeds"
 			txt = "Allows seeds to be entered as integers, which will be used to directly seed the game's internal random number generator."
 			txt = txt + " When no seed is entered, the elapsed millseconds since the computer started is used."

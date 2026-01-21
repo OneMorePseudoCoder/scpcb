@@ -7869,7 +7869,7 @@ Function UpdateEvents()
 							If (IsItemGoodFor1162(itt)) Then
 								Select Inventory(e\EventState2)\itemtemplate\tempname
 									Case "key"
-										If itt\tempname = "key1" Or itt\tempname = "key2" And Rand(2)=1
+										If (itt\tempname = "key1" Or itt\tempname = "key2") And Rand(2)=1
 											shouldCreateItem = True
 											DebugLog "lostkey"
 										EndIf
@@ -7879,17 +7879,17 @@ Function UpdateEvents()
 											DebugLog "paper"
 										EndIf
 									Case "gasmask","gasmask3","supergasmask","hazmatsuit","hazmatsuit2","hazmatsuit3"
-										If itt\tempname = "gasmask" Or itt\tempname = "gasmask3" Or itt\tempname = "supergasmask" Or itt\tempname = "hazmatsuit" Or itt\tempname = "hazmatsuit2" Or itt\tempname = "hazmatsuit3" And Rand(2)=1
+										If (itt\tempname = "gasmask" Or itt\tempname = "gasmask3" Or itt\tempname = "supergasmask" Or itt\tempname = "hazmatsuit" Or itt\tempname = "hazmatsuit2" Or itt\tempname = "hazmatsuit3") And Rand(2)=1
 											shouldCreateItem = True
 											DebugLog "gasmask hazmat"
 										EndIf
 									Case "key1","key2","key3"
-										If itt\tempname = "key1" Or itt\tempname = "key2" Or itt\tempname = "key3" Or itt\tempname = "misc" And Rand(6)=1
+										If (itt\tempname = "key1" Or itt\tempname = "key2" Or itt\tempname = "key3" Or itt\tempname = "misc") And Rand(6)=1
 											shouldCreateItem = True
 											DebugLog "key"
 										EndIf
 									Case "vest","finevest"
-										If itt\tempname = "vest" Or itt\tempname = "finevest" And Rand(1)=1
+										If itt\tempname = "vest" Or itt\tempname = "finevest"
 											shouldCreateItem = True
 											DebugLog "vest"
 										EndIf

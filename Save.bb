@@ -1127,7 +1127,8 @@ Function LoadGame(file$)
 		
 		For itt.ItemTemplates = Each ItemTemplates
 			If (itt\tempname = tempName) And (itt\name = ittName) Then
-				If itt\isAnim<>0 Then SetAnimTime it\model,ReadFloat(f) : Exit
+				If itt\isAnim<>0 Then SetAnimTime it\model,ReadFloat(f)
+				Exit
 			EndIf
 		Next
 		it\invSlots = ReadByte(f)
@@ -1845,7 +1846,8 @@ Function LoadGameQuick(file$)
 		
 		For itt.ItemTemplates = Each ItemTemplates
 			If itt\tempname = tempName Then
-				If itt\isAnim<>0 Then SetAnimTime it\model,ReadFloat(f) : Exit
+				If itt\isAnim<>0 Then SetAnimTime it\model,ReadFloat(f)
+				Exit
 			EndIf
 		Next
 		it\invSlots = ReadByte(f)

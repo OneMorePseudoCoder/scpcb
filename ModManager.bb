@@ -29,7 +29,7 @@ Function InstantiateMod.Mods(id$, path$)
     Local ini% = OpenFile(modIni)
     While Not Eof(ini)
         Local l$ = Trim(ReadLine(ini))
-        If l <> "" And Instr(l, "#") <> 1 Then
+        If l <> "" And Instr(l, "#") <> 1 And Instr(l, ";") <> 1 Then
             Local splitterPos = Instr(l, "=")
             Local key$ = Trim(Left(l, splitterPos - 1))
             Local value$ = Trim(Right(l, Len(l) - splitterPos))
@@ -96,12 +96,12 @@ Function ReloadMods()
         Next
     EndIf
 
-    If FileType("mods.ini") = 1 Then
-        Local mods% = OpenFile("mods.ini")
+    If FileType(ModsFile) = 1 Then
+        Local mods% = OpenFile(ModsFile)
         Local firstSorted.Mods = First Mods
         While Not Eof(mods)
             l$ = Trim(ReadLine(mods))
-            If l <> "" And Instr(l, "#") <> 1 Then
+            If l <> "" And Instr(l, "#") <> 1 And Instr(l, ";") <> 1 Then
                 splitterPos = Instr(l, "=")
                 key$ = Trim(Left(l, splitterPos - 1))
                 value$ = Trim(Right(l, Len(l) - splitterPos))
@@ -123,7 +123,7 @@ Function ReloadMods()
 End Function
 
 Function SerializeMods()
-    Local f% = WriteFile("mods.ini")
+    Local f% = WriteFile(ModsFile)
     For m.Mods = Each Mods
         WriteLine(f, m\Id + "=" + Str(m\IsActive))
     Next

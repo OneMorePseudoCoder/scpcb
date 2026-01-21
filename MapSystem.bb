@@ -1600,7 +1600,7 @@ Function LoadRoomTemplates(file$)
 			Next
 
 			If rt = Null Then rt = CreateRoomTemplate(l)
-		Else If l <> "" And Instr(l, ";") <> 1 Then
+		Else If l <> "" And Instr(l, "#") <> 1 And Instr(l, ";") <> 1 Then
 			Local splitterPos% = Instr(l, "=")
 			Local key$ = Lower(Trim(Left(l, splitterPos - 1)))
 			Local value$ = Trim(Right(l, Len(l) - splitterPos))
@@ -7412,7 +7412,7 @@ Function CreateMap()
 	For rs = ROOM1 To ROOM4
 		For z = 1 To ZONEAMOUNT
 			MinPositions(rs, z) = 0
-			MaxPositions(rs, z) = RoomAmounts(rs, 1)-1
+			MaxPositions(rs, z) = RoomAmounts(rs, 1)
 			If z > 1 Then
 				MinPositions(rs, z) = MinPositions(rs, z) + RoomAmounts(rs, 1)
 				MaxPositions(rs, z) = MaxPositions(rs, z) + RoomAmounts(rs, 2)
@@ -7758,7 +7758,7 @@ End Function
 
 Function SetRoom(room_name$,room_type%,pos%,min_pos%,max_pos%) ;place a room without overwriting others
 	
-	If max_pos<min_pos Then DebugLog "Can't place "+room_name : Return False
+	If max_pos<=min_pos Then DebugLog "Can't place "+room_name : Return False
 	
 	DebugLog "--- SETROOM: "+Upper(room_name)+" ---" + min_pos + " " + max_pos
 	Local placed% = False
@@ -7772,11 +7772,11 @@ Function SetRoom(room_name$,room_type%,pos%,min_pos%,max_pos%) ;place a room wit
 End Function
 
 Function SetRoomUpper(room_name$,room_type%,pos%,max_pos%)
-	If pos>max_pos Return False
+	If pos>=max_pos Return False
 	While MapRoom(room_type,pos)<>""
 		DebugLog "found "+MapRoom(room_type,pos)
 		pos=pos+1
-		If pos>max_pos Then
+		If pos>=max_pos Then
 			Return False
 		EndIf
 	Wend
@@ -7785,7 +7785,7 @@ Function SetRoomUpper(room_name$,room_type%,pos%,max_pos%)
 End Function
 
 Function SetRoomLower(room_name$,room_type%,pos%,min_pos%)
-	If pos<max_pos Return False
+	If pos<min_pos Return False
 	While MapRoom(room_type,pos)<>""
 		DebugLog "found "+MapRoom(room_type,pos) + " " + pos
 		pos=pos-1
