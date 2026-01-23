@@ -8706,9 +8706,7 @@ Function InitNewGame()
 			DebugLog "room2sl"
 		EndIf
 	Next
-	
-	MoveMouse viewport_center_x,viewport_center_y;320, 240
-	
+		
 	SetFont Font1
 	
 	HidePointer()
@@ -8734,6 +8732,8 @@ Function InitNewGame()
 	
 	FreeTextureCache
 	DrawLoading(100)
+
+	MoveMouse viewport_center_x,viewport_center_y
 
 	FlushKeys
 	FlushMouse
@@ -8769,9 +8769,7 @@ Function InitLoadGame()
 	;InitEvents()
 	
 	DrawLoading(90)
-	
-	MoveMouse viewport_center_x,viewport_center_y
-	
+		
 	SetFont Font1
 	
 	HidePointer ()
@@ -8823,6 +8821,8 @@ Function InitLoadGame()
 	
 	FreeTextureCache
 	DrawLoading(100)
+
+	MoveMouse viewport_center_x,viewport_center_y
 	
 	PrevTime = MilliSecs()
 	FPSfactor = 0
