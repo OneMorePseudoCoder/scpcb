@@ -2137,6 +2137,10 @@ Function LoadMap(file$)
 	f% = ReadFile(file)
 	DebugLog file
 	
+	; TODO: Size should be included in the map itself, why this is not done is a mystery to me.
+	MapWidth% = GetModdedINIInt(MapOptions, "facility", "width")
+	MapHeight% = GetModdedINIInt(MapOptions, "facility", "height")
+
 	Dim MapTemp%(MapWidth+1, MapHeight+1)
 	Dim MapFound%(MapWidth+1, MapHeight+1)
 	CoffinDistance = 100
