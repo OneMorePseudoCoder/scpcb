@@ -77,6 +77,13 @@ If SteamActive Then
 	If Steam_Init() <> 0 Then RuntimeErrorExt("Steam failed to initialize")
 EndIf
 
+Global DiscordLastStatus%, DiscordCooldown%
+Global DiscordActive% = GetOptionInt("general", "enable discord rich presence")
+If DiscordActive Then
+	DiscordActive = (BlitzcordCreateCore("1465275739342377014") = 0)
+	If DiscordActive Then BlitzcordSetLargeImage("logo")
+EndIf
+
 Global IsRestart% = False
 .Start
 Global IsRunning% = True
@@ -3420,6 +3427,59 @@ While IsRunning
 	CatchErrors("Main loop / uncaught")
 
 	If SteamActive Then Steam_Update()
+	If DiscordActive Then
+		If MilliSecs() > DiscordCooldown Then
+			If MainMenuOpen Then
+				If DiscordLastStatus <> -1 Then
+					BlitzcordSetActivityDetails("Browsing the menus")
+					BlitzcordSetLargeText("")
+					BlitzcordSetSmallImage("")
+					BlitzcordSetTimestampStart(BlitzcordGetCurrentTimestamp())
+					BlitzcordUpdateActivity()
+					DiscordCooldown = MilliSecs() + 5000
+					DiscordLastStatus = -1
+				EndIf
+			Else
+				If DiscordLastStatus = -1 Then
+					BlitzcordSetLargeText(GetSeedString())
+					BlitzcordSetSmallImage(Lower(SelectedDifficulty\name))
+					BlitzcordSetSmallText("Difficulty: " + SelectedDifficulty\name)
+					BlitzcordSetTimestampStart(BlitzcordGetCurrentTimestamp())
+				EndIf
+
+				Local newArea% = PlayerZone
+				Select PlayerRoom\RoomTemplate\Name
+					Case "173" newArea = 4
+					Case "dimension1499" newArea = 100
+					Case "pocketdimension" newArea = 101
+					Case "gatea" newArea = 102
+					Case "exit1" newArea = 103
+					Case "room2tunnel" If EntityY(Collider,True)>4.0 Then newArea = 104
+				End Select
+				If newArea <> DiscordLastStatus Then
+					Local newAreaStr$
+					Select newArea
+						Case 0 newAreaStr = "Roaming the Light Containment Zone"
+						Case 1 newAreaStr = "Roaming the Heavy Containment Zone"
+						Case 2 newAreaStr = "Roaming the Entrance Zone"
+						Case 3 newAreaStr = "jorge has been expecting you"
+						Case 4 newAreaStr = "Being tested on SCP-173"
+						Case 5 newAreaStr = "Traversing a blue-hued forest"
+						Case 100 newAreaStr = "Wearing a GP-5 Gas Mask"
+						Case 101 newAreaStr = "Trapped in the Pocket Dimension"
+						Case 102 newAreaStr = "Escaping through Gate A"
+						Case 103 newAreaStr = "Escaping through Gate B"
+						Case 104 newAreaStr = "Lost in the Maintenance Tunnels"
+					End Select
+					BlitzcordSetActivityDetails(newAreaStr)
+					BlitzcordUpdateActivity()
+					DiscordCooldown = MilliSecs() + 5000
+					DiscordLastStatus = newArea
+				EndIf
+			EndIf
+		EndIf
+		BlitzcordRunCallbacks()
+	EndIf
 
 	If Vsync = 0 Then
 		Flip 0
@@ -3434,6 +3494,7 @@ If ShouldRestart Then
 EndIf
 
 If SteamActive Then Steam_Shutdown()
+If DiscordActive Then BlitzcordClearActivity()
 
 Function Restart()
 	Cls
@@ -7376,11 +7437,7 @@ Function DrawMenu()
 			SetFont Font1
 			Text x, y, "Difficulty: "+SelectedDifficulty\name
 			Text x, y+20*MenuScale, "Save: "+CurrSave
-			If HasNumericSeed Then
-				Text x, y+40*MenuScale, "Map seed (numeric): "+Str(RandomSeedNumeric)
-			Else
-				Text x, y+40*MenuScale, "Map seed: "+RandomSeed
-			EndIf
+			Text x, y+40*MenuScale, GetSeedString()
 		ElseIf AchievementsMenu <= 0 And OptionsMenu > 0 And QuitMSG <= 0 And KillTimer >= 0
 			If DrawButton(x + 101 * MenuScale, y + 390 * MenuScale, 230 * MenuScale, 60 * MenuScale, "Back") Then
 				AchievementsMenu = 0
@@ -7984,6 +8041,14 @@ Function DrawMenu()
 	CatchErrors("DrawMenu")
 End Function
 
+Function GetSeedString$()
+	If HasNumericSeed Then
+		Return "Map seed (numeric): "+Str(RandomSeedNumeric)
+	Else
+		Return "Map seed: "+RandomSeed
+	EndIf
+End Function
+
 Function MouseOn%(x%, y%, width%, height%)
 	If ScaledMouseX() > x And ScaledMouseX() < x + width Then
 		If ScaledMouseY() > y And ScaledMouseY() < y + height Then
@@ -8568,16 +8633,6 @@ Function LoadEntities()
 	;LoadRoomMeshes()
 	
 	CatchErrors("LoadEntities")
-End Function
-
-Function SetUpSeedErrorInfo()
-	Local txt$
-	If HasNumericSeed Then
-		txt = "Seed (numeric): " + RandomSeedNumeric
-	Else
-		txt = "Seed: " + RandomSeed
-	EndIf
-	SetErrorMsg(7, txt)
 End Function
 
 Function InitNewGame()
