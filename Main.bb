@@ -7,7 +7,7 @@
 
 ;    See Credits.txt for a list of contributors
 
-Const VersionNumber$ = "1.3.12-pre8"
+Const VersionNumber$ = "1.3.12-pre9"
 Const CompatibleNumber$ = "1.3.12" ;Only change this if the version given isn't working with the current build version - ENDSHN
 
 InitErrorMsgs(10, True)
@@ -73,7 +73,15 @@ Include "DevilParticleSystem.bb"
 
 Global SteamActive% = GetOptionInt("general", "enable steam")
 If SteamActive Then
+	If Steam_RestartAppIfNecessary(2178380) Then Return
 	If Steam_Init() <> 0 Then RuntimeErrorExt("Steam failed to initialize")
+EndIf
+
+Global DiscordLastStatus%, DiscordCooldown%
+Global DiscordActive% = GetOptionInt("general", "enable discord rich presence")
+If DiscordActive Then
+	DiscordActive = (BlitzcordCreateCore("1465275739342377014") = 0)
+	If DiscordActive Then BlitzcordSetLargeImage("logo")
 EndIf
 
 Global IsRestart% = False
@@ -146,7 +154,7 @@ Global HUDScaleFactor# = GetOptionFloat("graphics", "hud scale factor")
 If LauncherEnabled And (Not IsRestart) Then
 	AspectRatioRatio = 1.0
 	UpdateLauncher()
-Else If Fullscreen And (Not GfxModeExists(GraphicWidth, GraphicHeight, 32)) Then
+Else If Fullscreen And (Not GfxMode3DExists(GraphicWidth, GraphicHeight, 32)) Then
 	; Exclusive fullscreen ONLY supports the reported resolutions
 	AspectRatioRatio = 1.0
 	UpdateLauncher()
@@ -2598,6 +2606,7 @@ Function InitEvents()
 	;there's a 30% chance that it appears in the later lockrooms
 	If Rand(3)<3 Then CreateEvent("lockroom173", "lockroom", 0)
 	CreateEvent("lockroom173", "lockroom", 0, 0.3 + (0.5*SelectedDifficulty\aggressiveNPCs))
+	CreateEvent("lockroom173", "lockroom_ez", 0, 0.3 + (0.5*SelectedDifficulty\aggressiveNPCs))
 	
 	CreateEvent("room2trick", "room2", 0, 0.15)	
 	
@@ -3209,13 +3218,15 @@ While IsRunning
 			EntityAlpha(Dark, darkA)	
 		EndIf
 		
-		If LightFlash > 0 Then
-			ShowEntity Light
-			EntityAlpha(Light, Max(Min(LightFlash + Rnd(-0.2, 0.2), 1.0), 0.0))
-			LightFlash = Max(LightFlash - (FPSfactor / 70.0), 0)
-		Else
-			HideEntity Light
-			;EntityAlpha(Light, LightFlash)
+		If Not IsAnyMenuOpen() Then
+			If LightFlash > 0 Then
+				ShowEntity Light
+				EntityAlpha(Light, Max(Min(LightFlash + Rnd(-0.2, 0.2), 1.0), 0.0))
+				LightFlash = Max(LightFlash - (FPSfactor / 70.0), 0)
+			Else
+				HideEntity Light
+				;EntityAlpha(Light, LightFlash)
+			EndIf
 		EndIf
 		
 		EntityColor Light,255,255,255
@@ -3374,6 +3385,59 @@ While IsRunning
 	CatchErrors("Main loop / uncaught")
 
 	If SteamActive Then Steam_Update()
+	If DiscordActive Then
+		If MilliSecs() > DiscordCooldown Then
+			If MainMenuOpen Then
+				If DiscordLastStatus <> -1 Then
+					BlitzcordSetActivityDetails("Browsing the menus")
+					BlitzcordSetLargeText("")
+					BlitzcordSetSmallImage("")
+					BlitzcordSetTimestampStart(BlitzcordGetCurrentTimestamp())
+					BlitzcordUpdateActivity()
+					DiscordCooldown = MilliSecs() + 5000
+					DiscordLastStatus = -1
+				EndIf
+			Else
+				If DiscordLastStatus = -1 Then
+					BlitzcordSetLargeText(GetSeedString())
+					BlitzcordSetSmallImage(Lower(SelectedDifficulty\name))
+					BlitzcordSetSmallText("Difficulty: " + SelectedDifficulty\name)
+					BlitzcordSetTimestampStart(BlitzcordGetCurrentTimestamp())
+				EndIf
+
+				Local newArea% = PlayerZone
+				Select PlayerRoom\RoomTemplate\Name
+					Case "173" newArea = 4
+					Case "dimension1499" newArea = 100
+					Case "pocketdimension" newArea = 101
+					Case "gatea" newArea = 102
+					Case "exit1" newArea = 103
+					Case "room2tunnel" If EntityY(Collider,True)>4.0 Then newArea = 104
+				End Select
+				If newArea <> DiscordLastStatus Then
+					Local newAreaStr$
+					Select newArea
+						Case 0 newAreaStr = "Roaming the Light Containment Zone"
+						Case 1 newAreaStr = "Roaming the Heavy Containment Zone"
+						Case 2 newAreaStr = "Roaming the Entrance Zone"
+						Case 3 newAreaStr = "jorge has been expecting you"
+						Case 4 newAreaStr = "Being tested on SCP-173"
+						Case 5 newAreaStr = "Traversing a blue-hued forest"
+						Case 100 newAreaStr = "Wearing a GP-5 Gas Mask"
+						Case 101 newAreaStr = "Trapped in the Pocket Dimension"
+						Case 102 newAreaStr = "Escaping through Gate A"
+						Case 103 newAreaStr = "Escaping through Gate B"
+						Case 104 newAreaStr = "Lost in the Maintenance Tunnels"
+					End Select
+					BlitzcordSetActivityDetails(newAreaStr)
+					BlitzcordUpdateActivity()
+					DiscordCooldown = MilliSecs() + 5000
+					DiscordLastStatus = newArea
+				EndIf
+			EndIf
+		EndIf
+		BlitzcordRunCallbacks()
+	EndIf
 
 	If Vsync = 0 Then
 		Flip 0
@@ -3388,6 +3452,7 @@ If ShouldRestart Then
 EndIf
 
 If SteamActive Then Steam_Shutdown()
+If DiscordActive Then BlitzcordClearActivity()
 
 Function Restart()
 	Cls
@@ -4223,10 +4288,10 @@ Function MovePlayer()
 					temp = GetStepSound(Collider)
 					
 					If Sprint = 1.0 Then
-						PlayerSoundVolume = Max(4.0,PlayerSoundVolume)
+						PlayerSoundVolume = Max(2.5-(Crouch*0.6),PlayerSoundVolume)
 						tempchn% = PlaySound_Strict(StepSFX(temp, 0, Rand(0, 7)))
 					Else
-						PlayerSoundVolume = Max(2.5-(Crouch*0.6),PlayerSoundVolume)
+						PlayerSoundVolume = Max(4.0,PlayerSoundVolume)
 						tempchn% = PlaySound_Strict(StepSFX(temp, 1, Rand(0, 7)))
 					End If
 				ElseIf CurrStepSFX=1
@@ -4235,10 +4300,10 @@ Function MovePlayer()
 					tempchn% = PlaySound_Strict(Step2SFX(Rand(3,5)))
 				ElseIf CurrStepSFX=3
 					If Sprint = 1.0 Then
-						PlayerSoundVolume = Max(4.0,PlayerSoundVolume)
+						PlayerSoundVolume = Max(2.5-(Crouch*0.6),PlayerSoundVolume)
 						tempchn% = PlaySound_Strict(StepSFX(0, 0, Rand(0, 7)))
 					Else
-						PlayerSoundVolume = Max(2.5-(Crouch*0.6),PlayerSoundVolume)
+						PlayerSoundVolume = Max(4.0,PlayerSoundVolume)
 						tempchn% = PlaySound_Strict(StepSFX(0, 1, Rand(0, 7)))
 					End If
 				EndIf
@@ -6909,6 +6974,7 @@ Function DrawGUI()
 					If SelectedItem\state=100 Then
 						If Wearing1499>0 Then
 							;Msg = "1499remove."
+							SecondaryLightOn = PrevSecondaryLightOn
 							Wearing1499 = False
 							;DropItem(SelectedItem)
 							If SelectedItem\itemtemplate\sound <> 66 Then PlaySound_Strict(PickSFX(SelectedItem\itemtemplate\sound))
@@ -6922,6 +6988,8 @@ Function DrawGUI()
 							EndIf
 							If SelectedItem\itemtemplate\sound <> 66 Then PlaySound_Strict(PickSFX(SelectedItem\itemtemplate\sound))
 							GiveAchievement(Achv1499)
+							PrevSecondaryLightOn = SecondaryLightOn
+							SecondaryLightOn = True
 							If WearingNightVision Then CameraFogFar = StoredCameraFogFar
 							WearingGasMask = 0
 							WearingNightVision = 0
@@ -7318,11 +7386,7 @@ Function DrawMenu()
 			SetFont Font1
 			Text x, y, "Difficulty: "+SelectedDifficulty\name
 			Text x, y+20*MenuScale, "Save: "+CurrSave
-			If HasNumericSeed Then
-				Text x, y+40*MenuScale, "Map seed (numeric): "+Str(RandomSeedNumeric)
-			Else
-				Text x, y+40*MenuScale, "Map seed: "+RandomSeed
-			EndIf
+			Text x, y+40*MenuScale, GetSeedString()
 		ElseIf AchievementsMenu <= 0 And OptionsMenu > 0 And QuitMSG <= 0 And KillTimer >= 0
 			If DrawButton(x + 101 * MenuScale, y + 390 * MenuScale, 230 * MenuScale, 60 * MenuScale, "Back") Then
 				AchievementsMenu = 0
@@ -7918,6 +7982,14 @@ Function DrawMenu()
 	CatchErrors("DrawMenu")
 End Function
 
+Function GetSeedString$()
+	If HasNumericSeed Then
+		Return "Map seed (numeric): "+Str(RandomSeedNumeric)
+	Else
+		Return "Map seed: "+RandomSeed
+	EndIf
+End Function
+
 Function MouseOn%(x%, y%, width%, height%)
 	If ScaledMouseX() > x And ScaledMouseX() < x + width Then
 		If ScaledMouseY() > y And ScaledMouseY() < y + height Then
@@ -8506,16 +8578,6 @@ Function LoadEntities()
 	CatchErrors("LoadEntities")
 End Function
 
-Function SetUpSeedErrorInfo()
-	Local txt$
-	If HasNumericSeed Then
-		txt = "Seed (numeric): " + RandomSeedNumeric
-	Else
-		txt = "Seed: " + RandomSeed
-	EndIf
-	SetErrorMsg(7, txt)
-End Function
-
 Function InitNewGame()
 	CatchErrors("Uncaught (InitNewGame)")
 	Local i%, de.Decals, d.Doors, it.Items, r.Rooms, sc.SecurityCams, e.Events
@@ -8649,9 +8711,7 @@ Function InitNewGame()
 			DebugLog "room2sl"
 		EndIf
 	Next
-	
-	MoveMouse viewport_center_x,viewport_center_y;320, 240
-	
+		
 	SetFont Font1
 	
 	HidePointer()
@@ -8677,6 +8737,8 @@ Function InitNewGame()
 	
 	FreeTextureCache
 	DrawLoading(100)
+
+	MoveMouse viewport_center_x,viewport_center_y
 
 	FlushKeys
 	FlushMouse
@@ -8712,9 +8774,7 @@ Function InitLoadGame()
 	;InitEvents()
 	
 	DrawLoading(90)
-	
-	MoveMouse viewport_center_x,viewport_center_y
-	
+		
 	SetFont Font1
 	
 	HidePointer ()
@@ -8766,6 +8826,8 @@ Function InitLoadGame()
 	
 	FreeTextureCache
 	DrawLoading(100)
+
+	MoveMouse viewport_center_x,viewport_center_y
 	
 	PrevTime = MilliSecs()
 	FPSfactor = 0
@@ -10955,21 +11017,13 @@ Function ReadINILine$(file.INIFile)
 	Return retStr
 End Function
 
-Function UpdateINIFile$(filename$)
-	Local file.INIFile = Null
-	For k.INIFile = Each INIFile
-		If k\name = Lower(filename) Then
-			file = k
-			Exit
-		EndIf
-	Next
-	
-	If file=Null Then Return
-	
+Function UpdateINIFile$(filename$, file.INIFile)
+	CatchErrors("Uncaught (UpdateINIFile) " + filename)
+
 	If file\bank<>0 Then FreeBank file\bank
-	Local f% = ReadFile(file\name)
+	Local f% = ReadFile(filename)
 	Local fleSize% = 1
-	While fleSize<FileSize(file\name)
+	While fleSize<FileSize(filename)
 		fleSize=fleSize*2
 	Wend
 	file\bank = CreateBank(fleSize)
@@ -10979,14 +11033,17 @@ Function UpdateINIFile$(filename$)
 		file\size=file\size+1
 	Wend
 	CloseFile(f)
+
+	CatchErrors("UpdateINIFile " + filename)
 End Function
 
 Function GetINIString$(file$, section$, parameter$, defaultvalue$="")
 	Local TemporaryString$ = ""
 	
+	Local fileLower$ = Lower(file)
 	Local lfile.INIFile = Null
 	For k.INIFile = Each INIFile
-		If k\name = Lower(file) Then
+		If k\name = fileLower Then
 			lfile = k
 			Exit
 		EndIf
@@ -10995,9 +11052,9 @@ Function GetINIString$(file$, section$, parameter$, defaultvalue$="")
 	If lfile = Null Then
 		DebugLog "CREATE BANK FOR "+file
 		lfile = New INIFile
-		lfile\name = Lower(file)
+		lfile\name = fileLower
 		lfile\bank = 0
-		UpdateINIFile(lfile\name)
+		UpdateINIFile(file, lfile)
 	EndIf
 	
 	lfile\bankOffset = 0
@@ -11486,6 +11543,8 @@ Function RenderWorld2()
 				EndIf
 			Next
 			
+			SetFont Font1
+			
 			FreeEntity (temp) : FreeEntity (temp2)
 			
 			Color 0,0,55
@@ -11525,6 +11584,7 @@ Function RenderWorld2()
 			
 			Text GraphicWidth/2,20*HUDScale,"WARNING: LOW BATTERY",True,False
 			Color 255,255,255
+			SetFont Font1
 		EndIf
 	EndIf
 End Function

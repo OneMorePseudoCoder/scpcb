@@ -2170,7 +2170,7 @@ Function FillRoom(r.Rooms)
 			RotateEntity it\collider, 0, r\angle+170, 0
 			EntityParent(it\collider, r\obj)
 			;[End Block]
-		Case "lockroom"
+		Case "lockroom", "lockroom_ez"
 			;[Block]
 			d = CreateDoor(r\zone, r\x - 736.0 * RoomScale, 0, r\z - 104.0 * RoomScale, 0, r, True)
 			d\timer = 70 * 5 : d\AutoClose = False : d\open = False
@@ -2690,7 +2690,6 @@ Function FillRoom(r.Rooms)
 			PositionEntity(r\Objects[2], r\x - 632.0 * RoomScale, 224.0*RoomScale, r\z - 208.0 * RoomScale)
 			TurnEntity(r\Objects[2],0,180,0)			
 			EntityParent(r\Objects[2], r\obj)
-			HideEntity (r\Objects[2])
 			
 			FreeTexture Glasstex
 			
@@ -4502,6 +4501,8 @@ Function FillRoom(r.Rooms)
 		Case "room2ccont"
 			;[Block]
 			d = CreateDoor(r\zone, r\x + 64.0 * RoomScale, 0.0, r\z + 368.0 * RoomScale, 180, r, False, False, 2)
+			MoveEntity(d\buttons[0], 0, 0, 10)
+			MoveEntity(d\buttons[1], 0, 0, 10)
 			d\AutoClose = False : d\open = False
 			
 			it = CreateItem("Note from Daniel", "paper", r\x-400.0*RoomScale,1040.0*RoomScale,r\z+115.0*RoomScale)
@@ -5047,6 +5048,8 @@ Function FillRoom(r.Rooms)
 			PositionEntity(d\buttons[1], r\x + 304.0 * RoomScale, EntityY(d\buttons[1],True), r\z + 840.0 * RoomScale, True)	
 			TurnEntity d\buttons[1],0,0,0,True
 			d.Doors = CreateDoor(r\zone, r\x -512.0 * RoomScale, -768.0*RoomScale, r\z -336.0 * RoomScale, 0, r, False, False, 3)
+			MoveEntity(d\buttons[0], 0, 0, 10)
+			MoveEntity(d\buttons[1], 0, 0, 10)
 			d.Doors = CreateDoor(r\zone, r\x -509.0 * RoomScale, -768.0*RoomScale, r\z -1037.0 * RoomScale, 0, r, False, False, 3)
 			d.Doors\locked = True
 			d.Doors\DisableWaypoint = True
@@ -7426,8 +7429,8 @@ Function CreateMap()
 	
 	MapRoom(ROOM1, 0) = "start"	
 	
-	MapRoom(ROOM1, MaxPositions(ROOM1, 3)-1) = "exit1"
-	MapRoom(ROOM1, MaxPositions(ROOM1, 3)) = "gateaentrance"
+	MapRoom(ROOM1, MaxPositions(ROOM1, 3)-2) = "exit1"
+	MapRoom(ROOM1, MaxPositions(ROOM1, 3)-1) = "gateaentrance"
 	
 	For rt.RoomTemplates = Each RoomTemplates
 		If rt\SetRoom >= 0 Then

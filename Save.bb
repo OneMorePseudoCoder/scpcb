@@ -591,7 +591,7 @@ Function LoadGame(file$)
 		RandomSeed = ReadString(f)
 	EndIf
 
-	SetUpSeedErrorInfo()
+	SetErrorMsg(7, GetSeedString())
 	
 	SecondaryLightOn = ReadFloat(f)
 	PrevSecondaryLightOn = ReadFloat(f)
@@ -671,7 +671,7 @@ Function LoadGame(file$)
 		
 		Local frame# = ReadFloat(f)
 		Select NPCtype
-			Case NPCtypeOldMan, NPCtypeD, NPCtype096, NPCtypeMTF, NPCtypeGuard, NPCtype049, NPCtypeZombie, NPCtypeClerk
+			Case NPCtypeOldMan, NPCtypeD, NPCtype096, NPCtypeMTF, NPCtypeGuard, NPCtype049, NPCtypeZombie, NPCtypeClerk, NPCtype1048a
 				SetAnimTime(n\obj, frame)
 		End Select
 		
@@ -1511,7 +1511,7 @@ Function LoadGameQuick(file$)
 		
 		Local frame# = ReadFloat(f)
 		Select NPCtype
-			Case NPCtypeOldMan, NPCtypeD, NPCtype096, NPCtypeMTF, NPCtypeGuard, NPCtype049, NPCtypeZombie, NPCtypeClerk
+			Case NPCtypeOldMan, NPCtypeD, NPCtype096, NPCtypeMTF, NPCtypeGuard, NPCtype049, NPCtypeZombie, NPCtypeClerk, NPCtype1048a
 				SetAnimTime(n\obj, frame)
 		End Select		
 		
@@ -2137,6 +2137,10 @@ Function LoadMap(file$)
 	f% = ReadFile(file)
 	DebugLog file
 	
+	; TODO: Size should be included in the map itself, why this is not done is a mystery to me.
+	MapWidth% = GetModdedINIInt(MapOptions, "facility", "width")
+	MapHeight% = GetModdedINIInt(MapOptions, "facility", "height")
+
 	Dim MapTemp%(MapWidth+1, MapHeight+1)
 	Dim MapFound%(MapWidth+1, MapHeight+1)
 	CoffinDistance = 100

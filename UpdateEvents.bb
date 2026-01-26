@@ -2689,7 +2689,6 @@ Function UpdateEvents()
 				If PlayerRoom = e\room Then
 					If e\EventState = 0 And Curr173\Idle = 0 Then
 						If (Not EntityInView(Curr173\obj, Camera)) Then
-							e\EventState = 1
 							PositionEntity(Curr173\Collider, EntityX(e\room\Objects[0], True), 0.5, EntityZ(e\room\Objects[0], True))
 							ResetEntity(Curr173\Collider)
 							RemoveEvent(e)
@@ -2875,19 +2874,6 @@ Function UpdateEvents()
 								If Not ChannelPlaying(e\SoundCHN) Then e\SoundCHN = PlaySound2(TeslaIdleSFX, Camera, e\room\Objects[3],4.0,0.5)
 							EndIf
 							
-							For i = 0 To 2
-								If Distance(EntityX(Collider),EntityZ(Collider),EntityX(e\room\Objects[i],True),EntityZ(e\room\Objects[i],True)) < 300.0*RoomScale Then
-									;play the activation sound
-									If KillTimer => 0 Then 
-										PlayerSoundVolume = Max(8.0,PlayerSoundVolume)
-										StopChannel(e\SoundCHN)
-										e\SoundCHN = PlaySound2(TeslaActivateSFX, Camera, e\room\Objects[3],4.0,0.5)
-										e\EventState = 1
-										Exit
-									EndIf
-								EndIf
-							Next
-							
 							Local temp2 = True
 							For e2.Events = Each Events
 								If e2\EventName = e\EventName And e2 <> e
@@ -2917,6 +2903,19 @@ Function UpdateEvents()
 									e\EventState3 = 0
 								EndIf
 							EndIf
+
+							For i = 0 To 2
+								If (e\room\NPC[0] = Null Lor e\room\NPC[0]\IsDead) And Distance(EntityX(Collider),EntityZ(Collider),EntityX(e\room\Objects[i],True),EntityZ(e\room\Objects[i],True)) < 300.0*RoomScale Then
+									;play the activation sound
+									If KillTimer => 0 Then 
+										PlayerSoundVolume = Max(8.0,PlayerSoundVolume)
+										StopChannel(e\SoundCHN)
+										e\SoundCHN = PlaySound2(TeslaActivateSFX, Camera, e\room\Objects[3],4.0,0.5)
+										e\EventState = 1
+										Exit
+									EndIf
+								EndIf
+							Next
 						Else
 							HideEntity e\room\Objects[4]
 						EndIf
@@ -3011,21 +3010,19 @@ Function UpdateEvents()
 						EndIf
 					EndIf
 				Else
+					HideEntity e\room\Objects[3]
 					HideEntity e\room\Objects[4]
 				EndIf
 				
 				If e\room\NPC[0] <> Null
 					If e\EventStr = "step1" And e\room\NPC[0]\State <> 3
-						If e\EventState = 0
-							For i = 0 To 2
-								If Distance(EntityX(e\room\NPC[0]\Collider),EntityZ(e\room\NPC[0]\Collider),EntityX(e\room\Objects[i],True),EntityZ(e\room\Objects[i],True)) < 400.0*RoomScale
-									StopChannel(e\SoundCHN)
-									e\SoundCHN = PlaySound2(TeslaActivateSFX, Camera, e\room\Objects[3],4.0,0.5)
-									HideEntity e\room\Objects[4]
-									e\EventState = 1
-									Exit
-								EndIf
-							Next
+						Local prevState# = e\room\NPC[0]\State3
+						e\room\NPC[0]\State3 = prevState + FPSfactor
+						If prevState < 57.0 And e\room\NPC[0]\State3 >= 57.0 Then
+							StopChannel(e\SoundCHN)
+							e\SoundCHN = PlaySound2(TeslaActivateSFX, Camera, e\room\Objects[3],4.0,0.5)
+							HideEntity e\room\Objects[4]
+							e\EventState = 1
 						EndIf
 					ElseIf e\EventStr = "step1" And e\room\NPC[0]\State = 3
 						e\room\NPC[0]\CurrSpeed = 0
@@ -7044,29 +7041,15 @@ Function UpdateEvents()
 					If Curr173\Idle = 0 Then 
 						If e\EventState = 0 Then
 							If e\room\RoomDoors[0]\open = True
-							PositionEntity(Curr173\Collider, EntityX(e\room\Objects[0], True), 0.5, EntityZ(e\room\Objects[0], True))
-							ResetEntity(Curr173\Collider)
-							e\EventState = 1
+								If EntityDistance(Collider, Curr173\Collider) < 8 Then ; Must be at least one room size away
+									RemoveEvent(e)
+								Else
+									PositionEntity(Curr173\Collider, EntityX(e\room\Objects[0], True), 0.5, EntityZ(e\room\Objects[0], True))
+									ResetEntity(Curr173\Collider)
+									e\EventState = 1
+								EndIf
 							EndIf
 						Else
-							If e\room\Objects[2]=0
-								Local Glasstex = LoadTexture_Strict("GFX\map\glass.png",1+2)
-								e\room\Objects[2] = CreateSprite()
-								EntityTexture(e\room\Objects[2],Glasstex)
-								SpriteViewMode(e\room\Objects[2],2)
-								ScaleSprite(e\room\Objects[2],182.0*RoomScale*0.5, 192.0*RoomScale*0.5)
-								pvt% = CreatePivot(e\room\obj)
-								;PositionEntity pvt%,-595.0,224.0,-208.0,False
-								PositionEntity pvt%,-632.0,224.0,-208.0,False
-								PositionEntity(e\room\Objects[2], EntityX(pvt,True), EntityY(pvt,True), EntityZ(pvt,True))
-								FreeEntity pvt
-								RotateEntity e\room\Objects[2],0,e\room\angle,0
-								TurnEntity(e\room\Objects[2],0,180,0)
-								EntityParent(e\room\Objects[2], e\room\obj)
-								FreeTexture Glasstex
-							EndIf
-							
-							ShowEntity (e\room\Objects[2])
 							;start a timer for 173 breaking through the window
 							e\EventState = e\EventState + 1
 							dist# = EntityDistance(Collider, e\room\Objects[1])
@@ -7564,123 +7547,11 @@ Function UpdateEvents()
 			Case "1048a"
 				;[Block]
 				
-				If e\room\Objects[0]=0 Then
-					If PlayerRoom<>e\room And BlinkTimer<-10 Then
-						dist = Distance(EntityX(Collider),EntityZ(Collider), EntityX(e\room\obj),EntityZ(e\room\obj))
-						If (dist<16.0) Then
-							For e2.Events = Each Events
-								If e2\EventName = e\EventName Then
-									If e2\room <> e\room Then
-										If e2\room\Objects[0]<>0 Then
-											e\room\Objects[0]=CopyEntity(e2\room\Objects[0])
-											Exit
-										EndIf
-									EndIf
-								EndIf
-							Next
-							If e\room\Objects[0]=0 Then
-								e\room\Objects[0] =	LoadAnimMesh_Strict("GFX\npcs\scp-1048a.b3d")
-							EndIf
-							ScaleEntity e\room\Objects[0], 0.05,0.05,0.05
-							SetAnimTime(e\room\Objects[0], 2)
-							PositionEntity(e\room\Objects[0], EntityX(e\room\obj), 0.0, EntityZ(e\room\obj))
-							
-							RotateEntity(e\room\Objects[0], -90.0, Rnd(0.0, 360.0), 0.0)
-							
-							e\Sound = LoadSound_Strict("SFX\SCP\1048A\Shriek.ogg")
-							e\Sound2 = LoadSound_Strict("SFX\SCP\1048A\Growth.ogg")
-							
-							e\EventState = 1
-						EndIf
-					EndIf
-				Else
-					e\EventState3 = 1
-					Select e\EventState
-						Case 1
-							Animate2(e\room\Objects[0], AnimTime(e\room\Objects[0]), 2.0, 395.0, 1.0)
-							
-							If (EntityDistance(Collider, e\room\Objects[0])<2.5) Then e\EventState = 2
-						Case 2
-							Local prevFrame# = AnimTime(e\room\Objects[0]) 
-							Animate2(e\room\Objects[0], prevFrame, 2.0, 647.0, 1.0, False)
-							
-							If (prevFrame <= 400.0 And AnimTime(e\room\Objects[0])>400.0) Then
-								e\SoundCHN = PlaySound_Strict(e\Sound)
-							EndIf
-							
-							Local volume# = Max(1.0 - Abs(prevFrame - 600.0)/100.0, 0.0)
-							
-							BlurTimer = volume*1000.0
-							CameraShake = volume*10.0
-							
-							PointEntity(e\room\Objects[0], Collider)
-							RotateEntity(e\room\Objects[0], -90.0, EntityYaw(e\room\Objects[0]), 0.0)
-							
-							If (prevFrame>646.0) Then
-								If (PlayerRoom = e\room) Then
-									e\EventState = 3	
-									PlaySound_Strict e\Sound2
-									
-									Msg = "Something is growing all around your body."
-									MsgTimer = 70.0 * 3.0
-								Else
-									e\EventState3 = 70*30
-								EndIf
-							EndIf
-						Case 3
-							e\EventState2 = e\EventState2 + FPSfactor
-							
-							CanSave = False
-
-							BlurTimer = e\EventState2*2.0
-							
-							If (e\EventState2>250.0 And e\EventState2-FPSfactor <= 250.0) Then
-								Select Rand(3)
-									Case 1
-										Msg = "Ears are growing all over your body."
-									Case 2
-										Msg = "Ear-like organs are growing all over your body."
-									Case 3
-										Msg = "Ears are growing all over your body. They are crawling on your skin."
-								End Select
-								
-								MsgTimer = 70.0 * 3.0
-							Else If (e\EventState2>600.0 And e\EventState2-FPSfactor <= 600.0)
-								Select Rand(4)
-									Case 1
-										Msg = "It is becoming difficult to breathe."
-									Case 2
-										Msg = "You have excellent hearing now. Also, you are dying."
-									Case 3
-										Msg = "The ears are growing inside your body."
-									Case 4
-										Msg = Chr(34)+"Can't... Breathe..."+Chr(34)
-								End Select
-								
-								MsgTimer = 70.0 * 5.0
-							EndIf
-							
-							If (e\EventState2>70*15) Then
-								DeathMSG = "A dead body covered in ears was found in [REDACTED]. Subject was presumably attacked by an instance of SCP-1048-A and suffocated to death by the ears. "
-								DeathMSG = DeathMSG + "Body was sent for autopsy."
-								Kill()
-								e\EventState = 4
-								RemoveEvent(e)
-							EndIf
-					End Select 
-					
-					If (e <> Null) Then
-						If PlayerRoom <> e\room Then
-							If e\EventState3>0 Then
-								e\EventState3 = e\EventState3+FPSfactor
-								
-								If e\EventState3>70*25 Then
-									FreeEntity(e\room\Objects[0])
-									e\room\Objects[0]=0
-									RemoveEvent(e)
-								EndIf
-							EndIf
-						EndIf
+				If PlayerRoom<>e\room And BlinkTimer<-10 Then
+					dist = Distance(EntityX(Collider),EntityZ(Collider), EntityX(e\room\obj),EntityZ(e\room\obj))
+					If (dist<16.0) Then
+						CreateNPC(NPCtype1048a, EntityX(e\room\obj), 0.2, EntityZ(e\room\obj))
+						RemoveEvent(e)
 					EndIf
 				EndIf
 				

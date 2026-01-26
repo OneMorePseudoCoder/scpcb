@@ -756,8 +756,8 @@ Function Update294()
 			VomitCHN = PlaySound_Strict(VomitSFX)
 			PrevInjuries = Injuries
 			PrevBloodloss = Bloodloss
-			Injuries = 1.5
-			Bloodloss = 70
+			Injuries = Injuries + 1.5
+			Bloodloss = Bloodloss + 70
 			EyeIrritation = 9 * 70
 			
 			pvt = CreatePivot()
