@@ -156,6 +156,8 @@ Global SFXVolume# = GetOptionFloat("audio", "sound volume")
 
 Global Bit16Mode = GetOptionInt("graphics", "16bit")
 
+Global HUDScaleFactor# = GetOptionFloat("graphics", "hud scale factor")
+
 If LauncherEnabled And (Not IsRestart) Then 
 	AspectRatioRatio = 1.0
 	UpdateLauncher()
@@ -190,7 +192,7 @@ Else
 EndIf
 
 Global MenuScale# = (Min(GraphicWidth, GraphicHeight) / 1024.0)
-Global HUDScale# = Max(MenuScale, 1)
+Global HUDScale# = Max(MenuScale * HUDScaleFactor, 1)
 
 SetBuffer(BackBuffer())
 

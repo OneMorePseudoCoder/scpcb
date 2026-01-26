@@ -1517,6 +1517,8 @@ Function UpdateLauncher()
 		Rect 0,0,LauncherWidth,LauncherHeight,True
 		
 		MouseHit1 = MouseHit(1)
+		MouseDown1 = MouseDown(1)
+		If Not MouseDown1 Then OnSliderID = 0
 		
 		Color 255, 255, 255
 		DrawImage(LauncherIMG, 0, 0)
@@ -1889,7 +1891,7 @@ Function DrawLoading(percent%, shortloading=False)
 		
 		DrawImage SelectedLoadingScreen\img, x, y
 		
-		DrawBar(BlinkMeterIMG, GraphicWidth / 2, GraphicHeight / 2 - 70 * HUDScale, 300 * HUDScale, percent / 100.0, True)
+		DrawBar(BlinkMeterIMG, GraphicWidth / 2, GraphicHeight / 2 - 70 * MenuScale, 300 * HUDScale, percent / 100.0, True)
 		
 		If SelectedLoadingScreen\title = "CWM" Then
 			
@@ -1909,7 +1911,7 @@ Function DrawLoading(percent%, shortloading=False)
 			For i = 0 To temp
 				strtemp$ = STRTEMP + RandomDefaultWidthChar(48,122,"?")
 			Next
-			Text(GraphicWidth / 2, GraphicHeight / 2 + 80*HUDScale, strtemp, True, True)
+			Text(GraphicWidth / 2, GraphicHeight / 2 + 80*MenuScale, strtemp, True, True)
 			
 			If percent = 0 Then 
 				If Rand(5)=1 Then
@@ -1955,20 +1957,20 @@ Function DrawLoading(percent%, shortloading=False)
 				strtemp$ = Replace(SelectedLoadingScreen\txt[0],Mid(SelectedLoadingScreen\txt[0],Rand(1,Len(strtemp)-1),1),RandomDefaultWidthChar(130,250,"?"))
 			Next		
 			SetFont Font1
-			RowText(strtemp, GraphicWidth / 2-200*HUDScale, GraphicHeight / 2 +120*HUDScale,400*HUDScale,300*HUDScale,True)		
+			RowText(strtemp, GraphicWidth / 2-200*MenuScale, GraphicHeight / 2 +120*MenuScale,400*MenuScale,300*MenuScale,True)		
 		Else
 			
 			Color 0,0,0
 			SetFont Font2
-			Text(GraphicWidth / 2 + 1 * HUDScale, GraphicHeight / 2 + (80+1)*HUDScale, SelectedLoadingScreen\title, True, True)
+			Text(GraphicWidth / 2 + 1 * MenuScale, GraphicHeight / 2 + (80+1)*MenuScale, SelectedLoadingScreen\title, True, True)
 			SetFont Font1
-			RowText(SelectedLoadingScreen\txt[LoadingScreenText], GraphicWidth / 2-(200+1)*HUDScale, GraphicHeight / 2 +(120+1)*HUDScale,400*HUDScale,300*HUDScale,True)
+			RowText(SelectedLoadingScreen\txt[LoadingScreenText], GraphicWidth / 2-(200+1)*MenuScale, GraphicHeight / 2 +(120+1)*MenuScale,400*MenuScale,300*MenuScale,True)
 			
 			Color 255,255,255
 			SetFont Font2
-			Text(GraphicWidth / 2, GraphicHeight / 2 +80*HUDScale, SelectedLoadingScreen\title, True, True)
+			Text(GraphicWidth / 2, GraphicHeight / 2 +80*MenuScale, SelectedLoadingScreen\title, True, True)
 			SetFont Font1
-			RowText(SelectedLoadingScreen\txt[LoadingScreenText], GraphicWidth / 2-200*HUDScale, GraphicHeight / 2 +120*HUDScale,400*HUDScale,300*HUDScale,True)
+			RowText(SelectedLoadingScreen\txt[LoadingScreenText], GraphicWidth / 2-200*MenuScale, GraphicHeight / 2 +120*MenuScale,400*MenuScale,300*MenuScale,True)
 			
 		EndIf
 
@@ -1977,13 +1979,13 @@ Function DrawLoading(percent%, shortloading=False)
 		EndIf
 		
 		Color 0,0,0
-		Text(GraphicWidth / 2 + 1 * HUDScale, GraphicHeight / 2 - 100 * HUDScale + 1 * HUDScale, "LOADING - " + percent + " %", True, True)
+		Text(GraphicWidth / 2 + 1 * MenuScale, GraphicHeight / 2 - 100 * MenuScale + 1 * MenuScale, "LOADING - " + percent + " %", True, True)
 		Color 255,255,255
-		Text(GraphicWidth / 2, GraphicHeight / 2 - 100 * HUDScale, "LOADING - " + percent + " %", True, True)
+		Text(GraphicWidth / 2, GraphicHeight / 2 - 100 * MenuScale, "LOADING - " + percent + " %", True, True)
 		
 		If percent = 100 Then 
 			If firstloop And SelectedLoadingScreen\title <> "CWM" Then PlaySound_Strict LoadTempSound(("SFX\Horror\Horror8.ogg"))
-			Text(GraphicWidth / 2, GraphicHeight - 50 * HUDScale, "PRESS ANY KEY TO CONTINUE", True, True)
+			Text(GraphicWidth / 2, GraphicHeight - 50 * MenuScale, "PRESS ANY KEY TO CONTINUE", True, True)
 		Else
 			FlushKeys()
 			FlushMouse()
