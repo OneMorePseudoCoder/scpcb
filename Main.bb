@@ -6809,7 +6809,7 @@ Function DrawGUI()
 									If dist < 8.0 * 4 Then
 										Color 100, 0, 0
 										Oval(x - dist * 3 * HUDScale, y - 7 - dist * 3 * HUDScale, dist * 3 * 2 * HUDScale, dist * 3 * 2 * HUDScale, False)
-										Text(x - width / 2 + 10*HUDScale, y - height / 2 + 30*HUDScale, "SCP-173")
+										Text(x - width / 2 + 10*HUDScale, y - height / 2 + 32*HUDScale, "SCP-173")
 										SCPs_found% = SCPs_found% + 1
 									EndIf
 								EndIf
@@ -6818,7 +6818,7 @@ Function DrawGUI()
 									If dist < 8.0 * 4 Then
 										Color 100, 0, 0
 										Oval(x - dist * 1.5 * HUDScale, y - 7 - dist * 1.5 * HUDScale, dist * 3 * HUDScale, dist * 3 * HUDScale, False)
-										Text(x - width / 2 + 10*HUDScale, y - height / 2 + (30 + (20*SCPs_found))*HUDScale, "SCP-106")
+										Text(x - width / 2 + 10*HUDScale, y - height / 2 + (32 + (20*SCPs_found))*HUDScale, "SCP-106")
 										SCPs_found% = SCPs_found% + 1
 									EndIf
 								EndIf
@@ -6827,7 +6827,7 @@ Function DrawGUI()
 									If dist < 8.0 * 4 Then
 										Color 100, 0, 0
 										Oval(x - dist * 1.5 * HUDScale, y - 7 - dist * 1.5 * HUDScale, dist * 3 * HUDScale, dist * 3 * HUDScale, False)
-										Text(x - width / 2 + 10*HUDScale, y - height / 2 + (30 + (20*SCPs_found))*HUDScale, "SCP-096")
+										Text(x - width / 2 + 10*HUDScale, y - height / 2 + (32 + (20*SCPs_found))*HUDScale, "SCP-096")
 										SCPs_found% = SCPs_found% + 1
 									EndIf
 								EndIf
@@ -6838,7 +6838,7 @@ Function DrawGUI()
 											If (Not np\HideFromNVG) Then
 												Color 100, 0, 0
 												Oval(x - dist * 1.5 * HUDScale, y - 7 - dist * 1.5 * HUDScale, dist * 3 * HUDScale, dist * 3 * HUDScale, False)
-												Text(x - width / 2 + 10*HUDScale, y - height / 2 + (30 + (20*SCPs_found))*HUDScale, "SCP-049")
+												Text(x - width / 2 + 10*HUDScale, y - height / 2 + (32 + (20*SCPs_found))*HUDScale, "SCP-049")
 												SCPs_found% = SCPs_found% + 1
 											EndIf
 										EndIf
@@ -6850,7 +6850,7 @@ Function DrawGUI()
 										dist = Rnd(4.0, 8.0)
 										Color 100, 0, 0
 										Oval(x - dist * 1.5 * HUDScale, y - 7 - dist * 1.5 * HUDScale, dist * 3 * HUDScale, dist * 3 * HUDScale, False)
-										Text(x - width / 2 + 10*HUDScale, y - height / 2 + (30 + (20*SCPs_found))*HUDScale, "SCP-895")
+										Text(x - width / 2 + 10*HUDScale, y - height / 2 + (32 + (20*SCPs_found))*HUDScale, "SCP-895")
 									EndIf
 								EndIf
 							End If
