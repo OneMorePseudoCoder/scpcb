@@ -141,6 +141,8 @@ End Select
 Global ConsoleOpening% = GetOptionInt("console", "auto opening")
 Global SFXVolume# = GetOptionFloat("audio", "sound volume")
 
+Global HUDScaleFactor# = GetOptionFloat("graphics", "hud scale factor")
+
 If LauncherEnabled And (Not IsRestart) Then
 	AspectRatioRatio = 1.0
 	UpdateLauncher()
@@ -174,7 +176,7 @@ Else
 EndIf
 
 Global MenuScale# = (Min(GraphicWidth, GraphicHeight) / 1024.0)
-Global HUDScale# = Max(MenuScale, 1)
+Global HUDScale# = Max(MenuScale * HUDScaleFactor, 1)
 
 SetBuffer(BackBuffer())
 
