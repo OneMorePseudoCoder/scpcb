@@ -6956,6 +6956,7 @@ Function DrawGUI()
 					If SelectedItem\state=100 Then
 						If Wearing1499>0 Then
 							;Msg = "1499remove."
+							SecondaryLightOn = PrevSecondaryLightOn
 							Wearing1499 = False
 							;DropItem(SelectedItem)
 							If SelectedItem\itemtemplate\sound <> 66 Then PlaySound_Strict(PickSFX(SelectedItem\itemtemplate\sound))
@@ -6969,6 +6970,8 @@ Function DrawGUI()
 							EndIf
 							If SelectedItem\itemtemplate\sound <> 66 Then PlaySound_Strict(PickSFX(SelectedItem\itemtemplate\sound))
 							GiveAchievement(Achv1499)
+							PrevSecondaryLightOn = SecondaryLightOn
+							SecondaryLightOn = True
 							If WearingNightVision Then CameraFogFar = StoredCameraFogFar
 							WearingGasMask = 0
 							WearingNightVision = 0
