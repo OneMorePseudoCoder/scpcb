@@ -532,8 +532,12 @@ Function CreateNPC.NPCs(NPCtype%, x#, y#, z#)
 			;[End Block]
 		Case NPCtype1048a
 			;[Block]
-			n\NVName = "SCP-1048-A"
+			;n\NVName = "SCP-1048-A"
 			n\obj =	LoadAnimMesh_Strict("GFX\npcs\scp-1048a.b3d")
+			n\Collider = CreatePivot()
+			EntityRadius n\Collider, 0.1
+			EntityType n\Collider, HIT_PLAYER
+			RotateEntity(n\obj, -90.0, Rnd(0.0, 360.0), 0.0)
 			ScaleEntity n\obj, 0.05,0.05,0.05
 			SetAnimTime(n\obj, 2)
 			
@@ -4382,11 +4386,90 @@ Function UpdateNPCs()
 				;[End Block]
 			Case NPCtype1048a
 				;[Block]
-				Select n\State	
-						
+
+				PositionEntity(n\obj, EntityX(n\Collider), EntityY(n\Collider) - 0.1, EntityZ(n\Collider))
+
+				If n\State3 > 0 And EntityDistance(Collider, n\obj) >= 4 Then
+					n\State3 = n\State3 + FPSfactor
+
+					If n\State3>70*25 Then
+						RemoveNPC(n)
+						Return
+					EndIf
+				EndIf
+
+				Select n\State
+					Case 0
+						AnimateNPC(n, 2.0, 395.0, 1.0)
+							
+						If (Not NoTarget) And EntityDistance(Collider, n\obj)<2.5 Then n\State = 1
+					
 					Case 1
-						n\PathStatus = FindPath(n, n\EnemyX,n\EnemyY+0.1,n\EnemyZ)
-						;649, 677
+						prevFrame# = n\Frame
+						AnimateNPC(n, 2.0, 647.0, 1.0, False)
+						
+						If n\SoundChn = 0 And n\Frame>400.0 Then n\SoundChn = PlaySound_Strict(n\Sound)
+						
+						Local volume# = Max(1.0 - Abs(prevFrame - 600.0)/100.0, 0.0)
+						
+						BlurTimer = volume*1000.0
+						CameraShake = volume*10.0
+						
+						PointEntity(n\obj, Collider)
+						RotateEntity(n\obj, -90.0, EntityYaw(n\obj), 0.0)
+						
+						If (prevFrame>646.0) Then
+							If (EntityDistance(Collider, n\obj) < 4) Then
+								n\State = 2
+								PlaySound_Strict n\Sound2
+								
+								Msg = "Something is growing all around your body."
+								MsgTimer = 70.0 * 3.0
+							Else
+								n\State3 = 70*30
+							EndIf
+						EndIf
+
+					Case 2
+						n\State2 = n\State2 + FPSfactor
+						
+						CanSave = False
+
+						BlurTimer = n\State2*2.0
+						
+						If (n\State2>250.0 And n\State2-FPSfactor <= 250.0) Then
+							Select Rand(3)
+								Case 1
+									Msg = "Ears are growing all over your body."
+								Case 2
+									Msg = "Ear-like organs are growing all over your body."
+								Case 3
+									Msg = "Ears are growing all over your body. They are crawling on your skin."
+							End Select
+							
+							MsgTimer = 70.0 * 3.0
+						Else If (n\State2>600.0 And n\State2-FPSfactor <= 600.0)
+							Select Rand(4)
+								Case 1
+									Msg = "It is becoming difficult to breathe."
+								Case 2
+									Msg = "You have excellent hearing now. Also, you are dying."
+								Case 3
+									Msg = "The ears are growing inside your body."
+								Case 4
+									Msg = Chr(34)+"Can't... Breathe..."+Chr(34)
+							End Select
+							
+							MsgTimer = 70.0 * 5.0
+						EndIf
+						
+						If (n\State2>70*15) Then
+							DeathMSG = "A dead body covered in ears was found in [REDACTED]. Subject was presumably attacked by an instance of SCP-1048-A and suffocated to death by the ears. "
+							DeathMSG = DeathMSG + "Body was sent for autopsy."
+							Kill()
+							n\State = 3
+						EndIf
+
 				End Select
 				;[End block]
 			Case NPCtype1499
@@ -7113,7 +7196,8 @@ Function Console_SpawnNPC(c_input$, c_state$ = "")
 			consoleMSG = "SCP-966 instance spawned."
 			
 		Case "1048-a", "scp1048-a", "scp-1048-a", "scp1048a", "scp-1048a"
-			CreateConsoleMsg("SCP-1048-A cannot be spawned with the console. Sorry!", 255, 0, 0)
+			n.NPCs = CreateNPC(NPCtype1048a, EntityX(Collider), EntityY(Collider) + 0.2, EntityZ(Collider))
+			consoleMSG = "SCP-1048-A spawned."
 			
 		Case "1499-1", "14991", "scp-1499-1", "scp1499-1"
 			n.NPCs = CreateNPC(NPCtype1499, EntityX(Collider), EntityY(Collider) + 0.2, EntityZ(Collider))
