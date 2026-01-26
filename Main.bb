@@ -3209,13 +3209,15 @@ While IsRunning
 			EntityAlpha(Dark, darkA)	
 		EndIf
 		
-		If LightFlash > 0 Then
-			ShowEntity Light
-			EntityAlpha(Light, Max(Min(LightFlash + Rnd(-0.2, 0.2), 1.0), 0.0))
-			LightFlash = Max(LightFlash - (FPSfactor / 70.0), 0)
-		Else
-			HideEntity Light
-			;EntityAlpha(Light, LightFlash)
+		If Not IsAnyMenuOpen() Then
+			If LightFlash > 0 Then
+				ShowEntity Light
+				EntityAlpha(Light, Max(Min(LightFlash + Rnd(-0.2, 0.2), 1.0), 0.0))
+				LightFlash = Max(LightFlash - (FPSfactor / 70.0), 0)
+			Else
+				HideEntity Light
+				;EntityAlpha(Light, LightFlash)
+			EndIf
 		EndIf
 		
 		EntityColor Light,255,255,255

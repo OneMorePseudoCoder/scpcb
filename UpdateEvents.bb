@@ -2875,19 +2875,6 @@ Function UpdateEvents()
 								If Not ChannelPlaying(e\SoundCHN) Then e\SoundCHN = PlaySound2(TeslaIdleSFX, Camera, e\room\Objects[3],4.0,0.5)
 							EndIf
 							
-							For i = 0 To 2
-								If Distance(EntityX(Collider),EntityZ(Collider),EntityX(e\room\Objects[i],True),EntityZ(e\room\Objects[i],True)) < 300.0*RoomScale Then
-									;play the activation sound
-									If KillTimer => 0 Then 
-										PlayerSoundVolume = Max(8.0,PlayerSoundVolume)
-										StopChannel(e\SoundCHN)
-										e\SoundCHN = PlaySound2(TeslaActivateSFX, Camera, e\room\Objects[3],4.0,0.5)
-										e\EventState = 1
-										Exit
-									EndIf
-								EndIf
-							Next
-							
 							Local temp2 = True
 							For e2.Events = Each Events
 								If e2\EventName = e\EventName And e2 <> e
@@ -2917,6 +2904,19 @@ Function UpdateEvents()
 									e\EventState3 = 0
 								EndIf
 							EndIf
+
+							For i = 0 To 2
+								If (e\room\NPC[0] = Null Lor e\room\NPC[0]\IsDead) And Distance(EntityX(Collider),EntityZ(Collider),EntityX(e\room\Objects[i],True),EntityZ(e\room\Objects[i],True)) < 300.0*RoomScale Then
+									;play the activation sound
+									If KillTimer => 0 Then 
+										PlayerSoundVolume = Max(8.0,PlayerSoundVolume)
+										StopChannel(e\SoundCHN)
+										e\SoundCHN = PlaySound2(TeslaActivateSFX, Camera, e\room\Objects[3],4.0,0.5)
+										e\EventState = 1
+										Exit
+									EndIf
+								EndIf
+							Next
 						Else
 							HideEntity e\room\Objects[4]
 						EndIf
@@ -3011,21 +3011,19 @@ Function UpdateEvents()
 						EndIf
 					EndIf
 				Else
+					HideEntity e\room\Objects[3]
 					HideEntity e\room\Objects[4]
 				EndIf
 				
 				If e\room\NPC[0] <> Null
 					If e\EventStr = "step1" And e\room\NPC[0]\State <> 3
-						If e\EventState = 0
-							For i = 0 To 2
-								If Distance(EntityX(e\room\NPC[0]\Collider),EntityZ(e\room\NPC[0]\Collider),EntityX(e\room\Objects[i],True),EntityZ(e\room\Objects[i],True)) < 400.0*RoomScale
-									StopChannel(e\SoundCHN)
-									e\SoundCHN = PlaySound2(TeslaActivateSFX, Camera, e\room\Objects[3],4.0,0.5)
-									HideEntity e\room\Objects[4]
-									e\EventState = 1
-									Exit
-								EndIf
-							Next
+						Local prevState# = e\room\NPC[0]\State3
+						e\room\NPC[0]\State3 = prevState + FPSfactor
+						If prevState < 57.0 And e\room\NPC[0]\State3 >= 57.0 Then
+							StopChannel(e\SoundCHN)
+							e\SoundCHN = PlaySound2(TeslaActivateSFX, Camera, e\room\Objects[3],4.0,0.5)
+							HideEntity e\room\Objects[4]
+							e\EventState = 1
 						EndIf
 					ElseIf e\EventStr = "step1" And e\room\NPC[0]\State = 3
 						e\room\NPC[0]\CurrSpeed = 0
