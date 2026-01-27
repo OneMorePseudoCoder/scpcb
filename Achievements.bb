@@ -63,11 +63,11 @@ For i = 0 To MAXACHIEVEMENTS-1
 	AchievementDescs(i) = GetModdedINIString(StringsFile, "Achievement Desc", AchvNames[i])
 	
 	AchvIMG(i) = LoadImage_Strict("GFX\menu\achievements\Achv"+AchvNames[i]+".jpg")
-	AchvIMG(i) = ResizeImage2(AchvIMG(i),ImageWidth(AchvIMG(i))*GraphicHeight/768.0,ImageHeight(AchvIMG(i))*GraphicHeight/768.0)
+	ScaleImage(AchvIMG(i), GraphicHeight/768.0, GraphicHeight/768.0)
 Next
 
 Global AchvLocked = LoadImage_Strict("GFX\menu\achievements\achvlocked.jpg")
-AchvLocked = ResizeImage2(AchvLocked,ImageWidth(AchvLocked)*GraphicHeight/768.0,ImageHeight(AchvLocked)*GraphicHeight/768.0)
+ScaleImage(AchvLocked,GraphicHeight/768.0,GraphicHeight/768.0)
 
 Function GiveAchievement(achvname%, showMessage%=True)
 	If Achievements(achvname)<>True Then
@@ -88,7 +88,7 @@ End Function
 Function AchievementTooltip(achvno%)
     Local scale# = GraphicHeight/768.0
     
-    SetFont Font3
+    SetFont Font6
     Local width = StringWidth(AchievementStrings(achvno))
     SetFont Font1
     If (StringWidth(AchievementDescs(achvno))>width) Then
@@ -102,7 +102,7 @@ Function AchievementTooltip(achvno%)
     Rect(ScaledMouseX()+(20*MenuScale),ScaledMouseY()+(20*MenuScale),width,height,True)
     Color 150,150,150
     Rect(ScaledMouseX()+(20*MenuScale),ScaledMouseY()+(20*MenuScale),width,height,False)
-    SetFont Font3
+    SetFont Font6
     Text(ScaledMouseX()+(20*MenuScale)+(width/2),ScaledMouseY()+(35*MenuScale), AchievementStrings(achvno), True, True)
     SetFont Font1
     Text(ScaledMouseX()+(20*MenuScale)+(width/2),ScaledMouseY()+(55*MenuScale), AchievementDescs(achvno), True, True)

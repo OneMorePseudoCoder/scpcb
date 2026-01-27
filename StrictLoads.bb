@@ -387,7 +387,7 @@ Function LoadTexture_Strict(File$,flags=1)
 	If tmp <> 0 Then Return tmp
 
 	If FileType(File$) <> 1 Then RuntimeErrorExt "Texture " + File$ + " not found."
-	tmp = LoadTexture(File$, flags+(256*(EnableVRam=True)))
+	tmp = LoadTexture(File$, flags)
 	If tmp = 0 Then RuntimeErrorExt "Failed to load Texture: " + File$
 	Return tmp
 End Function

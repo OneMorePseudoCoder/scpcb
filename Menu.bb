@@ -3,11 +3,10 @@ Global MenuText% = LoadImage_Strict("GFX\menu\scptext.jpg")
 Global Menu173% = LoadImage_Strict("GFX\menu\173back.jpg")
 MenuWhite = LoadImage_Strict("GFX\menu\menuwhite.jpg")
 MenuBlack = LoadImage_Strict("GFX\menu\menublack.jpg")
-MaskImage MenuBlack, 255,255,0
 
-ResizeImage(MenuBack, ImageWidth(MenuBack) * MenuScale, ImageHeight(MenuBack) * MenuScale)
-ResizeImage(MenuText, ImageWidth(MenuText) * MenuScale, ImageHeight(MenuText) * MenuScale)
-ResizeImage(Menu173, ImageWidth(Menu173) * MenuScale, ImageHeight(Menu173) * MenuScale)
+ScaleImage(MenuBack, MenuScale, MenuScale)
+ScaleImage(MenuText, MenuScale, MenuScale)
+ScaleImage(Menu173, MenuScale, MenuScale)
 
 For i = 0 To 3
 	ArrowIMG(i) = LoadImage_Strict("GFX\menu\arrow.png")
@@ -698,15 +697,6 @@ Function UpdateMainMenu()
 					TextureLodBias TextureFloat
 					If (MouseOn(x+310*MenuScale,y-6*MenuScale,150*MenuScale+14,20) And OnSliderID=0) Or OnSliderID=3
 						DrawOptionsTooltip(tx,ty,tw,th+100*MenuScale,"texquality")
-					EndIf
-					
-					y=y+50*MenuScale
-					
-					Color 255,255,255
-					Text(x + 20 * MenuScale, y, I_Loc\OptionName_Vram)
-					EnableVRam = DrawTick(x + 310 * MenuScale, y + MenuScale, EnableVRam)
-					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
-						DrawOptionsTooltip(tx,ty,tw,th,"vram")
 					EndIf
 
 					y=y+50*MenuScale
@@ -1407,8 +1397,8 @@ Function CreateGrayScaleImage%(img%)
 	Local buf% = ImageBuffer(ret)
 	LockBuffer(rbuf)
 	LockBuffer(buf)
-	For x = 0 To ImageWidth(img)-1
-		For y = 0 To ImageHeight(img)-1
+	For x = 0 To BufferWidth(rbuf)-1
+		For y = 0 To BufferHeight(rbuf)-1
 			Local color% = ReadPixelFast(x, y, rbuf)
 			Local g% = ((color Shr 16) And 255) * 0.21 + ((color Shr 8) And 255) * 0.72 + (color And 255) * 0.07
 			WritePixelFast(x, y, (color And $FF000000) + (g Shl 16) + (g Shl 8) + g, buf)
@@ -1455,7 +1445,6 @@ Function UpdateLauncher()
 	SetFont Font1
 	MenuWhite = LoadImage_Strict("GFX\menu\menuwhite.jpg")
 	MenuBlack = LoadImage_Strict("GFX\menu\menublack.jpg")	
-	MaskImage MenuBlack, 255,255,0
 	Local LauncherIMG% = LoadImage_Strict("GFX\menu\launcher.png")
 	Local i%	
 	
@@ -1582,61 +1571,26 @@ Function UpdateLauncher()
 		Next
 		
 		;-----------------------------------------------------------------
-		Color 255, 255, 255
-		x = 30
-		y = 369
-		Rect(x - 10, y, 340, 95)
-		Text(x - 10, y - 25, I_Loc\Launcher_Graphics)
-		
-		y=y+10
-		For i = 1 To gfxDriverCount
-			Color 0, 0, 0
-			txt$ = EllipsisLeft(GfxDrivers(i), 30)
-			txtW% = StringWidth(txt)
-			If SelectedGFXDriver = i Then Rect(x - 4, y - 4, txtW + 8, height, False)
-			Text(x, y, txt)
-			If MouseOn(x - 4, y - 4, txtW + 8, height) Then
-				Color 100, 100, 100
-				Rect(x - 4, y - 4, txtW + 8, height, False)
-				If MouseHit1 Then SelectedGFXDriver = i
-			EndIf
-			
-			y=y+20
-		Next
-		
 		Fullscreen = DrawTick(40 + 430 - 15, 260 - 55 + 5 - 8, Fullscreen)
 		If Fullscreen Then BorderlessWindowed = False
 		BorderlessWindowed = DrawTick(40 + 430 - 15, 260 - 55 + 35, BorderlessWindowed)
 		If BorderlessWindowed Then Fullscreen = False
 
-		lock% = False
-
-		If BorderlessWindowed Or (Not Fullscreen) Then lock% = True
-		Bit16Mode = DrawTick(40 + 430 - 15, 260 - 55 + 65 + 8, Bit16Mode,lock%)
 		LauncherEnabled = DrawTick(40 + 430 - 15, 260 - 55 + 95 + 8, LauncherEnabled)
 
 		Text(40 + 430 + 15, 262 - 55 + 5 - 8, I_Loc\Launcher_FullscreenExclusive)
 		Color 255, 255, 255
 		RowText(I_Loc\Launcher_Fullscreen, 40 + 430 + 15, 262 - 55 + 35 - 6, 150, 50)
-
-		If BorderlessWindowed Or (Not Fullscreen)
- 		   Color 255, 0, 0
- 		   Bit16Mode = False
-		Else
-		    Color 255, 255, 255
-		EndIf
-
-		Text(40 + 430 + 15, 262 - 55 + 65 + 8, I_Loc\Launcher_16bit)
-		Color 255, 255, 255
 		Text(40 + 430 + 15, 262 - 55 + 95 + 8, I_Loc\Launcher_Launcher)
 		
 		gfxWidth% = GfxModeWidthsByAspectRatio(SelectedAspectRatio, SelectedGfxMode) : gfxHeight% = GfxModeHeightsByAspectRatio(SelectedAspectRatio, SelectedGfxMode)
 
-		If Fullscreen
-			Text(260 + 15, 262 - 55 + 140, I_Loc\Launcher_ResolutionCurrent+gfxWidth + "x" + gfxHeight + "," + (16+(16*(Not Bit16Mode))))
-		Else
-			Text(260 + 15, 262 - 55 + 140, I_Loc\Launcher_ResolutionCurrent+gfxWidth + "x" + gfxHeight + ",32")
-		EndIf
+		Text(260 + 50, 262 - 55 + 140, I_Loc\Launcher_ResolutionCurrent+gfxWidth + "x" + gfxHeight)
+
+		x = 20 : y = 350
+		HUDScaleFactor = SlideBar(x+60, y+25, 150, HUDScaleFactor * 100 / 2, 1) * 2 / 100
+		Color 255, 255, 255
+		Text(x, y, I_Loc\Launcher_Hudscalefactor + Int(HUDScaleFactor * 100) + "%")
 
 		If DrawButton(LauncherWidth - 30 - 90 - 130 - 15, LauncherHeight - 50 - 55, 130, 30, I_Loc\Launcher_Mapcreator, False, False) Then
 			ExecFile(Chr(34)+"Map Creator\StartMapCreator.bat"+Chr(34))
@@ -1677,12 +1631,8 @@ Function UpdateLauncher()
 	Else
 		PutINIValue(OptionFile, "graphics", "borderless windowed", "false")
 	EndIf
-	If Bit16Mode Then
-		PutINIValue(OptionFile, "graphics", "16bit", "true")
-	Else
-		PutINIValue(OptionFile, "graphics", "16bit", "false")
-	EndIf
-	PutINIValue(OptionFile, "graphics", "gfx driver", SelectedGFXDriver)
+
+	PutINIValue(OptionFile, "graphics", "hud scale factor", HUDScaleFactor)
 	
 	FreeImage(LauncherIMG) : LauncherIMG = 0
 	
@@ -1989,51 +1939,8 @@ Function DrawLoading(percent%, shortloading=False)
 			FlushMouse()
 		EndIf
 		
-		If BorderlessWindowed Then
-			If (RealGraphicWidth<>GraphicWidth) Or (RealGraphicHeight<>GraphicHeight) Then
-				SetBuffer TextureBuffer(fresize_texture)
-				ClsColor 0,0,0 : Cls
-				CopyRect 0,0,GraphicWidth,GraphicHeight,1024-GraphicWidth/2,1024-GraphicHeight/2,BackBuffer(),TextureBuffer(fresize_texture)
-				SetBuffer BackBuffer()
-				ClsColor 0,0,0 : Cls
-				ScaleRender(0,0,2050.0 / Float(GraphicWidth) * AspectRatioRatio, 2050.0 / Float(GraphicWidth) * AspectRatioRatio)
-				;might want to replace Float(GraphicWidth) with Max(GraphicWidth,GraphicHeight) if portrait sizes cause issues
-				;everyone uses landscape so it's probably a non-issue
-			EndIf
-		EndIf
-		
-		;not by any means a perfect solution
-		;Not even proper gamma correction but it's a nice looking alternative that works in windowed mode
-		If ScreenGamma>1.0 Then
-			CopyRect 0,0,RealGraphicWidth,RealGraphicHeight,1024-RealGraphicWidth/2,1024-RealGraphicHeight/2,BackBuffer(),TextureBuffer(fresize_texture)
-			EntityBlend fresize_image,1
-			ClsColor 0,0,0 : Cls
-			ScaleRender(-1.0/Float(RealGraphicWidth),1.0/Float(RealGraphicWidth),2048.0 / Float(RealGraphicWidth),2048.0 / Float(RealGraphicWidth))
-			EntityFX fresize_image,1+32
-			EntityBlend fresize_image,3
-			EntityAlpha fresize_image,ScreenGamma-1.0
-			ScaleRender(-1.0/Float(RealGraphicWidth),1.0/Float(RealGraphicWidth),2048.0 / Float(RealGraphicWidth),2048.0 / Float(RealGraphicWidth))
-		ElseIf ScreenGamma<1.0 Then ;todo: maybe optimize this if it's too slow, alternatively give players the option to disable gamma
-			CopyRect 0,0,RealGraphicWidth,RealGraphicHeight,1024-RealGraphicWidth/2,1024-RealGraphicHeight/2,BackBuffer(),TextureBuffer(fresize_texture)
-			EntityBlend fresize_image,1
-			ClsColor 0,0,0 : Cls
-			ScaleRender(-1.0/Float(RealGraphicWidth),1.0/Float(RealGraphicWidth),2048.0 / Float(RealGraphicWidth),2048.0 / Float(RealGraphicWidth))
-			EntityFX fresize_image,1+32
-			EntityBlend fresize_image,2
-			EntityAlpha fresize_image,1.0
-			SetBuffer TextureBuffer(fresize_texture2)
-			ClsColor 255*ScreenGamma,255*ScreenGamma,255*ScreenGamma
-			Cls
-			SetBuffer BackBuffer()
-			ScaleRender(-1.0/Float(RealGraphicWidth),1.0/Float(RealGraphicWidth),2048.0 / Float(RealGraphicWidth),2048.0 / Float(RealGraphicWidth))
-			SetBuffer(TextureBuffer(fresize_texture2))
-			ClsColor 0,0,0
-			Cls
-			SetBuffer(BackBuffer())
-		EndIf
-		EntityFX fresize_image,1
-		EntityBlend fresize_image,1
-		EntityAlpha fresize_image,1.0
+		ApplyBorderlessResizing()
+		UpdatePostProcess()
 		
 		Flip False
 		
@@ -2330,8 +2237,6 @@ Function DrawOptionsTooltip(x%,y%,width%,height%,option$,value#=0,ingame%=False)
 			txt = I_Loc\OptionTooltip_Vsync
 		Case "antialias"
 			txt = I_Loc\OptionTooltip_Antialias
-			txt2 = I_Loc\Option_HintFullscreen
-			R = 255
 		Case "gamma"
 			txt = I_Loc\OptionTooltip_Gamma
 			R = 255
@@ -2340,10 +2245,6 @@ Function DrawOptionsTooltip(x%,y%,width%,height%,option$,value#=0,ingame%=False)
 			txt2 = Format(I_Loc\Option_HintDefault, "%", Str(Int(value*100)), "100")
 		Case "texquality"
 			txt = I_Loc\OptionTooltip_Texlod
-		Case "vram"
-			txt = I_Loc\OptionTooltip_Vram
-			txt2 = I_Loc\Option_HintMenuonly
-			R = 255
 		Case "hudoffset"
 			txt = I_Loc\OptionTooltip_Hudoffset
 			R = 255
