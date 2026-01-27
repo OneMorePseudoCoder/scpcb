@@ -67,13 +67,11 @@ Function UpdateEvents()
 						CameraFogRange(Camera, CameraFogNear, CameraFogFar)
 						CameraFogMode(Camera, 1)
 						If SelectedDifficulty\saveType = SAVEANYWHERE Then
-							Msg = "Press "+KeyName(KEY_SAVE)+" to save."
+							Msg = Format(I_Loc\MessageSave_Anywhere, KeyName(KEY_SAVE))
 							MsgTimer = 70*4
-							;SetSaveMSG("Press "+KeyName(KEY_SAVE)+" to save.")
 						ElseIf SelectedDifficulty\saveType = SAVEONSCREENS Then
-							Msg = "Saving is only permitted on clickable monitors scattered throughout the facility."
+							Msg = I_Loc\MessageSave_Screens
 							MsgTimer = 70 * 8
-							;SetSaveMSG("Saving is only permitted on clickable monitors scattered throughout the facility.")
 						EndIf
 						
 						Curr173\Idle=False
@@ -231,7 +229,7 @@ Function UpdateEvents()
                                                 PositionEntity Curr173\Collider, 0,0,0
                                             EndIf
 											ResetEntity Curr173\Collider
-											Msg = "Hold "+KeyName(KEY_SPRINT)+" to run."
+											Msg = Format(I_Loc\MessageHelp_Run, KeyName(KEY_SPRINT))
 											MsgTimer = 70*8
 										EndIf
 									EndIf
@@ -423,7 +421,7 @@ Function UpdateEvents()
 									ShowEntity Collider
 									DropSpeed = 0
 									e\EventState3 = 15
-									Msg = "Pick up the paper on the desk."
+									Msg = I_Loc\MessageHelp_Paper
 									MsgTimer=70*7
 									Playable = True
 								EndIf
@@ -433,7 +431,7 @@ Function UpdateEvents()
 								
 							ElseIf e\EventState3 < 40
 								If Inventory(0)<>Null Then
-									Msg = "Press "+KeyName(KEY_INV)+" to open the inventory."
+									Msg = Format(I_Loc\MessageHelp_Inventory, KeyName(KEY_INV))
 									MsgTimer=70*7
 									e\EventState3 = 40
 									Exit
@@ -1016,7 +1014,7 @@ Function UpdateEvents()
 							If IntroSFX(17)<>0 Then
 								If EntityVisible(Curr173\Collider, Collider) Then
 									If EntityInView(Curr173\obj, Camera) Then
-										Msg = "Press "+KeyName(KEY_BLINK)+" to blink."
+										Msg = Format(I_Loc\MessageHelp_Blink, KeyName(KEY_BLINK))
 										MsgTimer = 70*4
 										PlaySound_Strict IntroSFX(17)
 										IntroSFX(17)=0
@@ -1691,10 +1689,9 @@ Function UpdateEvents()
 							
 							If Sanity < -1000 Then
 								If WearingNightVision > 1
-									DeathMSG = Chr(34)+"Class D viewed SCP-895 through a pair of digital night vision goggles, presumably enhanced by SCP-914. It might be possible that the subject "
-									DeathMSG = DeathMSG + "was able to resist the memetic effects partially through these goggles. The goggles have been stored for further study."+Chr(34)
+									DeathMSG = I_Loc\DeathMessage_895Finenvg
 								Else
-									DeathMSG = Chr(34)+"Class D viewed SCP-895 through a pair of digital night vision goggles, killing him."+Chr(34)
+									DeathMSG = I_Loc\DeathMessage_895Nvg
 								EndIf
 								EntityTexture(NVOverlay, NVTexture)
 								If VomitTimer < -10 Then
@@ -2162,9 +2159,8 @@ Function UpdateEvents()
 											FreeEntity pvt
 											
 											If KillTimer = 0 Then
-												DeathMSG = "In addition to the decomposed appearance typical of SCP-106's victims, the body exhibits injuries that have not been observed before: "
-												DeathMSG = DeathMSG + "massive skull fracture, three broken ribs, fractured shoulder and multiple heavy lacerations."
-												
+												DeathMSG = I_Loc\DeathMessage_106PdCrushed
+
 												PlaySound_Strict LoadTempSound("SFX\Room\PocketDimension\Impact.ogg")
 												KillTimer=-1.0
 											EndIf
@@ -2334,8 +2330,7 @@ Function UpdateEvents()
 								
 								If KillTimer => 0 Then 
 									PlaySound_Strict HorrorSFX(8)
-									DeathMSG = "In addition to the decomposed appearance typical of the victims of SCP-106, the subject seems to have suffered multiple heavy fractures to both of his legs."
-									
+									DeathMSG = I_Loc\DeathMessage_106PdFall
 								EndIf
 								KillTimer = Min(-1, KillTimer)	
 								BlurTimer = 3000
@@ -2555,11 +2550,11 @@ Function UpdateEvents()
 										If Using294 Then MouseHit1=False
 									ElseIf e\EventState2 = 1 And (Not inserted) Then
 										Using294=False
-										Msg = "You need to insert another Quarter in order to use this machine."
+										Msg = I_Loc\Message_294One
 										MsgTimer = 70*5
 									ElseIf (Not inserted) Then
 										Using294=False
-										Msg = "You need to insert two Quarters in order to use this machine."
+										Msg = I_Loc\Message_294Two
 										MsgTimer = 70*5
 									EndIf
 								EndIf
@@ -2960,7 +2955,7 @@ Function UpdateEvents()
 											LightFlash = 0.4
 											CameraShake = 1.0
 											Kill()
-											DeathMSG = "Subject D-9341 killed by the Tesla gate at [REDACTED]."
+											DeathMSG = I_Loc\DeathMessage_Tesla
 										EndIf
 									Next
 								EndIf
@@ -4118,7 +4113,7 @@ Function UpdateEvents()
 								
 								If MouseHit1 Then
 									If ItemAmount >= MaxItemAmount Then
-										Msg = "You cannot carry any more items."
+										Msg = I_Loc\MessageItem_Full
 										MsgTimer = 70 * 5
 									Else
 										SelectedItem = CreateItem("drawing", 0.0, 0.0, 0.0)
@@ -5119,7 +5114,7 @@ Function UpdateEvents()
 									If e\EventState3>70 And e\EventState3-FPSfactor=<70 Then
 										PlaySound_Strict LoadTempSound("SFX\SCP\012\Speech1.ogg")
 									ElseIf e\EventState3>13*70 And e\EventState3-FPSfactor=<13*70
-										Msg="You start pushing your nails into your wrist, drawing blood."
+										Msg=I_Loc\Message_012_1
 										MsgTimer = 7*70
 										Injuries=Injuries+0.5
 										PlaySound_Strict LoadTempSound("SFX\SCP\012\Speech2.ogg")
@@ -5128,12 +5123,12 @@ Function UpdateEvents()
 										EntityTexture (e\room\Objects[4], tex,0,1)
 										FreeTexture tex
 										
-										Msg="You tear open your left wrist and start writing on the composition with your blood."
+										Msg=I_Loc\Message_012_2
 										MsgTimer = 7*70
 										Injuries=Max(Injuries,1.5)
 										PlaySound_Strict LoadTempSound("SFX\SCP\012\Speech"+Rand(3,4)+".ogg")
 									ElseIf e\EventState3>49*70 And e\EventState3-FPSfactor=<49*70
-										Msg="You push your fingers deeper into the wound."
+										Msg=I_Loc\Message_012_3
 										MsgTimer = 8*70
 										Injuries=Injuries+0.3
 										PlaySound_Strict LoadTempSound("SFX\SCP\012\Speech5.ogg")
@@ -5149,7 +5144,7 @@ Function UpdateEvents()
 										EntityTexture (e\room\Objects[4], tex,0,1)
 										FreeTexture tex
 										
-										Msg="You rip the wound wide open. Grabbing scoops of blood pouring out."
+										Msg=I_Loc\Message_012_4
 										MsgTimer = 7*70
 										Injuries=Injuries+0.8
 										PlaySound_Strict LoadTempSound("SFX\SCP\012\Speech7.ogg")
@@ -5158,8 +5153,7 @@ Function UpdateEvents()
 										de.Decals = CreateDecal(17,  EntityX(Collider), -768*RoomScale+0.01, EntityZ(Collider),90,Rnd(360),0)
 										de\Size = 0.1 : de\maxsize = 0.45 : de\sizechange = 0.0002 : UpdateDecals()
 									ElseIf e\EventState3>85*70 And e\EventState3-FPSfactor=<85*70	
-										DeathMSG = "Subject D-9341 found in a pool of blood next to SCP-012. Subject seems to have ripped open his wrists and written three extra "
-										DeathMSG = DeathMSG + "lines to the composition before dying of blood loss."
+										DeathMSG = I_Loc\DeathMessage_012
 										Kill()
 									EndIf
 									
@@ -5592,9 +5586,7 @@ Function UpdateEvents()
 										EndIf
 										
 										If KillTimer < 0 And Bloodloss =>100 Then
-											DeathMSG = "Class D Subject D-9341 found dead inside SCP-035's containment chamber. "
-											DeathMSG = DeathMSG + "The subject exhibits heavy hemorrhaging of blood vessels around the eyes and inside the mouth and nose. "
-											DeathMSG = DeathMSG + "Sent for autopsy."
+											DeathMSG = I_Loc\DeathMessage_035Chamber
 										EndIf
 									EndIf
 								EndIf
@@ -6368,10 +6360,7 @@ Function UpdateEvents()
 								EndIf
 							Case 67
 								If (Rand(150)=1) Then
-									DeathMSG = "The SCP-205 cycle seems to have resumed its normal course after the anomalies observed during "
-									DeathMSG = DeathMSG + "[REDACTED]. The body of subject D-9341 was discovered inside the chamber. "
-									DeathMSG = DeathMSG + "The subject exhibits signs of blunt force trauma typical for personnel who have "
-									DeathMSG = DeathMSG + "entered the chamber when the lights are off."
+									DeathMSG = I_Loc\DeathMessage_205
 									
 									Injuries=Injuries+Rnd(0.4,0.8)
 									PlaySound_Strict DamageSFX(Rand(2,3))
@@ -6517,7 +6506,7 @@ Function UpdateEvents()
 											e\EventState3 = 0.0
 										Else
 											PlaySound_Strict(LoadTempSound("SFX\Door\WoodenDoorBudge.ogg"))
-											Msg = "The door will not budge."
+											Msg = I_Loc\Message_860Doorbudge
 											MsgTimer = 70*5
 										EndIf
 									EndIf
@@ -6555,7 +6544,7 @@ Function UpdateEvents()
 								If SelectedItem = Null Then
 									If MouseHit1 Then
 										PlaySound_Strict(LoadTempSound("SFX\Door\WoodenDoorBudge.ogg"))
-										Msg = "The door will not budge."
+										Msg = I_Loc\Message_860Doorbudge
 										MsgTimer = 5*70
 									EndIf
 								ElseIf SelectedItem\itemtemplate\name="scp860" 
@@ -7156,7 +7145,7 @@ Function UpdateEvents()
 										If (Not WearingHazmat) Then
 											Injuries=Injuries+0.1
 											If Infect=0 Then Infect=1
-											Msg = "The window shattered and a piece of glass cut your arm."
+											Msg = I_Loc\Message_008Glassbreak
 											MsgTimer = 70*8
 										EndIf
 										
@@ -7482,9 +7471,7 @@ Function UpdateEvents()
 										KillTimer = Min(-1, KillTimer)
 										BlinkTimer = -10
 										If e\SoundCHN <> 0 Then StopChannel e\SoundCHN
-										DeathMSG = Chr(34)+"A heavily mutilated corpse found inside the output booth of SCP-914. DNA testing identified the corpse as Class D Subject D-9341. "
-										DeathMSG = DeathMSG + "The subject had obviously been "+Chr(34)+"refined"+Chr(34)+" by SCP-914 on the "+Chr(34)+"Rough"+Chr(34)+" setting, but we are still confused as to how he "
-										DeathMSG = DeathMSG + "ended up inside the intake booth and who or what wound the key."+Chr(34)
+										DeathMSG = I_Loc\DeathMessage_914Rough
 									Case "coarse"
 										BlinkTimer = -10
 										If e\EventState - FPSfactor2 < 70 * 3 Then PlaySound_Strict Use914SFX
@@ -7518,7 +7505,7 @@ Function UpdateEvents()
 								Select setting
 									Case "coarse"
 										Injuries = 4.0
-										Msg = "You notice countless small incisions all around your body. They are bleeding heavily."
+										Msg = I_Loc\Message_914PlayerCoarse
 										MsgTimer = 70*8
 									Case "1:1"
 										InvertMouse = (Not InvertMouse)
@@ -7811,16 +7798,14 @@ Function UpdateEvents()
 								MouseHit1 = False
 								e\EventState3 = 0.0
 								If Injuries > 15
-									DeathMSG = "A dead Class D subject was discovered within the containment chamber of SCP-1162."
-									DeathMSG = DeathMSG + " An autopsy revealed that his right lung was missing, which suggests"
-									DeathMSG = DeathMSG + " interaction with SCP-1162."
+									DeathMSG = I_Loc\DeathMessage_1162
 									PlaySound_Strict LoadTempSound("SFX\SCP\1162\BodyHorrorExchange"+Rand(1,4)+".ogg")
 									LightFlash = 5.0
 									Kill()
 								Else
 									PlaySound_Strict LoadTempSound("SFX\SCP\1162\BodyHorrorExchange"+Rand(1,4)+".ogg")
 									LightFlash = 5.0
-									Msg = "You feel a sudden overwhelming pain in your chest."
+									Msg = I_Loc\Message_1162ExchangeFailure
 									MsgTimer = 70*5
 								EndIf
 								Exit
@@ -7841,16 +7826,14 @@ Function UpdateEvents()
 							de\size = 0.75 : ScaleSprite de\obj, de\size, de\size
 							FreeEntity pvt
 							If Injuries > 15
-								DeathMSG = "A dead Class D subject was discovered within the containment chamber of SCP-1162."
-								DeathMSG = DeathMSG + " An autopsy revealed that his right lung was missing, which suggests"
-								DeathMSG = DeathMSG + " interaction with SCP-1162."
+								DeathMSG = I_Loc\DeathMessage_1162
 								PlaySound_Strict LoadTempSound("SFX\SCP\1162\BodyHorrorExchange"+Rand(1,4)+".ogg")
 								LightFlash = 5.0
 								Kill()
 							Else
 								PlaySound_Strict LoadTempSound("SFX\SCP\1162\BodyHorrorExchange"+Rand(1,4)+".ogg")
 								LightFlash = 5.0
-								Msg = "You notice something moving in your pockets and a sudden pain in your chest."
+								Msg = I_Loc\Message_1162ExchangeSuccess
 								MsgTimer = 70*5
 							EndIf
 							e\EventState2 = 0.0
@@ -8591,7 +8574,7 @@ Function UpdateEvents()
 				If PlayerRoom=e\room Then
 					UpdateButton(e\room\Objects[2])
 					If ClosestButton = e\room\Objects[2] And MouseHit1 Then
-						Msg = "The elevator appears to be broken."
+						Msg = I_Loc\MessageButton_ElevatorBroken
 						PlaySound2(ButtonSFX2, Camera, e\room\Objects[2])
 						MsgTimer = 5*70
 						MouseHit1=0
@@ -8604,7 +8587,7 @@ Function UpdateEvents()
 					For i = 0 To 1
 						UpdateButton(e\room\Objects[i])
 						If ClosestButton = e\room\Objects[i] And MouseHit1 Then
-							Msg = "The elevator appears to be broken."
+							Msg = I_Loc\MessageButton_ElevatorBroken
 							PlaySound2(ButtonSFX2, Camera, e\room\Objects[i])
 							MsgTimer = 5*70
 							MouseHit1=0

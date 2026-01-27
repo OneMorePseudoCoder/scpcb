@@ -267,3 +267,15 @@ End Function
 Function GetModdedINIFloat#(file$, section$, key$)
     Return Float(GetModdedINIString(file, section, key))
 End Function
+
+Function Format$(txt$, arg1$)
+    Return Replace(txt, "{0}", arg1)
+End Function
+
+Function Format$(txt$, arg1$, arg2$)
+    Return Replace(Format(txt, arg1), "{1}", arg2)
+End Function
+
+Function Format$(txt$, arg1$, arg2$, arg3$)
+    Return Replace(Format(txt, arg1, arg2), "{2}", arg3)
+End Function

@@ -189,7 +189,7 @@ Function UpdateAchievementMsg()
 			Rect(x+10*scale,y+10*scale,64*scale,64*scale,False)
 			Color 255,255,255
 			SetFont Font1
-			RowText("Achievement Unlocked - "+amsg\txt,x+84*scale,y+10*scale,width-94*scale,y-20*scale)
+			RowText(Format(I_Loc\HUD_AchvUnlocked, amsg\txt),x+84*scale,y+10*scale,width-94*scale,y-20*scale)
 			If amsg\msgtime > 0.0 And amsg\msgtime < 70*7
 				amsg\msgtime = amsg\msgtime + FPSfactor2
 				If amsg\msgx > -width%

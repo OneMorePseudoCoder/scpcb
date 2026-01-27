@@ -158,6 +158,9 @@ Global Bit16Mode = GetOptionInt("graphics", "16bit")
 
 Global HUDScaleFactor# = GetOptionFloat("graphics", "hud scale factor")
 
+Const StringsFile$ = "Data\strings.ini"
+Include "Localization.bb"
+
 If LauncherEnabled And (Not IsRestart) Then 
 	AspectRatioRatio = 1.0
 	UpdateLauncher()
@@ -272,9 +275,6 @@ Global BlinkMeterIMG% = LoadImage_Strict("GFX\blinkmeter.jpg")
 ScaleImage(BlinkMeterIMG, HUDScale, HUDScale)
 
 DrawLoading(0, True)
-
-Const StringsFile$ = "Data\strings.ini"
-Include "Localization.bb"
 
 DrawLoading(5, True)
 
@@ -1344,17 +1344,13 @@ Function UpdateConsole()
 					KillTimer = -1
 					Select Rand(4)
 						Case 1
-							DeathMSG = "[REDACTED]"
+							DeathMSG = I_Loc\DeathMessage_Suicide_1
 						Case 2
-							DeathMSG = "Subject D-9341 found dead in Sector [REDACTED]. "
-							DeathMSG = DeathMSG + "The subject appears to have attained no physical damage, and there is no visible indication as to what killed him. "
-							DeathMSG = DeathMSG + "Body was sent for autopsy."
+							DeathMSG = I_Loc\DeathMessage_Suicide_2
 						Case 3
-							DeathMSG = "EXCP_ACCESS_VIOLATION"
+							DeathMSG = I_Loc\DeathMessage_Suicide_3
 						Case 4
-							DeathMSG = "Subject D-9341 found dead in Sector [REDACTED]. "
-							DeathMSG = DeathMSG + "The subject appears to have scribbled the letters "+Chr(34)+"kys"+Chr(34)+" in his own blood beside him. "
-							DeathMSG = DeathMSG + "No other signs of physical trauma or struggle can be observed. Body was sent for autopsy."
+							DeathMSG = I_Loc\DeathMessage_Suicide_4
 					End Select
 					;[End Block]
 				Case "playmusic"
@@ -2342,9 +2338,10 @@ Function UseDoor(d.Doors, showmsg%=True, playsfx%=True)
 	If d\KeyCard > 0 Then
 		If SelectedItem = Null Then
 			If showmsg = True Then
-				If (Instr(Msg,"The keycard")=0 And Instr(Msg,"A keycard with")=0) Or (MsgTimer<70*3) Then
-					Msg = "A keycard is required to operate this door."
+				If Not HasKeyCardMsg() Then
+					Msg = I_Loc\MessageButton_KeyRequired
 					MsgTimer = 70 * 7
+					ActiveKeyCardMsgCooldown()
 				EndIf
 			EndIf
 			Return
@@ -2368,9 +2365,10 @@ Function UseDoor(d.Doors, showmsg%=True, playsfx%=True)
 			
 			If temp =-1 Then 
 				If showmsg = True Then
-					If (Instr(Msg,"The keycard")=0 And Instr(Msg,"A keycard with")=0) Or (MsgTimer<70*3) Then
-						Msg = "A keycard is required to operate this door."
+					If Not HasKeyCardMsg() Then
+						Msg = I_Loc\MessageButton_KeyRequired
 						MsgTimer = 70 * 7
+						ActiveKeyCardMsgCooldown()
 					EndIf
 				EndIf
 				Return				
@@ -2379,25 +2377,27 @@ Function UseDoor(d.Doors, showmsg%=True, playsfx%=True)
 				If showmsg = True Then
 					If d\locked Then
 						PlaySound_Strict KeyCardSFX2
-						Msg = "The keycard was inserted into the slot but nothing happened."
+						Msg = I_Loc\MessageButton_KeyNothing
 						MsgTimer = 70 * 7
 						Return
 					Else
 						PlaySound_Strict KeyCardSFX1
-						Msg = "The keycard was inserted into the slot."
+						Msg = I_Loc\MessageButton_KeyInserted
 						MsgTimer = 70 * 7	
 					EndIf
+					ActiveKeyCardMsgCooldown()
 				EndIf
 			Else
 				SelectedItem = Null
 				If showmsg = True Then 
 					PlaySound_Strict KeyCardSFX2					
 					If d\locked Then
-						Msg = "The keycard was inserted into the slot but nothing happened."
+						Msg = I_Loc\MessageButton_KeyNothing
 					Else
-						Msg = "A keycard with security clearance "+d\KeyCard+" or higher is required to operate this door."
+						Msg = Format(I_Loc\MessageButton_KeyRequiredLevel, d\KeyCard)
 					EndIf
 					MsgTimer = 70 * 7					
+					ActiveKeyCardMsgCooldown()
 				EndIf
 				Return
 			End If
@@ -2410,14 +2410,13 @@ Function UseDoor(d.Doors, showmsg%=True, playsfx%=True)
 		SelectedItem = Null
 		If temp <> 0 Then
 			PlaySound_Strict ScannerSFX1
-			If (Instr(Msg,"You placed your")=0) Or (MsgTimer < 70*3) Then
-				Msg = "You place the palm of the hand onto the scanner. The scanner reads: "+Chr(34)+"DNA verified. Access granted."+Chr(34)
-			EndIf
+			Msg = I_Loc\MessageButton_DnaSuccess
 			MsgTimer = 70 * 10
+			ActivateScannerMsgCooldown()
 		Else
-			If showmsg = True Then 
+			If showmsg = True And (Not HasScannerMsg()) Then 
 				PlaySound_Strict ScannerSFX2
-				Msg = "You placed your palm onto the scanner. The scanner reads: "+Chr(34)+"DNA does not match known sample. Access denied."+Chr(34)
+				Msg = I_Loc\MessageButton_DnaSelf
 				MsgTimer = 70 * 10
 			EndIf
 			Return			
@@ -2429,12 +2428,12 @@ Function UseDoor(d.Doors, showmsg%=True, playsfx%=True)
 					PlaySound_Strict ButtonSFX2
 					If PlayerRoom\RoomTemplate\Name <> "room2elevator" Then
                         If d\open Then
-                            Msg = "You pushed the button but nothing happened."
+                            Msg = I_Loc\MessageButton_Nothing
                         Else    
-                            Msg = "The door appears to be locked."
+                            Msg = I_Loc\MessageButton_DoorLocked
                         EndIf    
                     Else
-                        Msg = "The elevator appears to be broken."
+                        Msg = I_Loc\MessageButton_ElevatorBroken
                     EndIf
 					MsgTimer = 70 * 5
 				Else
@@ -2450,13 +2449,13 @@ Function UseDoor(d.Doors, showmsg%=True, playsfx%=True)
 					EndIf
 
 					If d\IsElevatorDoor = 1 Then
-						Msg = "You called the elevator."
+						Msg = I_Loc\MessageButton_ElevatorCall
 						MsgTimer = 70 * 5
 					ElseIf d\IsElevatorDoor = 3 Then
-						Msg = "The elevator is already on this floor."
+						Msg = I_Loc\MessageButton_ElevatorFloor
 						MsgTimer = 70 * 5
-					ElseIf (Msg<>"You called the elevator.")
-						If (Msg="You already called the elevator.") Or (MsgTimer<70*3) Or (ElevatorButtonSpamCount > 20 And Msg <> "If you continue pressing this button I will generate a Memory Access Violation.")
+					ElseIf (Msg<>I_Loc\MessageButton_ElevatorCall)
+						If (Msg=I_Loc\MessageButton_ElevatorAlready) Or (MsgTimer<70*3) Or (ElevatorButtonSpamCount > 20 And Msg <> I_Loc\MessageButton_ElevatorMav)
 							Local rnd%
 							If ElevatorButtonSpamCount > 20 Then
 								rnd = 3
@@ -2465,21 +2464,21 @@ Function UseDoor(d.Doors, showmsg%=True, playsfx%=True)
 							EndIf
 							Select rnd
 								Case 1
-									Msg = "Stop spamming the button."
+									Msg = I_Loc\MessageButton_ElevatorStop
 									MsgTimer = 70 * 7
 								Case 2
-									Msg = "Pressing it harder does not make the elevator come faster."
+									Msg = I_Loc\MessageButton_ElevatorFaster
 									MsgTimer = 70 * 7
 								Case 3
-									Msg = "If you continue pressing this button I will generate a Memory Access Violation."
+									Msg = I_Loc\MessageButton_ElevatorMav
 									MsgTimer = 70 * 7
 								Default
-									Msg = "You already called the elevator."
+									Msg = I_Loc\MessageButton_ElevatorAlready
 									MsgTimer = 70 * 7
 							End Select
 						EndIf
 					Else
-						Msg = "You already called the elevator."
+						Msg = I_Loc\MessageButton_ElevatorAlready
 						MsgTimer = 70 * 7
 					EndIf
 				EndIf
@@ -2512,6 +2511,25 @@ Function UseDoor(d.Doors, showmsg%=True, playsfx%=True)
 		EndIf
 	EndIf
 	
+End Function
+
+
+Global KeyCardMsgCooldown% = 0
+Function ActiveKeyCardMsgCooldown()
+	KeyCardMsgCooldown = MilliSecs() + 4000
+End Function
+
+Function HasKeyCardMsg()
+	Return MilliSecs() <= KeyCardMsgCooldown
+End Function
+
+Global ScannerMsgCooldown% = 0
+Function ActivateScannerMsgCooldown()
+	ScannerMsgCooldown = MilliSecs() + 7000
+End Function
+
+Function HasScannerMsg()
+	Return MilliSecs() <= ScannerMsgCooldown
 End Function
 
 Function RemoveDoor(d.Doors)
@@ -3138,7 +3156,7 @@ While IsRunning
 				If EyeStuck < 9000 Then BlurTimer = Max(BlurTimer, (9000-EyeStuck)*0.5)
 				If EyeStuck < 6000 Then darkA = Min(Max(darkA, (6000-EyeStuck)/5000.0),1.0)
 				If EyeStuck < 9000 And EyeStuck+FPSfactor =>9000 Then 
-					Msg = "The eyedrops are causing your eyes to tear up."
+					Msg = I_Loc\MessageItem_EyedropsTear
 					MsgTimer = 70*6
 				EndIf
 			EndIf
@@ -3259,39 +3277,34 @@ While IsRunning
 			If SelectedDifficulty\saveType = SAVEANYWHERE Then
 				RN$ = PlayerRoom\RoomTemplate\Name$
 				If RN$ = "173" Or (RN$ = "exit1" And EntityY(Collider)>1040.0*RoomScale) Or RN$ = "gatea"
-					Msg = "You cannot save in this location."
+					Msg = I_Loc\MessageSave_DisabledLocation
 					MsgTimer = 70 * 4
-					;SetSaveMSG("You cannot save in this location.")
 				ElseIf (Not CanSave) Or QuickLoadPercent > -1
-					Msg = "You cannot save at this moment."
-					MsgTimer = 70 * 4
-					;SetSaveMSG("You cannot save at this moment.")
 					If QuickLoadPercent > -1
-						Msg = Msg + " (game is loading)"
-						;Save_MSG = Save_MSG + " (game is loading)"
+						Msg = I_Loc\MessageSave_DisabledLoading
+					Else
+						Msg = I_Loc\MessageSave_DisabledMoment
 					EndIf
+					MsgTimer = 70 * 4
 				Else
 					SaveGame(SavePath + CurrSave)
 				EndIf
 			ElseIf SelectedDifficulty\saveType = SAVEONSCREENS
 				If SelectedScreen=Null And SelectedMonitor=Null Then
-					Msg = "Saving is only permitted on clickable monitors scattered throughout the facility."
+					Msg = I_Loc\MessageSave_Screens
 					MsgTimer = 70 * 4
-					;SetSaveMSG("Saving is only permitted on clickable monitors scattered throughout the facility.")
 				Else
 					RN$ = PlayerRoom\RoomTemplate\Name$
 					If RN$ = "173" Or (RN$ = "exit1" And EntityY(Collider)>1040.0*RoomScale) Or RN$ = "gatea"
-						Msg = "You cannot save in this location."
+						Msg = I_Loc\MessageSave_DisabledLocation
 						MsgTimer = 70 * 4
-						;SetSaveMSG("You cannot save in this location.")
 					ElseIf (Not CanSave) Or QuickLoadPercent > -1
-						Msg = "You cannot save at this moment."
-						MsgTimer = 70 * 4
-						;SetSaveMSG("You cannot save at this moment.")
 						If QuickLoadPercent > -1
-							Msg = Msg + " (game is loading)"
-							;Save_MSG = Save_MSG + " (game is loading)"
+							Msg = I_Loc\MessageSave_DisabledLoading
+						Else
+							Msg = I_Loc\MessageSave_DisabledMoment
 						EndIf
+						MsgTimer = 70 * 4
 					Else
 						If SelectedScreen<>Null
 							GameSaved = False
@@ -3302,15 +3315,13 @@ While IsRunning
 					EndIf
 				EndIf
 			Else
-				Msg = "Quick saving is disabled."
+				Msg = I_Loc\MessageSave_Disabled
 				MsgTimer = 70 * 4
-				;SetSaveMSG("Quick saving is disabled.")
 			EndIf
 		Else If SelectedDifficulty\saveType = SAVEONSCREENS And (SelectedScreen<>Null Or SelectedMonitor<>Null)
-			If (Msg<>"Game progress saved." And Msg<>"You cannot save in this location."And Msg<>"You cannot save at this moment.") Or MsgTimer<=0 Then
-				Msg = "Press "+KeyName(KEY_SAVE)+" to save."
+			If (Msg<>I_Loc\MessageSave_Saved And Msg<>I_Loc\MessageSave_DisabledLocation And Msg<>I_Loc\MessageSave_DisabledMoment) Or MsgTimer<=0 Then
+				Msg = Format(I_Loc\MessageSave_Anywhere, KeyName(KEY_SAVE))
 				MsgTimer = 70*4
-				;SetSaveMSG("Press "+KeyName(KEY_SAVE)+" to save.")
 			EndIf
 			
 			If MouseHit2 Then SelectedMonitor = Null
@@ -3333,7 +3344,7 @@ While IsRunning
 					If e\EventName = "173" Then
 						If e\EventState3 => 40 And e\EventState3 < 50 Then
 							If InvOpen Then
-								Msg = "Double click on the document to view it."
+								Msg = I_Loc\MessageHelp_View
 								MsgTimer=70*7
 								e\EventState3 = 50
 								Exit
@@ -3961,13 +3972,13 @@ Function DrawEnding()
 						achievementsUnlocked = achievementsUnlocked + Achievements(i)
 					Next
 					
-					Text x, y, "Ending: " + Upper(SelectedEnding)
-					Text x, y+20*MenuScale, "Time played: " +FormatDuration(PlayTime, SpeedRunMode)
-					Text x, y+40*MenuScale, "SCPs encountered: " +scpsEncountered
-					Text x, y+60*MenuScale, "Achievements unlocked: " + achievementsUnlocked+"/"+(MAXACHIEVEMENTS)
-					Text x, y+80*MenuScale, "Rooms found: " + roomsfound+"/"+roomamount
-					Text x, y+100*MenuScale, "Documents discovered: " +docsfound+"/"+docamount
-					Text x, y+120*MenuScale, "Items refined in SCP-914: " +RefinedItems			
+					Text x, y, I_Loc\Menu_EndEnding+" " + Upper(SelectedEnding)
+					Text x, y+20*MenuScale, I_Loc\Menu_EndTime+" " + FormatDuration(PlayTime, SpeedRunMode)
+					Text x, y+40*MenuScale, I_Loc\Menu_EndScps+" " + scpsEncountered
+					Text x, y+60*MenuScale, I_Loc\Menu_EndAchv+" " + achievementsUnlocked+"/"+(MAXACHIEVEMENTS)
+					Text x, y+80*MenuScale, I_Loc\Menu_EndRooms+" " + roomsfound+"/"+roomamount
+					Text x, y+100*MenuScale, I_Loc\Menu_EndDocs+" " +docsfound+"/"+docamount
+					Text x, y+120*MenuScale, I_Loc\Menu_End914+" " +RefinedItems			
 					
 					x = GraphicWidth / 2 - width / 2
 					y = GraphicHeight / 2 - height / 2
@@ -4228,8 +4239,7 @@ Function MovePlayer()
 		CameraShake = Sin(SuperManTimer / 5.0) * (SuperManTimer / 1500.0)
 		
 		If SuperManTimer > 70 * 50 Then
-			DeathMSG = "A Class D jumpsuit found in [DATA REDACTED]. Upon further examination, the jumpsuit was found to be filled with 12.5 kilograms of blue ash-like substance. "
-			DeathMSG = DeathMSG + "Chemical analysis of the substance remains non-conclusive. Most likely related to SCP-914."
+			DeathMSG = I_Loc\DeathMessage_914Superman
 			Kill()
 			ShowEntity Fog
 		Else
@@ -4500,7 +4510,7 @@ Function MovePlayer()
 		EndIf
 		
 		If temp2 <= 60 And Bloodloss > 60 Then
-			Msg = "You are feeling faint from the amount of blood you have lost."
+			Msg = I_Loc\Message_BloodlossFaint
 			MsgTimer = 70*4
 		EndIf
 	EndIf
@@ -4738,7 +4748,7 @@ Function MouseLook()
 					Stamina = Stamina - FPSfactor * 0.3
 				Case 1 ;chicken pox
 					If Rand(9000)=1 And Msg="" Then
-						Msg="Your skin is feeling itchy."
+						Msg=I_Loc\Message_1025ChickenpoxItchy
 						MsgTimer =70*4
 					EndIf
 				Case 2 ;cancer of the lungs
@@ -4758,10 +4768,10 @@ Function MouseLook()
 						SCP1025state[i]=SCP1025state[i]+FPSfactor*0.0005
 					EndIf
 					If SCP1025state[i]>20.0 Then
-						If SCP1025state[i]-FPSfactor<=20.0 Then Msg="The pain in your stomach is becoming unbearable." : MsgTimer = 70*4
+						If SCP1025state[i]-FPSfactor<=20.0 Then Msg=I_Loc\Message_1025Appendicitis_2 : MsgTimer = 70*4
 						Stamina = Stamina - FPSfactor * 0.3
 					ElseIf SCP1025state[i]>10.0
-						If SCP1025state[i]-FPSfactor<=10.0 Then Msg="Your stomach is aching." : MsgTimer = 70*4
+						If SCP1025state[i]-FPSfactor<=10.0 Then Msg=I_Loc\Message_1025Appendicitis_1 : MsgTimer = 70*4
 					EndIf
 				Case 4 ;asthma
 					If Stamina < 35 Then
@@ -4783,8 +4793,7 @@ Function MouseLook()
 						HeartBeatRate=0
 						BlurTimer = Max(BlurTimer, 500)
 						If SCP1025state[i]>140 Then 
-							DeathMSG = Chr(34)+"He died of a cardiac arrest after reading SCP-1025, that's for sure. Is there such a thing as psychosomatic cardiac arrest, or does SCP-1025 have some "
-							DeathMSG = DeathMSG + "anomalous properties we are not yet aware of?"+Chr(34)
+							DeathMSG = I_Loc\DeathMessage_1025Cardiacarrest
 							Kill()
 						EndIf
 					Else
@@ -5100,7 +5109,7 @@ Function DrawGUI()
 					MouseXSpeed() : MouseYSpeed() : MouseZSpeed() : mouse_x_speed_1#=0.0 : mouse_y_speed_1#=0.0
 				EndIf
 			Else
-				Text GraphicWidth/2, y+70*scale, "ACCESS CODE: ",True,True	
+				Text GraphicWidth/2, y+70*scale, I_Loc\HUD_KeypadCode,True,True	
 				SetFont Font4
 				Text GraphicWidth/2, y+124*scale, KeypadInput,True,True	
 			EndIf
@@ -5143,7 +5152,7 @@ Function DrawGUI()
 										MouseXSpeed() : MouseYSpeed() : MouseZSpeed() : mouse_x_speed_1#=0.0 : mouse_y_speed_1#=0.0
 									Else
 										PlaySound_Strict ScannerSFX2
-										KeypadMSG = "ACCESS DENIED"
+										KeypadMSG = I_Loc\HUD_KeypadDenied
 										KeypadTimer = 210
 										KeypadInput = ""	
 									EndIf
@@ -5403,7 +5412,7 @@ Function DrawGUI()
 						PrevOtherOpen\SecondInv[MouseSlot] = SelectedItem
 						SelectedItem = Null
 					ElseIf PrevOtherOpen\SecondInv[MouseSlot] <> SelectedItem
-						Msg = "You cannot combine these two items."
+						Msg = I_Loc\MessageItem_Cantcombine
 						MsgTimer = 70 * 5
 					EndIf
 					
@@ -5506,7 +5515,7 @@ Function DrawGUI()
 							
 							If DoubleClick Then
 								If WearingHazmat > 0 And SelectedItem\itemtemplate\group <> "hazmat" Then
-									Msg = "You cannot use any items while wearing a hazmat suit."
+									Msg = I_Loc\MessageItem_HazmatNouseAny
 									MsgTimer = 70*5
 									SelectedItem = Null
 									Return
@@ -5559,11 +5568,11 @@ Function DrawGUI()
 				If MouseSlot = 66 Then
 					Select SelectedItem\itemtemplate\name
 						Case "vest","finevest","hazmatsuit","hazmatsuit2","hazmatsuit3"
-							Msg = "Double click on this item to take it off."
+							Msg = I_Loc\MessageHelp_Remove
 							MsgTimer = 70*5
 						Case "scp1499","super1499"
 							If Wearing1499>0 Then
-								Msg = "Double click on this item to take it off."
+								Msg = I_Loc\MessageHelp_Remove
 								MsgTimer = 70*5
 							Else
 								DropItem(SelectedItem)
@@ -5620,20 +5629,20 @@ Function DrawGUI()
 											EndIf
 										Next
 										If SelectedItem <> Null Then
-											Msg = "The paperclip is not strong enough to hold any more items."
+											Msg = I_Loc\MessageItem_ClipboardFull
 										Else
 											If added\itemtemplate\group = "paper" Or added\itemtemplate\name = "oldpaper" Then
-												Msg = "This document was added to the clipboard."
+												Msg = I_Loc\MessageItem_ClipboardAddPaper
 											ElseIf added\itemtemplate\name = "badge" Lor added\itemtemplate\name = "oldbadge"
-												Msg = added\itemtemplate\displayname + " was added to the clipboard."
+												Msg = Format(I_Loc\MessageItem_ClipboardAddBadge, added\itemtemplate\displayname)
 											Else
-												Msg = "The " + added\itemtemplate\displayname + " was added to the clipboard."
+												Msg = Format(I_Loc\MessageItem_ClipboardAdd, added\itemtemplate\displayname)
 											EndIf
 											
 										EndIf
 										MsgTimer = 70 * 5
 									Else
-										Msg = "You cannot combine these two items."
+										Msg = I_Loc\MessageItem_Cantcombine
 										MsgTimer = 70 * 5
 									EndIf
 								ElseIf Inventory(MouseSlot)\itemtemplate\name = "wallet" Then
@@ -5665,18 +5674,18 @@ Function DrawGUI()
 											EndIf
 										Next
 										If SelectedItem <> Null Then
-											Msg = "The wallet is full."
+											Msg = I_Loc\MessageItem_WalletFull
 										Else
-											Msg = "You put "+added\itemtemplate\displayname+" into the wallet."
+											Msg = Format(I_Loc\MessageItem_WalletAdd, added\itemtemplate\displayname)
 										EndIf
 										
 										MsgTimer = 70 * 5
 									Else
-										Msg = "You cannot combine these two items."
+										Msg = I_Loc\MessageItem_Cantcombine
 										MsgTimer = 70 * 5
 									EndIf
 								Else
-									Msg = "You cannot combine these two items."
+									Msg = I_Loc\MessageItem_Cantcombine
 									MsgTimer = 70 * 5
 								EndIf
 								SelectedItem = Null
@@ -5690,36 +5699,36 @@ Function DrawGUI()
 										RemoveItem (SelectedItem)
 										SelectedItem = Null
 										Inventory(MouseSlot)\state = 100.0
-										Msg = "You replaced the navigator's battery."
+										Msg = I_Loc\MessageItem_NavBatReplace
 										MsgTimer = 70 * 5
 									Case "snavulti"
-										Msg = "There seems to be no place for batteries in this navigator."
+										Msg = I_Loc\MessageItem_NavBatNoplace
 										MsgTimer = 70 * 5
 									Case "radio"
 										If SelectedItem\itemtemplate\sound <> 66 Then PlaySound_Strict(PickSFX(SelectedItem\itemtemplate\sound))	
 										RemoveItem (SelectedItem)
 										SelectedItem = Null
 										Inventory(MouseSlot)\state = 100.0
-										Msg = "You replaced the radio's battery."
+										Msg = I_Loc\MessageItem_RadioBatReplace
 										MsgTimer = 70 * 5
 									Case "fineradio", "veryfineradio"
-										Msg = "There seems to be no place for batteries in this radio."
+										Msg = I_Loc\MessageItem_RadioBatNoplace
 										MsgTimer = 70 * 5
 									Case "18vradio"
-										Msg = "The battery does not fit inside this radio."
+										Msg = I_Loc\MessageItem_RadioBatNofit
 										MsgTimer = 70 * 5
 									Case "supernv", "nvgoggles"
 										If SelectedItem\itemtemplate\sound <> 66 Then PlaySound_Strict(PickSFX(SelectedItem\itemtemplate\sound))	
 										RemoveItem (SelectedItem)
 										SelectedItem = Null
 										Inventory(MouseSlot)\state = 1000.0
-										Msg = "You replaced the goggles' battery."
+										Msg = I_Loc\MessageItem_NvgBatReplace
 										MsgTimer = 70 * 5
 									Case "finenvgoggles"
-										Msg = "There seems to be no place for batteries in these night vision goggles."
+										Msg = I_Loc\MessageItem_NvgBatNoplace
 										MsgTimer = 70 * 5
 									Default
-										Msg = "You cannot combine these two items."
+										Msg = I_Loc\MessageItem_Cantcombine
 										MsgTimer = 70 * 5	
 								End Select
 								;[End Block]
@@ -5727,32 +5736,32 @@ Function DrawGUI()
 								;[Block]
 								Select Inventory(MouseSlot)\itemtemplate\name
 									Case "snav", "snav300", "snav310"
-										Msg = "The battery does not fit inside this navigator."
+										Msg = I_Loc\MessageItem_NavBatNofit
 										MsgTimer = 70 * 5
 									Case "snavulti"
-										Msg = "There seems to be no place for batteries in this navigator."
+										Msg = I_Loc\MessageItem_NavBatNoplace
 										MsgTimer = 70 * 5
 									Case "radio"
-										Msg = "The battery does not fit inside this radio."
+										Msg = I_Loc\MessageItem_RadioBatNofit
 										MsgTimer = 70 * 5
 									Case "fineradio", "veryfineradio"
-										Msg = "There seems to be no place for batteries in this radio."
+										Msg = I_Loc\MessageItem_RadioBatNoplace
 										MsgTimer = 70 * 5
 									Case "18vradio"
 										If SelectedItem\itemtemplate\sound <> 66 Then PlaySound_Strict(PickSFX(SelectedItem\itemtemplate\sound))	
 										RemoveItem (SelectedItem)
 										SelectedItem = Null
 										Inventory(MouseSlot)\state = 100.0
-										Msg = "You replaced the radio's battery."
+										Msg = I_Loc\MessageItem_RadioBatReplace
 										MsgTimer = 70 * 5
 									Default
-										Msg = "You cannot combine these two items."
+										Msg = I_Loc\MessageItem_Cantcombine
 										MsgTimer = 70 * 5
 								End Select
 								;[End Block]
 							Default
 								;[Block]
-								Msg = "You cannot combine these two items."
+								Msg = I_Loc\MessageItem_Cantcombine
 								MsgTimer = 70 * 5
 								;[End Block]
 						End Select					
@@ -5776,10 +5785,10 @@ Function DrawGUI()
 					;[Block]
 					If Wearing1499 = 0 And WearingHazmat=0 Then
 						If WearingNightVision = 1 Then
-							Msg = "You removed the goggles."
+							Msg = I_Loc\MessageItem_NvgOff
 							CameraFogFar = StoredCameraFogFar
 						Else
-							Msg = "You put on the goggles."
+							Msg = I_Loc\MessageItem_NvgOn
 							WearingGasMask = 0
 							WearingNightVision = 0
 							StoredCameraFogFar = CameraFogFar
@@ -5788,9 +5797,9 @@ Function DrawGUI()
 						
 						WearingNightVision = (Not WearingNightVision)
 					ElseIf Wearing1499 > 0 Then
-						Msg = "You need to take off SCP-1499 in order to put on the goggles."
+						Msg = I_Loc\MessageItem_NvgConflictScp1499
 					Else
-						Msg = "You need to take off the hazmat suit in order to put on the goggles."
+						Msg = I_Loc\MessageItem_NvgConflictHazmat
 					EndIf
 					SelectedItem = Null
 					MsgTimer = 70 * 5
@@ -5799,10 +5808,10 @@ Function DrawGUI()
 					;[Block]
 					If Wearing1499 = 0 And WearingHazmat=0 Then
 						If WearingNightVision = 2 Then
-							Msg = "You removed the goggles."
+							Msg = I_Loc\MessageItem_NvgOff
 							CameraFogFar = StoredCameraFogFar
 						Else
-							Msg = "You put on the goggles."
+							Msg = I_Loc\MessageItem_NvgOn
 							WearingGasMask = 0
 							WearingNightVision = 0
 							StoredCameraFogFar = CameraFogFar
@@ -5811,9 +5820,9 @@ Function DrawGUI()
 						
 						WearingNightVision = (Not WearingNightVision) * 2
 					ElseIf Wearing1499 > 0 Then
-						Msg = "You need to take off SCP-1499 in order to put on the goggles."
+						Msg = I_Loc\MessageItem_NvgConflictScp1499
 					Else
-						Msg = "You need to take off the hazmat suit in order to put on the goggles."
+						Msg = I_Loc\MessageItem_NvgConflictHazmat
 					EndIf
 					SelectedItem = Null
 					MsgTimer = 70 * 5
@@ -5822,10 +5831,10 @@ Function DrawGUI()
 					;[Block]
 					If Wearing1499 = 0 And WearingHazmat = 0 Then
 						If WearingNightVision = 3 Then
-							Msg = "You removed the goggles."
+							Msg = I_Loc\MessageItem_NvgOff
 							CameraFogFar = StoredCameraFogFar
 						Else
-							Msg = "You put on the goggles."
+							Msg = I_Loc\MessageItem_NvgOn
 							WearingGasMask = 0
 							WearingNightVision = 0
 							StoredCameraFogFar = CameraFogFar
@@ -5834,9 +5843,9 @@ Function DrawGUI()
 						
 						WearingNightVision = (Not WearingNightVision) * 3
 					ElseIf Wearing1499 > 0 Then
-						Msg = "You need to take off SCP-1499 in order to put on the goggles."
+						Msg = I_Loc\MessageItem_NvgConflictScp1499
 					Else
-						Msg = "You need to take off the hazmat suit in order to put on the goggles."
+						Msg = I_Loc\MessageItem_NvgConflictHazmat
 					EndIf
 					SelectedItem = Null
 					MsgTimer = 70 * 5
@@ -5848,10 +5857,7 @@ Function DrawGUI()
 							ShowEntity Light
 							LightFlash = 7
 							PlaySound_Strict(LoadTempSound("SFX\SCP\1123\Touch.ogg"))		
-							DeathMSG = "Subject D-9341 was shot dead after attempting to attack a member of Nine-Tailed Fox. Surveillance tapes show that the subject had been "
-							DeathMSG = DeathMSG + "wandering around the site approximately 9 minutes prior, shouting the phrase " + Chr(34) + "get rid of the four pests" + Chr(34)
-							DeathMSG = DeathMSG + " in chinese. SCP-1123 was found in [REDACTED] nearby, suggesting the subject had come into physical contact with it. How "
-							DeathMSG = DeathMSG + "exactly SCP-1123 was removed from its containment chamber is still unknown."
+							DeathMSG = I_Loc\DeathMessage_1123
 							Kill()
 							Return
 						EndIf
@@ -5887,9 +5893,9 @@ Function DrawGUI()
 						GiveAchievement(Achv500)
 						
 						If Infect > 0 Then
-							Msg = "You swallowed the pill. Your nausea is fading."
+							Msg = I_Loc\MessageItem_PillUseHealnausea
 						Else
-							Msg = "You swallowed the pill."
+							Msg = I_Loc\MessageItem_PillUse
 						EndIf
 						MsgTimer = 70*7
 						
@@ -5905,29 +5911,29 @@ Function DrawGUI()
 						Select Rand(5)
 							Case 1
 								Injuries = 3.5
-								Msg = "You started bleeding heavily."
+								Msg = I_Loc\MessageItem_VeryfinefirstaidUseHurt
 								MsgTimer = 70*7
 							Case 2
 								Injuries = 0
 								Bloodloss = 0
-								Msg = "Your wounds are healing up rapidly."
+								Msg = I_Loc\MessageItem_VeryfinefirstaidUseFullheal
 								MsgTimer = 70*7
 							Case 3
 								Injuries = Max(0, Injuries - Rnd(0.5,3.5))
 								Bloodloss = Max(0, Bloodloss - Rnd(10,100))
-								Msg = "You feel much better."
+								Msg = I_Loc\MessageItem_VeryfinefirstaidUseHeal
 								MsgTimer = 70*7
 							Case 4
 								BlurTimer = 10000
 								Bloodloss = 0
-								Msg = "You feel nauseated."
+								Msg = I_Loc\MessageItem_VeryfinefirstaidUseNausea
 								MsgTimer = 70*7
 							Case 5
 								BlinkTimer = -10
 								Local roomname$ = PlayerRoom\RoomTemplate\Name
 								If roomname = "dimension1499" Or roomname = "gatea" Or (roomname="exit1" And EntityY(Collider)>1040.0*RoomScale)
 									Injuries = 2.5
-									Msg = "You started bleeding heavily."
+									Msg = I_Loc\MessageItem_VeryfinefirstaidUseHurt
 									MsgTimer = 70*7
 								Else
 									For r.Rooms = Each Rooms
@@ -5942,7 +5948,7 @@ Function DrawGUI()
 											Exit
 										EndIf
 									Next
-									Msg = "For some inexplicable reason, you find yourself inside the pocket dimension."
+									Msg = I_Loc\MessageItem_VeryfinefirstaidUsePocketdimension
 									MsgTimer = 70*8
 								EndIf
 						End Select
@@ -5953,7 +5959,7 @@ Function DrawGUI()
 				Case "firstaid", "finefirstaid", "firstaid2"
 					;[Block]
 					If Bloodloss = 0 And Injuries = 0 Then
-						Msg = "You do not need to use a first aid kit right now."
+						Msg = I_Loc\MessageItem_FirstaidUseFull
 						MsgTimer = 70*5
 						SelectedItem = Null
 					Else
@@ -5972,33 +5978,33 @@ Function DrawGUI()
 									Bloodloss = 0
 									Injuries = Max(0, Injuries - 2.0)
 									If Injuries = 0 Then
-										Msg = "You bandaged the wounds and took a painkiller. You feel fine."
+										Msg = I_Loc\MessageItem_FinefirstaidUse1
 									ElseIf Injuries > 1.0
-										Msg = "You bandaged the wounds and took a painkiller, but you were not able to stop the bleeding."
+										Msg = I_Loc\MessageItem_FinefirstaidUse2
 									Else
-										Msg = "You bandaged the wounds and took a painkiller, but you still feel sore."
+										Msg = I_Loc\MessageItem_FinefirstaidUse3
 									EndIf
 									MsgTimer = 70*5
 									RemoveItem(SelectedItem)
 								Else
 									Bloodloss = Max(0, Bloodloss - Rand(10,20))
 									If Injuries => 2.5 Then
-										Msg = "The wounds were way too severe to staunch the bleeding completely."
+										Msg = I_Loc\MessageItem_FirstaidUse5
 										Injuries = Max(2.5, Injuries-Rnd(0.3,0.7))
 									ElseIf Injuries > 1.0
 										Injuries = Max(0.5, Injuries-Rnd(0.5,1.0))
 										If Injuries > 1.0 Then
-											Msg = "You bandaged the wounds but were unable to staunch the bleeding completely."
+											Msg = I_Loc\MessageItem_FirstaidUse4
 										Else
-											Msg = "You managed to stop the bleeding."
+											Msg = I_Loc\MessageItem_FirstaidUse3
 										EndIf
 									Else
 										If Injuries > 0.5 Then
 											Injuries = 0.5
-											Msg = "You took a painkiller, easing the pain slightly."
+											Msg = I_Loc\MessageItem_FirstaidUse2
 										Else
 											Injuries = 0.5
-											Msg = "You took a painkiller, but it still hurts to walk."
+											Msg = I_Loc\MessageItem_FirstaidUse1
 										EndIf
 									EndIf
 									
@@ -6006,22 +6012,22 @@ Function DrawGUI()
 										Select Rand(6)
 											Case 1
 												SuperMan = True
-												Msg = "You have becomed overwhelmedwithadrenalineholyshitWOOOOOO~!"
+												Msg = I_Loc\MessageItem_BluefirstaidUseSuperman
 											Case 2
 												InvertMouse = (Not InvertMouse)
-												Msg = "You suddenly find it very difficult to turn your head."
+												Msg = I_Loc\MessageItem_BluefirstaidUseInvert
 											Case 3
 												BlurTimer = 5000
-												Msg = "You feel nauseated."
+												Msg = I_Loc\MessageItem_BluefirstaidUseNausea
 											Case 4
 												BlinkEffect = 0.6
 												BlinkEffectTimer = Rand(20,30)
 											Case 5
 												Bloodloss = 0
 												Injuries = 0
-												Msg = "You bandaged the wounds. The bleeding stopped completely and you feel fine."
+												Msg = I_Loc\MessageItem_BluefirstaidUseHeal
 											Case 6
-												Msg = "You bandaged the wounds and blood started pouring heavily through the bandages."
+												Msg = I_Loc\MessageItem_BluefirstaidUseHurt
 												Injuries = 3.5
 										End Select
 									EndIf
@@ -6190,7 +6196,7 @@ Function DrawGUI()
 						StaminaEffect = 0.5
 						StaminaEffectTimer = 20
 						
-						Msg = "You injected yourself with the syringe and feel a slight adrenaline rush."
+						Msg = I_Loc\MessageItem_SyringeUse
 						MsgTimer = 70 * 8
 						
 						RemoveItem(SelectedItem)
@@ -6203,7 +6209,7 @@ Function DrawGUI()
 						StaminaEffect = Rnd(0.5, 0.8)
 						StaminaEffectTimer = Rnd(20, 30)
 						
-						Msg = "You injected yourself with the syringe and feel an adrenaline rush."
+						Msg = I_Loc\MessageItem_FinesyringeUse
 						MsgTimer = 70 * 8
 						
 						RemoveItem(SelectedItem)
@@ -6217,13 +6223,13 @@ Function DrawGUI()
 								HealTimer = Rnd(40, 60)
 								StaminaEffect = 0.1
 								StaminaEffectTimer = 30
-								Msg = "You injected yourself with the syringe and feel a huge adrenaline rush."
+								Msg = I_Loc\MessageItem_VeryfinesyringeUseHuge
 							Case 2
 								SuperMan = True
-								Msg = "You injected yourself with the syringe and feel a humongous adrenaline rush."
+								Msg = I_Loc\MessageItem_VeryfinesyringeUseVeryhuge
 							Case 3
 								VomitTimer = 30
-								Msg = "You injected yourself with the syringe and feel a pain in your stomach."
+								Msg = I_Loc\MessageItem_VeryfinesyringeUseStomacheache
 						End Select
 						
 						MsgTimer = 70 * 8
@@ -6244,7 +6250,7 @@ Function DrawGUI()
 					;RadioState(7) = another timer for the "code channel"
 					
 					If RadioState(5) = 0 And SelectedItem\state > 0 And SelectedItem\itemtemplate\name <> "veryfineradio" Then 
-						Msg = "Use the numbered keys 1 through 5 to cycle between various channels."
+						Msg = I_Loc\MessageItem_RadioUse
 						MsgTimer = 70 * 5
 						RadioState(5) = 1
 						RadioState(0) = -1
@@ -6265,13 +6271,13 @@ Function DrawGUI()
 							Select Int(SelectedItem\state2)
 								Case 0 ;randomkanava
 									ResumeChannel(RadioCHN(0))
-									strtemp = "        USER TRACK PLAYER - "
+									strtemp = "        " + I_Loc\HUD_RadioUsertrack + " - "
 									If (Not EnableUserTracks)
 										If ChannelPlaying(RadioCHN(0)) = False Then RadioCHN(0) = PlaySound_Strict(RadioStatic)
-										strtemp = strtemp + "NOT ENABLED     "
+										strtemp = strtemp + I_Loc\HUD_RadioUsertrackDisabled + "     "
 									ElseIf UserTrackMusicAmount<1
 										If ChannelPlaying(RadioCHN(0)) = False Then RadioCHN(0) = PlaySound_Strict(RadioStatic)
-										strtemp = strtemp + "NO TRACKS FOUND     "
+										strtemp = strtemp + I_Loc\HUD_RadioUsertrackNotracks + "     "
 									Else
 										If (Not ChannelPlaying(RadioCHN(0)))
 											If (Not UserTrackFlag%)
@@ -6321,7 +6327,7 @@ Function DrawGUI()
 									DebugLog RadioState(1) 
 									
 									ResumeChannel(RadioCHN(1))
-									strtemp = "        WARNING - CONTAINMENT BREACH          "
+									strtemp = "        " + I_Loc\HUD_RadioCb + "          "
 									If ChannelPlaying(RadioCHN(1)) = False Then
 										
 										If RadioState(1) => 5 Then
@@ -6336,7 +6342,7 @@ Function DrawGUI()
 									
 								Case 2 ;scp-radio
 									ResumeChannel(RadioCHN(2))
-									strtemp = "        SCP Foundation On-Site Radio          "
+									strtemp = "        " + I_Loc\HUD_RadioRadio + "          "
 									If ChannelPlaying(RadioCHN(2)) = False Then
 										RadioState(2)=RadioState(2)+1
 										If RadioState(2) = 17 Then RadioState(2) = 1
@@ -6348,7 +6354,7 @@ Function DrawGUI()
 									EndIf 
 								Case 3
 									ResumeChannel(RadioCHN(3))
-									strtemp = "             EMERGENCY CHANNEL - RESERVED FOR COMMUNICATION IN THE EVENT OF A CONTAINMENT BREACH         "
+									strtemp = "             " + I_Loc\HUD_RadioEmergency + "         "
 									If ChannelPlaying(RadioCHN(3)) = False Then RadioCHN(3) = PlaySound_Strict(RadioStatic)
 									
 									If MTFtimer > 0 Then 
@@ -6496,7 +6502,7 @@ Function DrawGUI()
 							EndIf	
 							
 							SetFont Font3
-							Text(x+60, y, "CHN")						
+							Text(x+60, y, I_Loc\HUD_RadioChannel)						
 							
 							If SelectedItem\itemtemplate\name = "veryfineradio" Then ;"KOODIKANAVA"
 								ResumeChannel(RadioCHN(0))
@@ -6560,23 +6566,23 @@ Function DrawGUI()
 						If SelectedItem\state = 0 Then
 							Select Rand(6)
 								Case 1
-									Msg = Chr(34)+"I don't have anything to light it with. Umm, what about that... Nevermind."+Chr(34)
+									Msg = I_Loc\MessageItem_CigaretteUse_1
 								Case 2
-									Msg = "You are unable to get lit."
+									Msg = I_Loc\MessageItem_CigaretteUseUnable
 								Case 3
-									Msg = Chr(34)+"I quit that a long time ago."+Chr(34)
+									Msg = I_Loc\MessageItem_CigaretteUse_2
 									RemoveItem(SelectedItem)
 								Case 4
-									Msg = Chr(34)+"Even if I wanted one, I have nothing to light it with."+Chr(34)
+									Msg = I_Loc\MessageItem_CigaretteUse_3
 								Case 5
-									Msg = Chr(34)+"Could really go for one now... Wish I had a lighter."+Chr(34)
+									Msg = I_Loc\MessageItem_CigaretteUse_4
 								Case 6
-									Msg = Chr(34)+"Don't plan on starting, even at a time like this."+Chr(34)
+									Msg = I_Loc\MessageItem_CigaretteUse_5
 									RemoveItem(SelectedItem)
 							End Select
 							SelectedItem\state = 1 
 						Else
-							Msg = "You are unable to get lit."
+							Msg = I_Loc\MessageItem_CigaretteUseUnable
 						EndIf
 						
 						MsgTimer = 70 * 5
@@ -6586,9 +6592,9 @@ Function DrawGUI()
 					;[Block]
 					If CanUseItem(False,False,True)
 						If Wearing714=1 Then
-							Msg = Chr(34) + "DUDE WTF THIS SHIT DOESN'T EVEN WORK" + Chr(34)
+							Msg = I_Loc\MessageItem_420jUse714
 						Else
-							Msg = Chr(34) + "MAN DATS SUM GOOD ASS SHIT" + Chr(34)
+							Msg = I_Loc\MessageItem_420jUse
 							Injuries = Max(Injuries-0.5, 0)
 							BlurTimer = 500
 							GiveAchievement(Achv420)
@@ -6602,12 +6608,10 @@ Function DrawGUI()
 					;[Block]
 					If CanUseItem(False,False,True)
 						If Wearing714=1 Then
-							Msg = Chr(34) + "DUDE WTF THIS SHIT DOESN'T EVEN WORK" + Chr(34)
+							Msg = I_Loc\MessageItem_420jUse714
 						Else
-							DeathMSG = "Subject D-9341 found in a comatose state in [DATA REDACTED]. The subject was holding what appears to be a cigarette while smiling widely. "
-							DeathMSG = DeathMSG+"Chemical analysis of the cigarette has been inconclusive, although it seems to contain a high concentration of an unidentified chemical "
-							DeathMSG = DeathMSG+"whose molecular structure is remarkably similar to that of tetrahydrocannabinol."
-							Msg = Chr(34) + "UH WHERE... WHAT WAS I DOING AGAIN... MAN I NEED TO TAKE A NAP..." + Chr(34)
+							DeathMSG = I_Loc\DeathMessage_420js
+							Msg = I_Loc\MessageItem_420jUseNap
 							KillTimer = -1						
 						EndIf
 						MsgTimer = 70 * 6
@@ -6617,11 +6621,11 @@ Function DrawGUI()
 				Case "scp714"
 					;[Block]
 					If Wearing714=1 Then
-						Msg = "You removed the ring."
+						Msg = I_Loc\MessageItem_Scp714Off
 						Wearing714 = False
 					Else
 						GiveAchievement(Achv714)
-						Msg = "You put on the ring."
+						Msg = I_Loc\MessageItem_Scp714On
 						Wearing714 = True
 					EndIf
 					MsgTimer = 70 * 5
@@ -6640,7 +6644,7 @@ Function DrawGUI()
 						
 						If SelectedItem\state=100 Then
 							If WearingHazmat>0 Then
-								Msg = "You removed the hazmat suit."
+								Msg = I_Loc\MessageItem_HazmatOff
 								WearingHazmat = False
 								DropItem(SelectedItem)
 							Else
@@ -6655,7 +6659,7 @@ Function DrawGUI()
 									WearingHazmat = 3
 								EndIf
 								If SelectedItem\itemtemplate\sound <> 66 Then PlaySound_Strict(PickSFX(SelectedItem\itemtemplate\sound))
-								Msg = "You put on the hazmat suit."
+								Msg = I_Loc\MessageItem_HazmatOn
 								If WearingNightVision Then CameraFogFar = StoredCameraFogFar
 								WearingGasMask = 0
 								WearingNightVision = 0
@@ -6678,15 +6682,15 @@ Function DrawGUI()
 					
 					If SelectedItem\state=100 Then
 						If WearingVest>0 Then
-							Msg = "You removed the vest."
+							Msg = I_Loc\MessageItem_VestOff
 							WearingVest = False
 							DropItem(SelectedItem)
 						Else
 							If SelectedItem\itemtemplate\name="vest" Then
-								Msg = "You put on the vest and feel slightly encumbered."
+								Msg = I_Loc\MessageItem_VestOn
 								WearingVest = 1
 							Else
-								Msg = "You put on the vest and feel heavily encumbered."
+								Msg = I_Loc\MessageItem_VestOnHeavy
 								WearingVest = 2
 							EndIf
 							If SelectedItem\itemtemplate\sound <> 66 Then PlaySound_Strict(PickSFX(SelectedItem\itemtemplate\sound))
@@ -6700,12 +6704,12 @@ Function DrawGUI()
 					;[Block]
 					If Wearing1499 = 0 And WearingHazmat = 0 Then
 						If WearingGasMask Then
-							Msg = "You removed the gas mask."
+							Msg = I_Loc\MessageItem_GasmaskOff
 						Else
 							If SelectedItem\itemtemplate\name = "supergasmask"
-								Msg = "You put on the gas mask and you can breathe easier."
+								Msg = I_Loc\MessageItem_GasmaskOnEasy
 							Else
-								Msg = "You put on the gas mask."
+								Msg = I_Loc\MessageItem_GasmaskOn
 							EndIf
 							If WearingNightVision Then CameraFogFar = StoredCameraFogFar
 							WearingNightVision = 0
@@ -6719,9 +6723,9 @@ Function DrawGUI()
 							WearingGasMask = (Not WearingGasMask)
 						EndIf
 					ElseIf Wearing1499 > 0 Then
-						Msg = "You need to take off SCP-1499 in order to put on the gas mask."
+						Msg = I_Loc\MessageItem_GasmaskConflictScp1499
 					Else
-						Msg = "You need to take off the hazmat suit in order to put on the gas mask."
+						Msg = I_Loc\MessageItem_GasmaskConflictHazmat
 					EndIf
 					SelectedItem = Null
 					MsgTimer = 70 * 5
@@ -6764,8 +6768,8 @@ Function DrawGUI()
 					If (Not NavWorks) Then
 						If (MilliSecs() Mod 1000) > 300 Then
 							Color(200, 0, 0)
-							Text(x, y + height / 2 - 80, "ERROR 06", True)
-							Text(x, y + height / 2 - 60, "LOCATION UNKNOWN", True)						
+							Text(x, y + height / 2 - 80, I_Loc\HUD_NavError, True)
+							Text(x, y + height / 2 - 60, I_Loc\HUD_NavErrorLocation, True)						
 						EndIf
 					Else
 						
@@ -6859,7 +6863,7 @@ Function DrawGUI()
 									If dist < 8.0 * 4 Then
 										Color 100, 0, 0
 										Oval(x - dist * 3, y - 7 - dist * 3, dist * 3 * 2, dist * 3 * 2, False)
-										Text(x - width / 2 + 10, y - height / 2 + 30, "SCP-173")
+										Text(x - width / 2 + 10, y - height / 2 + 30, I_Loc\NPC_173)
 										SCPs_found% = SCPs_found% + 1
 									EndIf
 								EndIf
@@ -6868,7 +6872,7 @@ Function DrawGUI()
 									If dist < 8.0 * 4 Then
 										Color 100, 0, 0
 										Oval(x - dist * 1.5, y - 7 - dist * 1.5, dist * 3, dist * 3, False)
-										Text(x - width / 2 + 10, y - height / 2 + 30 + (20*SCPs_found), "SCP-106")
+										Text(x - width / 2 + 10, y - height / 2 + 30 + (20*SCPs_found), I_Loc\NPC_106)
 										SCPs_found% = SCPs_found% + 1
 									EndIf
 								EndIf
@@ -6877,7 +6881,7 @@ Function DrawGUI()
 									If dist < 8.0 * 4 Then
 										Color 100, 0, 0
 										Oval(x - dist * 1.5, y - 7 - dist * 1.5, dist * 3, dist * 3, False)
-										Text(x - width / 2 + 10, y - height / 2 + 30 + (20*SCPs_found), "SCP-096")
+										Text(x - width / 2 + 10, y - height / 2 + 30 + (20*SCPs_found), I_Loc\NPC_096)
 										SCPs_found% = SCPs_found% + 1
 									EndIf
 								EndIf
@@ -6888,7 +6892,7 @@ Function DrawGUI()
 											If (Not np\HideFromNVG) Then
 												Color 100, 0, 0
 												Oval(x - dist * 1.5, y - 7 - dist * 1.5, dist * 3, dist * 3, False)
-												Text(x - width / 2 + 10, y - height / 2 + 30 + (20*SCPs_found), "SCP-049")
+												Text(x - width / 2 + 10, y - height / 2 + 30 + (20*SCPs_found), I_Loc\NPC_049)
 												SCPs_found% = SCPs_found% + 1
 											EndIf
 										EndIf
@@ -6900,7 +6904,7 @@ Function DrawGUI()
 										dist = Rnd(4.0, 8.0)
 										Color 100, 0, 0
 										Oval(x - dist * 1.5, y - 7 - dist * 1.5, dist * 3, dist * 3, False)
-										Text(x - width / 2 + 10, y - height / 2 + 30 + (20*SCPs_found), "SCP-895")
+										Text(x - width / 2 + 10, y - height / 2 + 30 + (20*SCPs_found), I_Loc\NPC_895)
 									EndIf
 								EndIf
 							End If
@@ -6940,7 +6944,7 @@ Function DrawGUI()
 				Case "scp1499","super1499"
 					;[Block]
 					If WearingHazmat>0
-						Msg = "You are not able to wear SCP-1499 and a hazmat suit at the same time."
+						Msg = I_Loc\MessageItem_Scp1499ConflictHazmat
 						MsgTimer = 70 * 5
 						SelectedItem=Null
 						Return
@@ -7039,7 +7043,7 @@ Function DrawGUI()
 					If SelectedItem\state = 0 Then
 						PlaySound_Strict LoadTempSound("SFX\SCP\1162\NostalgiaCancer"+Rand(6,10)+".ogg")
 						If SelectedItem\itemtemplate\name = "oldbadge"
-							Msg = Chr(34)+"Huh? This guy looks just like me!"+Chr(34)
+							Msg = I_Loc\MessageItem_1162UseBadge
 							MsgTimer = 70*10
 						EndIf
 						
@@ -7051,7 +7055,7 @@ Function DrawGUI()
 					If SelectedItem\state = 0 Then
 						PlaySound_Strict LoadTempSound("SFX\SCP\1162\NostalgiaCancer"+Rand(6,10)+".ogg")
 						
-						Msg = Chr(34)+"Isn't this the key to that old shack? The one where I... No, it can't be."+Chr(34)
+						Msg = I_Loc\MessageItem_1162UseKey
 						MsgTimer = 70*10						
 					EndIf
 					
@@ -7072,7 +7076,7 @@ Function DrawGUI()
 					If SelectedItem\state = 0
 						BlurTimer = 1000
 						
-						Msg = Chr(34)+"Why does this seem so familiar?"+Chr(34)
+						Msg = I_Loc\MessageItem_1162UseHearing
 						MsgTimer = 70*10
 						PlaySound_Strict LoadTempSound("SFX\SCP\1162\NostalgiaCancer"+Rand(6,10)+".ogg")
 						SelectedItem\state = 1
@@ -7092,11 +7096,11 @@ Function DrawGUI()
 				Case "scp427"
 					;[Block]
 					If I_427\Using=1 Then
-						Msg = "You closed the locket."
+						Msg = I_Loc\MessageItem_427Off
 						I_427\Using = False
 					Else
 						GiveAchievement(Achv427)
-						Msg = "You opened the locket."
+						Msg = I_Loc\MessageItem_427On
 						I_427\Using = True
 					EndIf
 					MsgTimer = 70 * 5
@@ -7105,7 +7109,7 @@ Function DrawGUI()
 				Case "pill"
 					;[Block]
 					If CanUseItem(False, False, True)
-						Msg = "You swallowed the pill."
+						Msg = I_Loc\MessageItem_PillUse
 						MsgTimer = 70*7
 						
 						RemoveItem(SelectedItem)
@@ -7115,7 +7119,7 @@ Function DrawGUI()
 				Case "scp500death"
 					;[Block]
 					If CanUseItem(False, False, True)
-						Msg = "You swallowed the pill."
+						Msg = I_Loc\MessageItem_PillUse
 						MsgTimer = 70*7
 						
 						If I_427\Timer < 70*360 Then
@@ -7156,7 +7160,7 @@ Function DrawGUI()
 									SelectedItem\itemtemplate\img=LoadImage_Strict(SelectedItem\itemtemplate\imgpath)
 									
 									If (SelectedItem\state = 0) Then
-										Msg = Chr(34)+"Hey, I remember this movie!"+Chr(34)
+										Msg = I_Loc\MessageItem_1162UseTicket
 										MsgTimer = 70*10
 										PlaySound_Strict LoadTempSound("SFX\SCP\1162\NostalgiaCancer"+Rand(1,5)+".ogg")
 										SelectedItem\state = 1
@@ -7282,9 +7286,9 @@ Function DrawTimer()
 	If Not TimerStopped Then
 		durText$ = FormatDuration(PlayTime)
 	Else If TimerStopped = 1 Then
-		durText = "Timer stopped"
+		durText = "Timer stopped" ; TODO Remove, never occurs
 	Else
-		durText$ = "Pre-made save loaded"
+		durText$ = I_Loc\HUD_SpeedrunSaveloaded
 	EndIf
 	Local x% = HUDEndX - StringWidth(durText) - 24 * HUDScale
 	Local y% = HUDStartY + 24 * HUDScale
@@ -7361,7 +7365,7 @@ Function DrawMenu()
 					
 					If StopHidingTimer => 40 Then
 						PlaySound_Strict(HorrorSFX(15))
-						Msg = "STOP HIDING"
+						Msg = I_Loc\Message_Stophiding
 						MsgTimer = 6*70
 						MenuOpen = False
 						Return
@@ -7392,23 +7396,23 @@ Function DrawMenu()
 		
 		If AchievementsMenu > 0 Then
 			SetFont Font2
-			Text(x, y-(122-45)*MenuScale, "ACHIEVEMENTS",False,True)
+			Text(x, y-(122-45)*MenuScale, I_Loc\Menu_AchievementsUpper,False,True)
 			SetFont Font1
 		ElseIf OptionsMenu > 0 Then
 			SetFont Font2
-			Text(x, y-(122-45)*MenuScale, "OPTIONS",False,True)
+			Text(x, y-(122-45)*MenuScale, I_Loc\Menu_OptionsUpper,False,True)
 			SetFont Font1
 		ElseIf QuitMSG > 0 Then
 			SetFont Font2
-			Text(x, y-(122-45)*MenuScale, "QUIT?",False,True)
+			Text(x, y-(122-45)*MenuScale, I_Loc\Menu_QuitQuestion,False,True)
 			SetFont Font1
 		ElseIf KillTimer >= 0 Then
 			SetFont Font2
-			Text(x, y-(122-45)*MenuScale, "PAUSED",False,True)
+			Text(x, y-(122-45)*MenuScale, I_Loc\Menu_Pause,False,True)
 			SetFont Font1
 		Else
 			SetFont Font2
-			Text(x, y-(122-45)*MenuScale, "YOU DIED",False,True)
+			Text(x, y-(122-45)*MenuScale, I_Loc\Menu_Dead,False,True)
 			SetFont Font1
 		End If		
 		
@@ -7420,10 +7424,10 @@ Function DrawMenu()
 		If AchievementsMenu <= 0 And OptionsMenu <= 0 And QuitMSG <= 0
 			SetFont Font1
 			Text x, y, "Difficulty: "+SelectedDifficulty\name
-			Text x, y+20*MenuScale, "Save: "+CurrSave
+			Text x, y+20*MenuScale, I_Loc\Menu_Save+ " "+CurrSave
 			Text x, y+40*MenuScale, GetSeedString()
 		ElseIf AchievementsMenu <= 0 And OptionsMenu > 0 And QuitMSG <= 0 And KillTimer >= 0
-			If DrawButton(x + 101 * MenuScale, y + 390 * MenuScale, 230 * MenuScale, 60 * MenuScale, "Back") Then
+			If DrawButton(x + 101 * MenuScale, y + 390 * MenuScale, 230 * MenuScale, 60 * MenuScale, I_Loc\Menu_Back) Then
 				AchievementsMenu = 0
 				OptionsMenu = 0
 				QuitMSG = 0
@@ -7445,10 +7449,10 @@ Function DrawMenu()
 				Rect(x+320*MenuScale,y-5*MenuScale,110*MenuScale,40*MenuScale,True)
 			EndIf
 			
-			If DrawButton(x-5*MenuScale,y,100*MenuScale,30*MenuScale,"GRAPHICS",False) Then OptionsMenu = 1
-			If DrawButton(x+105*MenuScale,y,100*MenuScale,30*MenuScale,"AUDIO",False) Then OptionsMenu = 2
-			If DrawButton(x+215*MenuScale,y,100*MenuScale,30*MenuScale,"CONTROLS",False) Then OptionsMenu = 3
-			If DrawButton(x+325*MenuScale,y,100*MenuScale,30*MenuScale,"ADVANCED",False) Then OptionsMenu = 4
+			If DrawButton(x-5*MenuScale,y,100*MenuScale,30*MenuScale,I_Loc\Option_Graphics,False) Then OptionsMenu = 1
+			If DrawButton(x+105*MenuScale,y,100*MenuScale,30*MenuScale,I_Loc\Option_Audio,False) Then OptionsMenu = 2
+			If DrawButton(x+215*MenuScale,y,100*MenuScale,30*MenuScale,I_Loc\Option_Controls,False) Then OptionsMenu = 3
+			If DrawButton(x+325*MenuScale,y,100*MenuScale,30*MenuScale,I_Loc\Option_Advanced,False) Then OptionsMenu = 4
 			
 			Local tx# = (GraphicWidth/2)+(width/2)
 			Local ty# = y
@@ -7463,7 +7467,7 @@ Function DrawMenu()
 					y=y+50*MenuScale
 					
 					Color 255,255,255
-					Text(x, y, "VSync:")
+					Text(x, y, I_Loc\OptionName_Vsync)
 					Vsync% = DrawTick(x + 270 * MenuScale, y + MenuScale, Vsync%)
 					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"vsync")
@@ -7472,7 +7476,7 @@ Function DrawMenu()
 					y=y+30*MenuScale
 					
 					Color 255,255,255
-					Text(x, y, "Anti-aliasing:")
+					Text(x, y, I_Loc\OptionName_Antialias)
 					Opt_AntiAlias = DrawTick(x + 270 * MenuScale, y + MenuScale, Opt_AntiAlias%)
 					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"antialias")
@@ -7482,7 +7486,7 @@ Function DrawMenu()
 					
 					ScreenGamma = (SlideBar(x + 270*MenuScale, y+6*MenuScale, 100*MenuScale, ScreenGamma*50.0, 1)/50.0)
 					Color 255,255,255
-					Text(x, y, "Screen gamma:")
+					Text(x, y, I_Loc\OptionName_Gamma)
 					If (MouseOn(x+270*MenuScale,y+6*MenuScale,100*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=1
 						DrawOptionsTooltip(tx,ty,tw,th,"gamma",ScreenGamma)
 					EndIf
@@ -7490,7 +7494,7 @@ Function DrawMenu()
 					y=y+50*MenuScale
 					
 					Color 255,255,255
-					Text(x, y, "Texture LOD Bias:")
+					Text(x, y, I_Loc\OptionName_Texlod)
 					TextureDetails = Slider5(x+270*MenuScale,y+6*MenuScale,100*MenuScale,TextureDetails,3,"0.8","0.4","0.0","-0.4","-0.8")
 					Select TextureDetails%
 						Case 0
@@ -7511,7 +7515,7 @@ Function DrawMenu()
 					
 					y=y+50*MenuScale
 					Color 100,100,100
-					Text(x, y, "Save textures in the VRAM:")	
+					Text(x, y, I_Loc\OptionName_Vram)	
 					EnableVRam = DrawTick(x + 270 * MenuScale, y + MenuScale, EnableVRam, True)
 					If MouseOn(x + 270 * MenuScale, y + MenuScale, 20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"vram")
@@ -7521,7 +7525,7 @@ Function DrawMenu()
 
 					HUDOffsetScale = SlideBar(x + 270*MenuScale, y+6*MenuScale,100*MenuScale, HUDOffsetScale*100, 5)/100
 					Color 255,255,255
-					Text(x, y, "HUD offset:")
+					Text(x, y, I_Loc\OptionName_Hudoffset)
 					If (MouseOn(x+270*MenuScale,y+6*MenuScale,100*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=5
 						DrawOptionsTooltip(tx,ty,tw,th,"hudoffset")
 					EndIf
@@ -7533,9 +7537,9 @@ Function DrawMenu()
 					SlideBarFOV = SlideBar(x + 270*MenuScale, y+6*MenuScale,100*MenuScale, SlideBarFOV*2.0, 4)/2.0
 					FOV = Int(SlideBarFOV+40)
 					Color 255,255,255
-					Text(x, y, "Field of view:")
+					Text(x, y, I_Loc\OptionName_fov)
 					Color 255,255,0
-					Text(x + 5 * MenuScale, y + 25 * MenuScale, FOV+" FOV")
+					Text(x + 5 * MenuScale, y + 25 * MenuScale, FOV+"°")
 					If (MouseOn(x+270*MenuScale,y+6*MenuScale,100*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=4
 						DrawOptionsTooltip(tx,ty,tw,th,"fov")
 					EndIf
@@ -7548,7 +7552,7 @@ Function DrawMenu()
 					
 					MusicVolume = (SlideBar(x + 250*MenuScale, y-4*MenuScale, 100*MenuScale, MusicVolume*100.0, 1)/100.0)
 					Color 255,255,255
-					Text(x, y, "Music volume:")
+					Text(x, y, I_Loc\OptionName_Musicvol)
 					If (MouseOn(x+250*MenuScale,y-4*MenuScale,100*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=1
 						DrawOptionsTooltip(tx,ty,tw,th,"musicvol",MusicVolume)
 					EndIf
@@ -7558,7 +7562,7 @@ Function DrawMenu()
 					PrevSFXVolume = (SlideBar(x + 250*MenuScale, y-4*MenuScale, 100*MenuScale, SFXVolume*100.0, 2)/100.0)
 					If (Not DeafPlayer) Then SFXVolume# = PrevSFXVolume#
 					Color 255,255,255
-					Text(x, y, "Sound volume:")
+					Text(x, y, I_Loc\OptionName_Soundvol)
 					If (MouseOn(x+250*MenuScale,y-4*MenuScale,100*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=2
 						DrawOptionsTooltip(tx,ty,tw,th,"soundvol",PrevSFXVolume)
 					EndIf
@@ -7566,7 +7570,7 @@ Function DrawMenu()
 					y = y + 30*MenuScale
 					
 					Color 100,100,100
-					Text x, y, "Sound auto-release:"
+					Text x, y, I_Loc\OptionName_Sfxautorelease
 					EnableSFXRelease = DrawTick(x + 270 * MenuScale, y + MenuScale, EnableSFXRelease,True)
 					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th+220*MenuScale,"sfxautorelease")
@@ -7575,7 +7579,7 @@ Function DrawMenu()
 					y = y + 30*MenuScale
 					
 					Color 100,100,100
-					Text x, y, "Enable user tracks:"
+					Text x, y, I_Loc\OptionName_Usertrack
 					EnableUserTracks = DrawTick(x + 270 * MenuScale, y + MenuScale, EnableUserTracks,True)
 					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"usertrack")
@@ -7584,7 +7588,7 @@ Function DrawMenu()
 					If EnableUserTracks
 						y = y + 30 * MenuScale
 						Color 255,255,255
-						Text x, y, "User track mode:"
+						Text x, y, I_Loc\OptionName_Usertrackmode
 						UserTrackMode = DrawTick(x + 270 * MenuScale, y + MenuScale, UserTrackMode)
 						If UserTrackMode
 							Text x, y + 20 * MenuScale, "Repeat"
@@ -7594,7 +7598,7 @@ Function DrawMenu()
 						If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 							DrawOptionsTooltip(tx,ty,tw,th,"usertrackmode")
 						EndIf
-						;DrawButton(x, y + 30 * MenuScale, 190 * MenuScale, 25 * MenuScale, "Scan for User Tracks",False)
+						;DrawButton(x, y + 30 * MenuScale, 190 * MenuScale, 25 * MenuScale, I_Loc\OptionName_Usertrackscan,False)
 						;If MouseOn(x,y+30*MenuScale,190*MenuScale,25*MenuScale) And OnSliderID=0
 						;	DrawOptionsTooltip(tx,ty,tw,th,"usertrackscan")
 						;EndIf
@@ -7607,7 +7611,7 @@ Function DrawMenu()
 					
 					MouseSens = (SlideBar(x + 270*MenuScale, y-4*MenuScale, 100*MenuScale, (MouseSens+0.5)*100.0, 1)/100.0)-0.5
 					Color(255, 255, 255)
-					Text(x, y, "Mouse sensitivity:")
+					Text(x, y, I_Loc\OptionName_Mousesensitivity)
 					If (MouseOn(x+270*MenuScale,y-4*MenuScale,100*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=1
 						DrawOptionsTooltip(tx,ty,tw,th,"mousesensitivity",MouseSens)
 					EndIf
@@ -7615,7 +7619,7 @@ Function DrawMenu()
 					y = y + 30*MenuScale
 					
 					Color(255, 255, 255)
-					Text(x, y, "Invert mouse Y-axis:")
+					Text(x, y, I_Loc\OptionName_Mouseinvert)
 					InvertMouse = DrawTick(x + 270 * MenuScale, y + MenuScale, InvertMouse)
 					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"mouseinvert")
@@ -7625,7 +7629,7 @@ Function DrawMenu()
 					
 					MouseSmooth = (SlideBar(x + 270*MenuScale, y-4*MenuScale, 100*MenuScale, (MouseSmooth)*50.0, 2)/50.0)
 					Color(255, 255, 255)
-					Text(x, y, "Mouse smoothing:")
+					Text(x, y, I_Loc\OptionName_Mousesmoothing)
 					If (MouseOn(x+270*MenuScale,y-4*MenuScale,100*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=2
 						DrawOptionsTooltip(tx,ty,tw,th,"mousesmoothing",MouseSmooth)
 					EndIf
@@ -7697,7 +7701,7 @@ Function DrawMenu()
 					y = y + 50*MenuScale
 					
 					Color 255,255,255				
-					Text(x, y, "Show HUD:")	
+					Text(x, y, I_Loc\OptionName_Showhud)	
 					HUDenabled = DrawTick(x + 270 * MenuScale, y + MenuScale, HUDenabled)
 					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"hud")
@@ -7706,7 +7710,7 @@ Function DrawMenu()
 					y = y + 30*MenuScale
 					
 					Color 255,255,255
-					Text(x, y, "Enable console:")
+					Text(x, y, I_Loc\OptionName_Console)
 					CanOpenConsole = DrawTick(x +270 * MenuScale, y + MenuScale, CanOpenConsole)
 					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"consoleenable")
@@ -7715,7 +7719,7 @@ Function DrawMenu()
 					y = y + 30*MenuScale
 					
 					Color 255,255,255
-					Text(x, y, "Open console on error:")
+					Text(x, y, I_Loc\OptionName_Consoleerror)
 					ConsoleOpening = DrawTick(x + 270 * MenuScale, y + MenuScale, ConsoleOpening)
 					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"consoleerror")
@@ -7724,7 +7728,7 @@ Function DrawMenu()
 					y = y + 30*MenuScale
 
 					Color 255,255,255
-					Text(x, y, "Speed run mode:")
+					Text(x, y, I_Loc\OptionName_Speedrunmode)
 					SpeedRunMode = DrawTick(x + 270 * MenuScale, y + MenuScale, SpeedRunMode)
 					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"speedrunmode")
@@ -7733,7 +7737,7 @@ Function DrawMenu()
 					y = y + 30*MenuScale
 
 					Color 255,255,255
-					Text(x, y, "Use numeric seeds:")
+					Text(x, y, I_Loc\OptionName_Numericseeds)
 					UseNumericSeeds = DrawTick(x + 270 * MenuScale, y + MenuScale, UseNumericSeeds)
 					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"numericseeds")
@@ -7742,7 +7746,7 @@ Function DrawMenu()
 					y = y + 50*MenuScale
 					
 					Color 255,255,255
-					Text(x, y, "Achievement popups:")
+					Text(x, y, I_Loc\OptionName_Achpopup)
 					AchvMSGenabled% = DrawTick(x + 270 * MenuScale, y, AchvMSGenabled%)
 					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"achpopup")
@@ -7751,7 +7755,7 @@ Function DrawMenu()
 					y = y + 50*MenuScale
 
 					Color 255,255,255
-					Text(x, y, "Use launcher:")
+					Text(x, y, I_Loc\OptionName_Launcher)
 					LauncherEnabled% = DrawTick(x + 270 * MenuScale, y, LauncherEnabled%)
 					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"launcher")
@@ -7760,7 +7764,7 @@ Function DrawMenu()
 					y = y + 50*MenuScale
 					
 					Color 255,255,255
-					Text(x, y, "Show FPS:")
+					Text(x, y, I_Loc\OptionName_Showfps)
 					ShowFPS% = DrawTick(x + 270 * MenuScale, y, ShowFPS%)
 					If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"showfps")
@@ -7769,7 +7773,7 @@ Function DrawMenu()
 					y = y + 30*MenuScale
 					
 					Color 255,255,255
-					Text(x, y, "Framelimit:")
+					Text(x, y, I_Loc\OptionName_Framelimit)
 					
 					Color 255,255,255
 					If DrawTick(x + 270 * MenuScale, y, CurrFrameLimit > 0.0) Then
@@ -7802,7 +7806,7 @@ Function DrawMenu()
 				If (Not CanSave) Then AbleToSave = False
 				If AbleToSave
 					QuitButton = 140
-					If DrawButton(x, y + 60*MenuScale, 390*MenuScale, 60*MenuScale, "Save & Quit") Then
+					If DrawButton(x, y + 60*MenuScale, 390*MenuScale, 60*MenuScale, I_Loc\Menu_Savequit) Then
 						DropSpeed = 0
 						SaveGame(SavePath + CurrSave)
 						NullGame()
@@ -7817,7 +7821,7 @@ Function DrawMenu()
 				EndIf
 			EndIf
 			
-			If DrawButton(x, y + QuitButton*MenuScale, 390*MenuScale, 60*MenuScale, "Quit") Then
+			If DrawButton(x, y + QuitButton*MenuScale, 390*MenuScale, 60*MenuScale, I_Loc\Menu_Quit) Then
 				NullGame()
 				MenuOpen = False
 				MainMenuOpen = True
@@ -7828,14 +7832,14 @@ Function DrawMenu()
 				Return
 			EndIf
 			
-			If DrawButton(x+101*MenuScale, y + 344*MenuScale, 230*MenuScale, 60*MenuScale, "Back") Then
+			If DrawButton(x+101*MenuScale, y + 344*MenuScale, 230*MenuScale, 60*MenuScale, I_Loc\Menu_Back) Then
 				AchievementsMenu = 0
 				OptionsMenu = 0
 				QuitMSG = 0
 				MouseHit1 = False
 			EndIf
 		Else
-			If DrawButton(x+101*MenuScale, y + 344*MenuScale, 230*MenuScale, 60*MenuScale, "Back") Then
+			If DrawButton(x+101*MenuScale, y + 344*MenuScale, 230*MenuScale, 60*MenuScale, I_Loc\Menu_Back) Then
 				AchievementsMenu = 0
 				OptionsMenu = 0
 				QuitMSG = 0
@@ -7884,7 +7888,7 @@ Function DrawMenu()
 				
 				y = y+ 72*MenuScale
 				
-				If DrawButton(x, y, 390*MenuScale, 60*MenuScale, "Resume", True, True) Then
+				If DrawButton(x, y, 390*MenuScale, 60*MenuScale, I_Loc\Menu_Resume, True, True) Then
 					MenuOpen = False
 					UpdateMenuState()
 				EndIf
@@ -7892,7 +7896,7 @@ Function DrawMenu()
 				y = y + 75*MenuScale
 				If (Not SelectedDifficulty\permaDeath) Then
 					If GameSaved Then
-						If DrawButton(x, y, 390*MenuScale, 60*MenuScale, "Load Game") Then
+						If DrawButton(x, y, 390*MenuScale, 60*MenuScale, I_Loc\Menu_Load) Then
 							DrawLoading(0)
 							
 							MenuOpen = False
@@ -7936,19 +7940,19 @@ Function DrawMenu()
 						DrawFrame(x,y,390*MenuScale, 60*MenuScale)
 						Color (100, 100, 100)
 						SetFont Font2
-						Text(x + (390*MenuScale) / 2, y + (60*MenuScale) / 2, "Load Game", True, True)
+						Text(x + (390*MenuScale) / 2, y + (60*MenuScale) / 2, I_Loc\Menu_Load, True, True)
 					EndIf
 					y = y + 75*MenuScale
 			EndIf
 				
-				If DrawButton(x, y, 390*MenuScale, 60*MenuScale, "Achievements") Then AchievementsMenu = 1
+				If DrawButton(x, y, 390*MenuScale, 60*MenuScale, I_Loc\Menu_Achievements) Then AchievementsMenu = 1
 				y = y + 75*MenuScale
-				If DrawButton(x, y, 390*MenuScale, 60*MenuScale, "Options") Then OptionsMenu = 1 : OnSliderID = 66
+				If DrawButton(x, y, 390*MenuScale, 60*MenuScale, I_Loc\Menu_Options) Then OptionsMenu = 1 : OnSliderID = 66
 				y = y + 75*MenuScale
 			Else
 				y = y+104*MenuScale
 				If GameSaved And (Not SelectedDifficulty\permaDeath) Then
-					If DrawButton(x, y, 390*MenuScale, 60*MenuScale, "Load Game") Then
+					If DrawButton(x, y, 390*MenuScale, 60*MenuScale, I_Loc\Menu_Load) Then
 						DrawLoading(0)
 						
 						MenuOpen = False
@@ -7991,9 +7995,9 @@ Function DrawMenu()
 				Else
 					DrawButton(x, y, 390*MenuScale, 60*MenuScale, "")
 					Color 50,50,50
-					Text(x + 185*MenuScale, y + 30*MenuScale, "Load Game", True, True)
+					Text(x + 185*MenuScale, y + 30*MenuScale, I_Loc\Menu_Load, True, True)
 				EndIf
-				If DrawButton(x, y + 80*MenuScale, 390*MenuScale, 60*MenuScale, "Quit to Menu") Then
+				If DrawButton(x, y + 80*MenuScale, 390*MenuScale, 60*MenuScale, I_Loc\Menu_QuitMenu) Then
 					NullGame()
 					MenuOpen = False
 					MainMenuOpen = True
@@ -8007,7 +8011,7 @@ Function DrawMenu()
 			EndIf
 			
 			If KillTimer >= 0 And (Not MainMenuOpen)
-				If DrawButton(x, y, 390*MenuScale, 60*MenuScale, "Quit") Then
+				If DrawButton(x, y, 390*MenuScale, 60*MenuScale, I_Loc\Menu_Quit) Then
 					QuitMSG = 1
 				EndIf
 			EndIf
@@ -8027,9 +8031,9 @@ End Function
 
 Function GetSeedString$()
 	If HasNumericSeed Then
-		Return "Map seed (numeric): "+Str(RandomSeedNumeric)
+		Return I_Loc\Menu_SeedNumeric+" "+Str(RandomSeedNumeric)
 	Else
-		Return "Map seed: "+RandomSeed
+		Return I_Loc\Menu_Seed+" "+RandomSeed
 	EndIf
 End Function
 
@@ -10451,7 +10455,7 @@ Function Use294()
 					
 				Else
 					;out of range
-					Input294 = "OUT OF RANGE"
+					Input294 = I_Loc\HUD_294Range
 					PlayerRoom\SoundCHN = PlaySound_Strict (LoadTempSound("SFX\SCP\294\outofrange.ogg"))
 				EndIf
 				
@@ -10467,10 +10471,10 @@ Function Use294()
 		EndIf
 		
 	Else ;playing a dispensing sound
-		If Input294 <> "OUT OF RANGE" Then Input294 = "DISPENSING..."
+		If Input294 <> I_Loc\HUD_294Range Then Input294 = I_Loc\HUD_294Dispense
 		
 		If Not ChannelPlaying(PlayerRoom\SoundCHN) Then
-			If Input294 <> "OUT OF RANGE" Then
+			If Input294 <> I_Loc\HUD_294Range Then
 				HidePointer()
 				Using294 = False
 				MouseXSpeed() : MouseYSpeed() : MouseZSpeed() : mouse_x_speed_1#=0.0 : mouse_y_speed_1#=0.0
@@ -10525,10 +10529,10 @@ Function Use427()
 				EndIf
 			EndIf
 			If prevI427Timer < 70*60 And I_427\Timer => 70*60 Then
-				Msg = "You feel refreshed and energetic."
+				Msg = I_Loc\Message_427_1
 				MsgTimer = 70*5
 			ElseIf prevI427Timer < 70*180 And I_427\Timer => 70*180 Then
-				Msg = "You feel gentle muscle spasms all over your body."
+				Msg = I_Loc\Message_427_2
 				MsgTimer = 70*5
 			EndIf
 		Else
@@ -10542,10 +10546,10 @@ Function Use427()
 		EndIf
 	Else
 		If prevI427Timer-FPSfactor < 70*360 And I_427\Timer => 70*360 Then
-			Msg = "Your muscles are swelling. You feel more powerful than ever."
+			Msg = I_Loc\Message_427_3
 			MsgTimer = 70*5
 		ElseIf prevI427Timer-FPSfactor < 70*390 And I_427\Timer => 70*390 Then
-			Msg = "You can't feel your legs. But you don't need legs anymore."
+			Msg = I_Loc\Message_427_4
 			MsgTimer = 70*5
 		EndIf
 		I_427\Timer = I_427\Timer + FPSfactor
@@ -10575,7 +10579,7 @@ Function Use427()
 		EndIf
 		If I_427\Timer >= 70*420 Then
 			Kill()
-			DeathMSG = Chr(34)+"Requesting support from MTF Nu-7. We need more firepower to take this thing down."+Chr(34)
+			DeathMSG = I_Loc\DeathMessage_427
 		ElseIf I_427\Timer >= 70*390 Then
 			Crouch = True
 		EndIf
@@ -10715,16 +10719,16 @@ Function UpdateInfect()
 			Next
 			
 			If Infect > 20 And temp =< 20.0 Then
-				Msg = "You feel kinda feverish."
+				Msg = I_Loc\Message_008_1
 				MsgTimer = 70*6
 			ElseIf Infect > 40 And temp =< 40.0
-				Msg = "You feel nauseated."
+				Msg = I_Loc\Message_008_2
 				MsgTimer = 70*6
 			ElseIf Infect > 60 And temp =< 60.0
-				Msg = "The nausea's getting worse."
+				Msg = I_Loc\Message_008_3
 				MsgTimer = 70*6
 			ElseIf Infect > 80 And temp =< 80.0
-				Msg = "You feel very faint."
+				Msg = I_Loc\Message_008_4
 				MsgTimer = 70*6
 			ElseIf Infect =>91.5
 				BlinkTimer = Max(Min(-10*(Infect-91.5),BlinkTimer),-10)
@@ -10784,8 +10788,7 @@ Function UpdateInfect()
 						PlayerRoom\NPC[0]\Sound = LoadSound_Strict("SFX\SCP\008\KillScientist2.ogg")
 						PlayerRoom\NPC[0]\SoundChn = PlaySound_Strict(PlayerRoom\NPC[0]\Sound)
 						
-						DeathMSG = "Subject D-9341 found ingesting Dr. [REDACTED] at Sector [REDACTED]. Subject was immediately terminated by Nine-Tailed Fox and sent for autopsy. "
-						DeathMSG = DeathMSG + "SCP-008 infection was confirmed, after which the body was incinerated."
+						DeathMSG = I_Loc\DeathMessage_008
 						
 						Kill()
 						de.Decals = CreateDecal(3, EntityX(PlayerRoom\NPC[0]\Collider), 544*RoomScale + 0.01, EntityZ(PlayerRoom\NPC[0]\Collider),90,Rnd(360),0)
@@ -10825,16 +10828,15 @@ Function UpdateInfect()
 				Kill()
 				BlinkTimer = Max(Min(-10*(Infect-96),BlinkTimer),-10)
 				If PlayerRoom\RoomTemplate\Name = "dimension1499" Then
-					DeathMSG = "The whereabouts of SCP-1499 are still unknown, but a recon team has been dispatched to investigate reports of a violent attack to a church in the Russian town of [REDACTED]."
+					DeathMSG = I_Loc\DeathMessage_1499
 				ElseIf PlayerRoom\RoomTemplate\Name = "gatea" Or PlayerRoom\RoomTemplate\Name = "exit1" Then
-					DeathMSG = "Subject D-9341 found wandering around Gate "
+					Local deathGate$
 					If PlayerRoom\RoomTemplate\Name = "gatea" Then
-						DeathMSG = DeathMSG + "A"
+						deathGate = I_Loc\DeathMessage_008Gatea
 					Else
-						DeathMSG = DeathMSG + "B"
+						deathGate = I_Loc\DeathMessage_008Gateb
 					EndIf
-					DeathMSG = DeathMSG + ". Subject was immediately terminated by Nine-Tailed Fox and sent for autopsy. "
-					DeathMSG = DeathMSG + "SCP-008 infection was confirmed, after which the body was incinerated."
+					DeathMSG = Format(I_Loc\DeathMessage_008Gate, deathGate)
 				Else
 					DeathMSG = ""
 				EndIf
@@ -11484,7 +11486,7 @@ Function RenderWorld2()
 					power%=Int(Inventory(i)\state)
 					If Inventory(i)\state<=0.0 Then ;this nvg can't be used
 						hasBattery = 0
-						Msg = "The batteries in these night vision goggles died."
+						Msg = I_Loc\MessageItem_NvgBatDead
 						BlinkTimer = -1.0
 						MsgTimer = 350
 						Exit
@@ -11533,10 +11535,10 @@ Function RenderWorld2()
 			Local plusY% = 0
 			If hasBattery=1 Then plusY% = 40
 			
-			Text GraphicWidth/2,HUDStartY+(20+plusY)*MenuScale,"REFRESHING DATA IN",True,False
+			Text GraphicWidth/2,HUDStartY+(20+plusY)*MenuScale,I_Loc\HUD_NvgRefresh,True,False
 			
 			Text GraphicWidth/2,HUDStartY+(60+plusY)*MenuScale,Max(f2s(NVTimer/60.0,1),0.0),True,False
-			Text GraphicWidth/2,HUDStartY+(100+plusY)*MenuScale,"SECONDS",True,False
+			Text GraphicWidth/2,HUDStartY+(100+plusY)*MenuScale,I_Loc\HUD_NvgRefreshSeconds,True,False
 			
 			temp% = CreatePivot() : temp2% = CreatePivot()
 			PositionEntity temp, EntityX(Collider), EntityY(Collider), EntityZ(Collider)
@@ -11570,7 +11572,7 @@ Function RenderWorld2()
 						
 						If (Not IsNVGBlinking%)
 						Text GraphicWidth / 2 + xvalue * (GraphicWidth / 2),GraphicHeight / 2 - yvalue * (GraphicHeight / 2),np\NVName,True,True
-						Text GraphicWidth / 2 + xvalue * (GraphicWidth / 2),GraphicHeight / 2 - yvalue * (GraphicHeight / 2) + 30.0 * MenuScale,f2s(dist,1)+" m",True,True
+						Text GraphicWidth / 2 + xvalue * (GraphicWidth / 2),GraphicHeight / 2 - yvalue * (GraphicHeight / 2) + 30.0 * MenuScale,Format(I_Loc\HUD_NvgMeters, f2s(dist,1)),True,True
 					EndIf
 				EndIf
 				EndIf
@@ -11615,7 +11617,7 @@ Function RenderWorld2()
 			Color 255,0,0
 			SetFont Font3
 			
-			Text GraphicWidth/2,20*MenuScale,"WARNING: LOW BATTERY",True,False
+			Text GraphicWidth/2,20*MenuScale,I_Loc\HUD_NvgBatlow,True,False
 			Color 255,255,255
 			SetFont Font1
 		EndIf
@@ -11995,15 +11997,15 @@ End Function
 
 Function CanUseItem(canUseWithHazmat%, canUseWithGasMask%, canUseWithEyewear%)
 	If (canUseWithHazmat = False And WearingHazmat) Then
-		Msg = "You can't use that item while wearing a hazmat suit."
+		Msg = I_Loc\MessageItem_HazmatNouse
 		MsgTimer = 70*5
 		Return False
 	ElseIf (canUseWithGasMask = False And (WearingGasMask Or Wearing1499))
-		Msg = "You can't use that item while wearing a gas mask."
+		Msg = I_Loc\MessageItem_GasmaskNouse
 		MsgTimer = 70*5
 		Return False
 	ElseIf (canUseWithEyewear = False And (WearingNightVision))
-		Msg = "You can't use that item while wearing headgear."
+		Msg = I_Loc\MessageItem_NvgNouse
 		MsgTimer = 70*5
 		Return False
 	EndIf

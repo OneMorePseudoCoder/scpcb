@@ -104,33 +104,33 @@ Function UpdateMainMenu()
 			
 			Select Rand(0, 22)
 				Case 0, 2, 3
-					MenuStr = "DON'T BLINK"
+					MenuStr = I_Loc\Menu_Random_1
 				Case 4, 5
-					MenuStr = "Secure. Contain. Protect."
+					MenuStr = I_Loc\Menu_Random_2
 				Case 6, 7, 8
-					MenuStr = "You want happy endings? Fuck you."
+					MenuStr = I_Loc\Menu_Random_3
 				Case 9, 10, 11
-					MenuStr = "Sometimes we would have had time to scream."
+					MenuStr = I_Loc\Menu_Random_4
 				Case 12, 19
-					MenuStr = "NIL"
+					MenuStr = I_Loc\Menu_Random_5
 				Case 13
-					MenuStr = "NO"
+					MenuStr = I_Loc\Menu_Random_6
 				Case 14
-					MenuStr = "black white black white black white gray"
+					MenuStr = I_Loc\Menu_Random_7
 				Case 15
-					MenuStr = "Stone does not care"
+					MenuStr = I_Loc\Menu_Random_8
 				Case 16
-					MenuStr = "9341"
+					MenuStr = I_Loc\Menu_Random_9
 				Case 17
-					MenuStr = "It controls the doors"
+					MenuStr = I_Loc\Menu_Random_10
 				Case 18
-					MenuStr = "e8m106]af173o+079m895w914"
+					MenuStr = I_Loc\Menu_Random_11
 				Case 20
-					MenuStr = "It has taken over everything"
+					MenuStr = I_Loc\Menu_Random_12
 				Case 21
-					MenuStr = "The spiral is growing"
+					MenuStr = I_Loc\Menu_Random_13
 				Case 22
-					MenuStr = Chr(34)+"Some kind of gestalt effect due to massive reality damage."+Chr(34)
+					MenuStr = I_Loc\Menu_Random_14
 			End Select
 		EndIf
 	EndIf
@@ -161,7 +161,7 @@ Function UpdateMainMenu()
 			Local txt$
 			Select i
 				Case 0
-					txt = "NEW GAME"
+					txt = I_Loc\Menu_NewUpper
 					If temp Then
 						HasNumericSeed = UseNumericSeeds
 						If HasNumericSeed Then
@@ -212,19 +212,19 @@ Function UpdateMainMenu()
 						MainMenuTab = 1
 					EndIf
 				Case 1
-					txt = "LOAD GAME"
+					txt = I_Loc\Menu_LoadUpper
 					If temp Then
 						LoadSaveGames()
 						MainMenuTab = 2
 					EndIf
 				Case 2
-					txt = "MODS"
+					txt = I_Loc\Menu_Mods
 					If temp Then MainMenuTab = 8
 				Case 3
-					txt = "OPTIONS"
+					txt = I_Loc\Menu_OptionsUpper
 					If temp Then MainMenuTab = 3 : OnSliderID = 66
 				Case 4
-					txt = "QUIT"
+					txt = I_Loc\Menu_QuitUpper
 					If temp Then
 						StopChannel(CurrMusicStream)
 						End
@@ -248,7 +248,7 @@ Function UpdateMainMenu()
 		
 		DrawFrame(x, y, width, height)
 		
-		If DrawButton(x + width + 20 * MenuScale, y, 580 * MenuScale - width - 20 * MenuScale, height, "BACK", False, False, UpdatingMod<>Null) Then 
+		If DrawButton(x + width + 20 * MenuScale, y, 580 * MenuScale - width - 20 * MenuScale, height, I_Loc\Menu_BackUpper, False, False, UpdatingMod<>Null) Then 
 			Select MainMenuTab
 				Case 1
 					PutINIValue(OptionFile, "general", "intro enabled", IntroEnabled%)
@@ -295,7 +295,7 @@ Function UpdateMainMenu()
 				
 				Color(255, 255, 255)
 				SetFont Font2
-				Text(x + width / 2, y + height / 2, "NEW GAME", True, True)
+				Text(x + width / 2, y + height / 2, I_Loc\Menu_NewUpper, True, True)
 				
 				x = 160 * MenuScale
 				y = y + height + 20 * MenuScale
@@ -306,7 +306,7 @@ Function UpdateMainMenu()
 				
 				SetFont Font1
 				
-				Text (x + 20 * MenuScale, y + 20 * MenuScale, "Name:")
+				Text (x + 20 * MenuScale, y + 20 * MenuScale, I_Loc\NewGame_Name)
 				CurrSave = InputBox(x + 150 * MenuScale, y + 15 * MenuScale, 200 * MenuScale, 30 * MenuScale, CurrSave, 1)
 				CurrSave = Left(CurrSave, 15)
 				CurrSave = Replace(CurrSave,":","")
@@ -322,7 +322,7 @@ Function UpdateMainMenu()
 				
 				Color 255,255,255
 				If SelectedMap = "" Then
-					Text (x + 20 * MenuScale, y + 60 * MenuScale, "Map seed:")
+					Text (x + 20 * MenuScale, y + 60 * MenuScale, I_Loc\Menu_Seed)
 					If HasNumericSeed Then
 						Local inputBoxSeed$ = InputBox(x+150*MenuScale, y+55*MenuScale, 200*MenuScale, 30*MenuScale, Str(RandomSeedNumeric), 3)
 						If Instr(inputBoxSeed, "-", 2) <> 0 Then
@@ -334,7 +334,7 @@ Function UpdateMainMenu()
 						RandomSeed = Left(InputBox(x+150*MenuScale, y+55*MenuScale, 200*MenuScale, 30*MenuScale, RandomSeed, 3),15)
 					EndIf
 				Else
-					Text (x + 20 * MenuScale, y + 60 * MenuScale, "Selected map:")
+					Text (x + 20 * MenuScale, y + 60 * MenuScale, I_Loc\Menu_Map)
 					Color (255, 255, 255)
 					Rect(x+150*MenuScale, y+55*MenuScale, 200*MenuScale, 30*MenuScale)
 					Color (0, 0, 0)
@@ -347,16 +347,16 @@ Function UpdateMainMenu()
 						Text(x+150*MenuScale + 100*MenuScale, y+55*MenuScale + 15*MenuScale, SelectedMap, True, True)
 					EndIf
 					
-					If DrawButton(x+370*MenuScale, y+55*MenuScale, 120*MenuScale, 30*MenuScale, "Deselect", False) Then
+					If DrawButton(x+370*MenuScale, y+55*MenuScale, 120*MenuScale, 30*MenuScale, I_Loc\NewGame_Deselect, False) Then
 						SelectedMap=""
 					EndIf
 				EndIf	
 				
-				Text(x + 20 * MenuScale, y + 110 * MenuScale, "Enable intro sequence:")
+				Text(x + 20 * MenuScale, y + 110 * MenuScale, I_Loc\NewGame_Enableintro)
 				IntroEnabled = DrawTick(x + 280 * MenuScale, y + 110 * MenuScale, IntroEnabled)	
 				
 				;Local modeName$, modeDescription$, selectedDescription$
-				Text (x + 20 * MenuScale, y + 150 * MenuScale, "Difficulty:")				
+				Text (x + 20 * MenuScale, y + 150 * MenuScale, I_Loc\Menu_Difficulty)				
 				For i = SAFE To CUSTOM
 					If DrawTick(x + 20 * MenuScale, y + (180+30*i) * MenuScale, (SelectedDifficulty = difficulties(i))) Then SelectedDifficulty = difficulties(i)
 					Color(difficulties(i)\r,difficulties(i)\g,difficulties(i)\b)
@@ -368,7 +368,7 @@ Function UpdateMainMenu()
 				
 				If SelectedDifficulty\customizable Then
 					SelectedDifficulty\permaDeath =  DrawTick(x + 160 * MenuScale, y + 165 * MenuScale, SelectedDifficulty\permaDeath)
-					Text(x + 200 * MenuScale, y + 165 * MenuScale, "Permadeath")
+					Text(x + 200 * MenuScale, y + 165 * MenuScale, I_Loc\Difficulty_Permadeath)
 					
 					If DrawTick(x + 160 * MenuScale, y + 195 * MenuScale, SelectedDifficulty\saveType = SAVEANYWHERE And (Not SelectedDifficulty\permaDeath)) Then 
 						SelectedDifficulty\saveType = SAVEANYWHERE
@@ -377,10 +377,10 @@ Function UpdateMainMenu()
 						SelectedDifficulty\saveType = SAVEONSCREENS
 					EndIf
 					
-					Text(x + 200 * MenuScale, y + 195 * MenuScale, "Save anywhere")	
+					Text(x + 200 * MenuScale, y + 195 * MenuScale, I_Loc\Difficulty_Saveanywhere)	
 					
 					SelectedDifficulty\aggressiveNPCs =  DrawTick(x + 160 * MenuScale, y + 225 * MenuScale, SelectedDifficulty\aggressiveNPCs)
-					Text(x + 200 * MenuScale, y + 225 * MenuScale, "Aggressive NPCs")
+					Text(x + 200 * MenuScale, y + 225 * MenuScale, I_Loc\Difficulty_Aggressivenpcs)
 					
 					;Other factor's difficulty
 					Color 255,255,255
@@ -398,27 +398,27 @@ Function UpdateMainMenu()
 					Color 255,255,255
 					Select SelectedDifficulty\otherFactors
 						Case EASY
-							Text(x + 200 * MenuScale, y + 255 * MenuScale, "Other difficulty factors: Easy")
+							Text(x + 200 * MenuScale, y + 255 * MenuScale, Format(I_Loc\Difficulty_Other, I_Loc\Difficulty_OtherEasy))
 						Case NORMAL
-							Text(x + 200 * MenuScale, y + 255 * MenuScale, "Other difficulty factors: Normal")
+							Text(x + 200 * MenuScale, y + 255 * MenuScale, Format(I_Loc\Difficulty_Other, I_Loc\Difficulty_OtherNormal))
 						Case HARD
-							Text(x + 200 * MenuScale, y + 255 * MenuScale, "Other difficulty factors: Hard")
+							Text(x + 200 * MenuScale, y + 255 * MenuScale, Format(I_Loc\Difficulty_Other, I_Loc\Difficulty_OtherHard))
 					End Select
 				Else
 					RowText(SelectedDifficulty\description, x+160*MenuScale, y+165*MenuScale, (410-20)*MenuScale, 140*MenuScale)					
 				EndIf
 				
-				If DrawButton(x, y + height + 20 * MenuScale, 160 * MenuScale, 70 * MenuScale, "Load map", False) Then
+				If DrawButton(x, y + height + 20 * MenuScale, 160 * MenuScale, 70 * MenuScale, I_Loc\NewGame_Loadmap, False) Then
 					MainMenuTab = 4
 					LoadSavedMaps()
 				EndIf
 				
 				SetFont Font2
 				
-				If DrawButton(x + 420 * MenuScale, y + height + 20 * MenuScale, 160 * MenuScale, 70 * MenuScale, "START", False) Then
+				If DrawButton(x + 420 * MenuScale, y + height + 20 * MenuScale, 160 * MenuScale, 70 * MenuScale, I_Loc\NewGame_Start, False) Then
 					TimerStopped = True
 
-					If CurrSave = "" Then CurrSave = "untitled"
+					If CurrSave = "" Then CurrSave = I_Loc\NewGame_Untitled
 					Local SaveName$ = CurrSave
 					
 					Local SameFound% = 1
@@ -469,7 +469,7 @@ Function UpdateMainMenu()
 				
 				Color(255, 255, 255)
 				SetFont Font2
-				Text(x + width / 2, y + height / 2, "LOAD GAME", True, True)
+				Text(x + width / 2, y + height / 2, I_Loc\Menu_LoadUpper, True, True)
 				
 				x = 160 * MenuScale
 				y = y + height + 20 * MenuScale
@@ -501,7 +501,7 @@ Function UpdateMainMenu()
 				
 				DrawFrame(x+50*MenuScale,y+510*MenuScale,width-100*MenuScale,55*MenuScale)
 				
-				Text(x+(width/2.0),y+536*MenuScale,"Page "+Int(Max((CurrLoadGamePage+1),1))+"/"+Int(Max((Int(Ceil(Float(SaveGameAmount)/6.0))),1)),True,True)
+				Text(x+(width/2.0),y+536*MenuScale,Format(I_Loc\Menu_Page, Int(Max((CurrLoadGamePage+1),1)), Int(Max((Int(Ceil(Float(SaveGameAmount)/6.0))),1))),True,True)
 				
 				SetFont Font1
 				
@@ -534,9 +534,9 @@ Function UpdateMainMenu()
 								If SaveGameVersion(i - 1) <> CompatibleNumber Then
 									DrawFrame(x + 280 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale)
 									Color(255, 0, 0)
-									Text(x + 330 * MenuScale, y + 34 * MenuScale, "Load", True, True)
+									Text(x + 330 * MenuScale, y + 34 * MenuScale, I_Loc\LoadGame_Load, True, True)
 								Else
-									If DrawButton(x + 280 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, "Load", False) Then
+									If DrawButton(x + 280 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\LoadGame_Load, False) Then
 										LoadEntities()
 										LoadAllSounds()
 										LoadGame(SaveGames(i - 1))
@@ -547,7 +547,7 @@ Function UpdateMainMenu()
 									EndIf
 								EndIf
 								
-								If DrawButton(x + 400 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, "Delete", False) Then
+								If DrawButton(x + 400 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\LoadGame_Delete, False) Then
 									SaveMSG = SaveGames(i - 1)
 									DebugLog SaveMSG
 									Exit
@@ -559,11 +559,11 @@ Function UpdateMainMenu()
 								Else
 									Color(100, 100, 100)
 								EndIf
-								Text(x + 330 * MenuScale, y + 34 * MenuScale, "Load", True, True)
+								Text(x + 330 * MenuScale, y + 34 * MenuScale, I_Loc\LoadGame_Load, True, True)
 								
 								DrawFrame(x + 400 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale)
 								Color(100, 100, 100)
-								Text(x + 450 * MenuScale, y + 34 * MenuScale, "Delete", True, True)
+								Text(x + 450 * MenuScale, y + 34 * MenuScale, I_Loc\LoadGame_Delete, True, True)
 							EndIf
 							
 							y = y + 80 * MenuScale
@@ -576,14 +576,14 @@ Function UpdateMainMenu()
 						x = 740 * MenuScale
 						y = 376 * MenuScale
 						DrawFrame(x, y, 420 * MenuScale, 200 * MenuScale)
-						RowText("Are you sure you want to delete this save?", x + 20 * MenuScale, y + 15 * MenuScale, 400 * MenuScale, 200 * MenuScale)
+						RowText(I_Loc\LoadGame_DeleteConfirm, x + 20 * MenuScale, y + 15 * MenuScale, 400 * MenuScale, 200 * MenuScale)
 						;Text(x + 20 * MenuScale, y + 15 * MenuScale, "Are you sure you want to delete this save?")
-						If DrawButton(x + 50 * MenuScale, y + 150 * MenuScale, 100 * MenuScale, 30 * MenuScale, "Yes", False) Then
+						If DrawButton(x + 50 * MenuScale, y + 150 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Menu_Yes, False) Then
 							DeleteFile(CurrentDir() + SavePath + SaveMSG + ".cbsav")
 							SaveMSG = ""
 							LoadSaveGames()
 						EndIf
-						If DrawButton(x + 250 * MenuScale, y + 150 * MenuScale, 100 * MenuScale, 30 * MenuScale, "No", False) Then
+						If DrawButton(x + 250 * MenuScale, y + 150 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Menu_No, False) Then
 							SaveMSG = ""
 						EndIf
 					EndIf
@@ -603,7 +603,7 @@ Function UpdateMainMenu()
 				
 				Color(255, 255, 255)
 				SetFont Font2
-				Text(x + width / 2, y + height / 2, "OPTIONS", True, True)
+				Text(x + width / 2, y + height / 2, I_Loc\Menu_OptionsUpper, True, True)
 				
 				x = 160 * MenuScale
 				y = y + height + 20 * MenuScale
@@ -623,10 +623,10 @@ Function UpdateMainMenu()
 				EndIf
 				
 				Color 255,255,255
-				If DrawButton(x+20*MenuScale,y+15*MenuScale,width/5,height/2, "GRAPHICS", False) Then MainMenuTab = 3
-				If DrawButton(x+160*MenuScale,y+15*MenuScale,width/5,height/2, "AUDIO", False) Then MainMenuTab = 5
-				If DrawButton(x+300*MenuScale,y+15*MenuScale,width/5,height/2, "CONTROLS", False) Then MainMenuTab = 6
-				If DrawButton(x+440*MenuScale,y+15*MenuScale,width/5,height/2, "ADVANCED", False) Then MainMenuTab = 7
+				If DrawButton(x+20*MenuScale,y+15*MenuScale,width/5,height/2, I_Loc\Option_Graphics, False) Then MainMenuTab = 3
+				If DrawButton(x+160*MenuScale,y+15*MenuScale,width/5,height/2, I_Loc\Option_Audio, False) Then MainMenuTab = 5
+				If DrawButton(x+300*MenuScale,y+15*MenuScale,width/5,height/2, I_Loc\Option_Controls, False) Then MainMenuTab = 6
+				If DrawButton(x+440*MenuScale,y+15*MenuScale,width/5,height/2, I_Loc\Option_Advanced, False) Then MainMenuTab = 7
 				
 				SetFont Font1
 				y = y + 70 * MenuScale
@@ -652,7 +652,7 @@ Function UpdateMainMenu()
 					y=y+20*MenuScale
 					
 					Color 255,255,255
-					Text(x + 20 * MenuScale, y, "VSync:")
+					Text(x + 20 * MenuScale, y, I_Loc\OptionName_Vsync)
 					Vsync% = DrawTick(x + 310 * MenuScale, y + MenuScale, Vsync%)
 					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"vsync")
@@ -661,7 +661,7 @@ Function UpdateMainMenu()
 					y=y+30*MenuScale
 					
 					Color 255,255,255
-					Text(x + 20 * MenuScale, y, "Anti-aliasing:")
+					Text(x + 20 * MenuScale, y, I_Loc\OptionName_Antialias)
 					Opt_AntiAlias = DrawTick(x + 310 * MenuScale, y + MenuScale, Opt_AntiAlias%)
 					;Text(x + 20 * MenuScale, y + 15 * MenuScale, "(fullscreen mode only)")
 					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
@@ -673,7 +673,7 @@ Function UpdateMainMenu()
 					;Local prevGamma# = ScreenGamma
 					ScreenGamma = (SlideBar(x + 310*MenuScale, y+6*MenuScale, 150*MenuScale, ScreenGamma*50.0, 1)/50.0)
 					Color 255,255,255
-					Text(x + 20 * MenuScale, y, "Screen gamma:")
+					Text(x + 20 * MenuScale, y, I_Loc\OptionName_Gamma)
 					If (MouseOn(x+310*MenuScale,y+6*MenuScale,150*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=1
 						DrawOptionsTooltip(tx,ty,tw,th,"gamma",ScreenGamma)
 					EndIf
@@ -681,7 +681,7 @@ Function UpdateMainMenu()
 					y=y+50*MenuScale
 					
 					Color 255,255,255
-					Text(x + 20 * MenuScale, y, "Texture LOD Bias:")
+					Text(x + 20 * MenuScale, y, I_Loc\OptionName_Texlod)
 					TextureDetails = Slider5(x+310*MenuScale,y+6*MenuScale,150*MenuScale,TextureDetails,3,"0.8","0.4","0.0","-0.4","-0.8")
 					Select TextureDetails%
 						Case 0
@@ -703,7 +703,7 @@ Function UpdateMainMenu()
 					y=y+50*MenuScale
 					
 					Color 255,255,255
-					Text(x + 20 * MenuScale, y, "Save textures in the VRAM:")
+					Text(x + 20 * MenuScale, y, I_Loc\OptionName_Vram)
 					EnableVRam = DrawTick(x + 310 * MenuScale, y + MenuScale, EnableVRam)
 					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"vram")
@@ -713,7 +713,7 @@ Function UpdateMainMenu()
 
 					HUDOffsetScale = SlideBar(x + 310*MenuScale, y+6*MenuScale,150*MenuScale, HUDOffsetScale*100, 5)/100
 					Color 255,255,255
-					Text(x + 20 * MenuScale, y, "HUD offset:")
+					Text(x + 20 * MenuScale, y, I_Loc\OptionName_Hudoffset)
 					If (MouseOn(x+310*MenuScale,y+6*MenuScale,150*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=5
 						DrawOptionsTooltip(tx,ty,tw,th,"hudoffset")
 					EndIf
@@ -724,9 +724,9 @@ Function UpdateMainMenu()
 					SlideBarFOV = (SlideBar(x + 310*MenuScale, y+6*MenuScale,150*MenuScale, SlideBarFOV*2.0, 4)/2.0)
 					FOV = Int(SlideBarFOV+40)
 					Color 255,255,255
-					Text(x + 20 * MenuScale, y, "Field of view:")
+					Text(x + 20 * MenuScale, y, I_Loc\OptionName_fov)
 					Color 255,255,0
-					Text(x + 25 * MenuScale, y + 25 * MenuScale, FOV+" FOV")
+					Text(x + 25 * MenuScale, y + 25 * MenuScale, FOV+"°")
 					If (MouseOn(x+310*MenuScale,y+6*MenuScale,150*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=4
 						DrawOptionsTooltip(tx,ty,tw,th,"fov")
 					EndIf
@@ -741,7 +741,7 @@ Function UpdateMainMenu()
 					
 					MusicVolume = (SlideBar(x + 310*MenuScale, y-4*MenuScale, 150*MenuScale, MusicVolume*100.0, 1)/100.0)
 					Color 255,255,255
-					Text(x + 20 * MenuScale, y, "Music volume:")
+					Text(x + 20 * MenuScale, y, I_Loc\OptionName_Musicvol)
 					If (MouseOn(x+310*MenuScale,y-4*MenuScale,150*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=1
 						DrawOptionsTooltip(tx,ty,tw,th,"musicvol",MusicVolume)
 					EndIf
@@ -752,7 +752,7 @@ Function UpdateMainMenu()
 					PrevSFXVolume = (SlideBar(x + 310*MenuScale, y-4*MenuScale, 150*MenuScale, SFXVolume*100.0, 2)/100.0)
 					SFXVolume = PrevSFXVolume
 					Color 255,255,255
-					Text(x + 20 * MenuScale, y, "Sound volume:")
+					Text(x + 20 * MenuScale, y, I_Loc\OptionName_Soundvol)
 					If (MouseOn(x+310*MenuScale,y-4*MenuScale,150*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=2
 						DrawOptionsTooltip(tx,ty,tw,th,"soundvol",PrevSFXVolume)
 					EndIf
@@ -769,7 +769,7 @@ Function UpdateMainMenu()
 					y = y + 30*MenuScale
 					
 					Color 255,255,255
-					Text x + 20 * MenuScale, y, "Sound auto-release:"
+					Text x + 20 * MenuScale, y, I_Loc\OptionName_Sfxautorelease
 					EnableSFXRelease = DrawTick(x + 310 * MenuScale, y + MenuScale, EnableSFXRelease)
 					If EnableSFXRelease_Prev% <> EnableSFXRelease
 						If EnableSFXRelease%
@@ -800,7 +800,7 @@ Function UpdateMainMenu()
 					y = y + 30*MenuScale
 					
 					Color 255,255,255
-					Text x + 20 * MenuScale, y, "Enable user tracks:"
+					Text x + 20 * MenuScale, y, I_Loc\OptionName_Usertrack
 					EnableUserTracks = DrawTick(x + 310 * MenuScale, y + MenuScale, EnableUserTracks)
 					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"usertrack")
@@ -809,7 +809,7 @@ Function UpdateMainMenu()
 					If EnableUserTracks
 						y = y + 30 * MenuScale
 						Color 255,255,255
-						Text x + 20 * MenuScale, y, "User track mode:"
+						Text x + 20 * MenuScale, y, I_Loc\OptionName_Usertrackmode
 						UserTrackMode = DrawTick(x + 310 * MenuScale, y + MenuScale, UserTrackMode)
 						If UserTrackMode
 							Text x + 350 * MenuScale, y + MenuScale, "Repeat"
@@ -819,7 +819,7 @@ Function UpdateMainMenu()
 						If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 							DrawOptionsTooltip(tx,ty,tw,th,"usertrackmode")
 						EndIf
-						If DrawButton(x + 20 * MenuScale, y + 30 * MenuScale, 250 * MenuScale, 25 * MenuScale, "Scan for User Tracks",False)
+						If DrawButton(x + 20 * MenuScale, y + 30 * MenuScale, 250 * MenuScale, 25 * MenuScale, I_Loc\OptionName_Usertrackscan,False)
 							DebugLog "User Tracks Check Started"
 							
 							UserTrackCheck% = 0
@@ -861,7 +861,7 @@ Function UpdateMainMenu()
 					
 					MouseSens = (SlideBar(x + 310*MenuScale, y-4*MenuScale, 150*MenuScale, (MouseSens+0.5)*100.0, 1)/100.0)-0.5
 					Color(255, 255, 255)
-					Text(x + 20 * MenuScale, y, "Mouse sensitivity:")
+					Text(x + 20 * MenuScale, y, I_Loc\OptionName_Mousesensitivity)
 					If (MouseOn(x+310*MenuScale,y-4*MenuScale,150*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=1
 						DrawOptionsTooltip(tx,ty,tw,th,"mousesensitivity",MouseSens)
 					EndIf
@@ -869,7 +869,7 @@ Function UpdateMainMenu()
 					y = y + 40*MenuScale
 					
 					Color(255, 255, 255)
-					Text(x + 20 * MenuScale, y, "Invert mouse Y-axis:")
+					Text(x + 20 * MenuScale, y, I_Loc\OptionName_Mouseinvert)
 					InvertMouse = DrawTick(x + 310 * MenuScale, y + MenuScale, InvertMouse)
 					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"mouseinvert")
@@ -879,7 +879,7 @@ Function UpdateMainMenu()
 					
 					MouseSmooth = (SlideBar(x + 310*MenuScale, y-4*MenuScale, 150*MenuScale, (MouseSmooth)*50.0, 2)/50.0)
 					Color(255, 255, 255)
-					Text(x + 20 * MenuScale, y, "Mouse smoothing:")
+					Text(x + 20 * MenuScale, y, I_Loc\OptionName_Mousesmoothing)
 					If (MouseOn(x+310*MenuScale,y-4*MenuScale,150*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=2
 						DrawOptionsTooltip(tx,ty,tw,th,"mousesmoothing",MouseSmooth)
 					EndIf
@@ -953,7 +953,7 @@ Function UpdateMainMenu()
 					y = y + 20*MenuScale
 					
 					Color 255,255,255				
-					Text(x + 20 * MenuScale, y, "Show HUD:")	
+					Text(x + 20 * MenuScale, y, I_Loc\OptionName_Showhud)	
 					HUDenabled = DrawTick(x + 310 * MenuScale, y + MenuScale, HUDenabled)
 					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"hud")
@@ -962,7 +962,7 @@ Function UpdateMainMenu()
 					y=y+30*MenuScale
 					
 					Color 255,255,255
-					Text(x + 20 * MenuScale, y, "Enable console:")
+					Text(x + 20 * MenuScale, y, I_Loc\OptionName_Console)
 					CanOpenConsole = DrawTick(x + 310 * MenuScale, y + MenuScale, CanOpenConsole)
 					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"consoleenable")
@@ -971,7 +971,7 @@ Function UpdateMainMenu()
 					y = y + 30*MenuScale
 					
 					Color 255,255,255
-					Text(x + 20 * MenuScale, y, "Open console on error:")
+					Text(x + 20 * MenuScale, y, I_Loc\OptionName_Consoleerror)
 					ConsoleOpening = DrawTick(x + 310 * MenuScale, y + MenuScale, ConsoleOpening)
 					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"consoleerror")
@@ -980,7 +980,7 @@ Function UpdateMainMenu()
 					y = y + 30*MenuScale
 
 					Color 255,255,255
-					Text(x + 20 * MenuScale, y, "Speed run mode:")
+					Text(x + 20 * MenuScale, y, I_Loc\OptionName_Speedrunmode)
 					SpeedRunMode = DrawTick(x + 310 * MenuScale, y + MenuScale, SpeedRunMode)
 					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"speedrunmode")
@@ -989,7 +989,7 @@ Function UpdateMainMenu()
 					y = y + 30*MenuScale
 
 					Color 255,255,255
-					Text(x + 20 * MenuScale, y, "Use numeric seeds:")
+					Text(x + 20 * MenuScale, y, I_Loc\OptionName_Numericseeds)
 					UseNumericSeeds = DrawTick(x + 310 * MenuScale, y + MenuScale, UseNumericSeeds)
 					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"numericseeds")
@@ -998,7 +998,7 @@ Function UpdateMainMenu()
 					y = y + 50*MenuScale
 					
 					Color 255,255,255
-					Text(x + 20 * MenuScale, y, "Achievement popups:")
+					Text(x + 20 * MenuScale, y, I_Loc\OptionName_Achpopup)
 					AchvMSGenabled% = DrawTick(x + 310 * MenuScale, y + MenuScale, AchvMSGenabled%)
 					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"achpopup")
@@ -1007,7 +1007,7 @@ Function UpdateMainMenu()
 					y = y + 50*MenuScale
 
 					Color 255,255,255
-					Text(x + 20 * MenuScale, y, "Use launcher:")
+					Text(x + 20 * MenuScale, y, I_Loc\OptionName_Launcher)
 					LauncherEnabled% = DrawTick(x + 310 * MenuScale, y + MenuScale, LauncherEnabled%)
 					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"launcher")
@@ -1016,7 +1016,7 @@ Function UpdateMainMenu()
 					y = y + 50*MenuScale
 					
 					Color 255,255,255
-					Text(x + 20 * MenuScale, y, "Show FPS:")
+					Text(x + 20 * MenuScale, y, I_Loc\OptionName_Showfps)
 					ShowFPS% = DrawTick(x + 310 * MenuScale, y + MenuScale, ShowFPS%)
 					If MouseOn(x+310*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"showfps")
@@ -1025,7 +1025,7 @@ Function UpdateMainMenu()
 					y = y + 30*MenuScale
 					
 					Color 255,255,255
-					Text(x + 20 * MenuScale, y, "Framelimit:")
+					Text(x + 20 * MenuScale, y, I_Loc\OptionName_Framelimit)
 					Color 255,255,255
 					If DrawTick(x + 310 * MenuScale, y, CurrFrameLimit > 0.0) Then
 						;CurrFrameLimit# = (SlideBar(x + 150*MenuScale, y+30*MenuScale, 100*MenuScale, CurrFrameLimit#*50.0, 1)/50.0)
@@ -1100,7 +1100,7 @@ Function UpdateMainMenu()
 				
 				DrawFrame(x+50*MenuScale,y+510*MenuScale,width-100*MenuScale,55*MenuScale)
 				
-				Text(x+(width/2.0),y+536*MenuScale,"Page "+Int(Max((CurrLoadGamePage+1),1))+"/"+Int(Max((Int(Ceil(Float(SavedMapsAmount)/6.0))),1)),True,True)
+				Text(x+(width/2.0),y+536*MenuScale,Format(I_Loc\Menu_Page, Int(Max((CurrLoadGamePage+1),1)), Int(Max((Int(Ceil(Float(SavedMapsAmount)/6.0))),1))),True,True)
 				
 				SetFont Font1
 				
@@ -1122,7 +1122,7 @@ Function UpdateMainMenu()
 							Text(x + 20 * MenuScale, y + 10 * MenuScale, SavedMaps(i - 1))
 							Text(x + 20 * MenuScale, y + (10+27) * MenuScale, SavedMapsAuthor(i - 1))
 							
-							If DrawButton(x + 400 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, "Load", False) Then
+							If DrawButton(x + 400 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\LoadGame_Load, False) Then
 								SelectedMap=SavedMaps(i - 1)
 								MainMenuTab = 1
 							EndIf
@@ -1153,7 +1153,7 @@ Function UpdateMainMenu()
 				
 				Color(255, 255, 255)
 				SetFont Font2
-				Text(x + width / 2, y + height / 2, "MODS", True, True)
+				Text(x + width / 2, y + height / 2, I_Loc\Menu_Mods, True, True)
 				
 				x = 160 * MenuScale
 				y = y + height + 20 * MenuScale
@@ -1183,7 +1183,7 @@ Function UpdateMainMenu()
 				
 				DrawFrame(x+50*MenuScale,y+510*MenuScale,width-100*MenuScale,55*MenuScale)
 				
-				Text(x+(width/2.0),y+536*MenuScale,"Page "+Int(Max((CurrLoadGamePage+1),1))+"/"+Int(Max((Int(Ceil(Float(ModCount)/6.0))),1)),True,True)
+				Text(x+(width/2.0),y+536*MenuScale,Format(I_Loc\Menu_Page, Int(Max((CurrLoadGamePage+1),1)), Int(Max((Int(Ceil(Float(ModCount)/6.0))),1))),True,True)
 				
 				SetFont Font1
 				
@@ -1279,18 +1279,18 @@ Function UpdateMainMenu()
 								Else
 									Local buttonsInactive% = UpdateModErrorCode <> 0 Or ModUIState <> 0 Or UpdatingMod <> Null Or (Not SteamActive)
 									If m\SteamWorkshopId = "" Then
-										If DrawButton(x + 370 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, "Upload", False, False, buttonsInactive) Then
+										If DrawButton(x + 370 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Mods_Upload, False, False, buttonsInactive) Then
 											ModUIState = 1
 											SelectedMod = m
 										EndIf
 									Else
 										If m\IsUserOwner Then
-											If DrawButton(x + 370 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, "Update", False, False, buttonsInactive) Then
+											If DrawButton(x + 370 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Mods_Update, False, False, buttonsInactive) Then
 												ModUIState = 2
 												SelectedMod = m
 											EndIf
 										Else
-											If DrawButton(x + 370 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, "Visit", False, False, buttonsInactive) Then
+											If DrawButton(x + 370 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Mods_Visit, False, False, buttonsInactive) Then
 												VisitModPage(m)
 											EndIf
 										EndIf
@@ -1322,49 +1322,49 @@ Function UpdateMainMenu()
 					If UpdateModErrorCode <> 0
 						DrawFrame(x, y, 420 * MenuScale, 200 * MenuScale)
 						Color(255, 0, 0)
-						RowText("Failed to update mod (" + GetWorkshopErrorCodeStr(UpdateModErrorCode) + ")", x + 20 * MenuScale, y + 15 * MenuScale, 400 * MenuScale, 200 * MenuScale)
-						If DrawButton(x + 150 * MenuScale, y + 150 * MenuScale, 100 * MenuScale, 30 * MenuScale, "Ok", False) Then
+						RowText(Format(I_Loc\Mods_UpdateFailed, GetWorkshopErrorCodeStr(UpdateModErrorCode)), x + 20 * MenuScale, y + 15 * MenuScale, 400 * MenuScale, 200 * MenuScale)
+						If DrawButton(x + 150 * MenuScale, y + 150 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Menu_Ok, False) Then
 							UpdateModErrorCode = 0
 						EndIf
 					Else If ModUIState = 1 Then
 						DrawFrame(x, y, 420 * MenuScale, 200 * MenuScale)
-						RowText("By submitting this item, you agree to the Steam workshop terms of service. Are you sure you want to upload it?", x + 20 * MenuScale, y + 15 * MenuScale, 400 * MenuScale, 200 * MenuScale)
-						If DrawButton(x + 25 * MenuScale, y + 150 * MenuScale, 100 * MenuScale, 30 * MenuScale, "Yes", False) Then
+						RowText(I_Loc\Mods_UploadConfirm, x + 20 * MenuScale, y + 15 * MenuScale, 400 * MenuScale, 200 * MenuScale)
+						If DrawButton(x + 25 * MenuScale, y + 150 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Menu_Yes, False) Then
 							UploadMod(SelectedMod)
 							ModUIState = 0
 							SelectedMod = Null
 						EndIf
-						If DrawButton(x + 150 * MenuScale, y + 150 * MenuScale, 125 * MenuScale, 30 * MenuScale, "View terms", False) Then
+						If DrawButton(x + 150 * MenuScale, y + 150 * MenuScale, 125 * MenuScale, 30 * MenuScale, I_Loc\Mods_Viewterms, False) Then
 							ExecFile("https://steamcommunity.com/sharedfiles/workshoplegalagreement")
 						EndIf
-						If DrawButton(x + 300 * MenuScale, y + 150 * MenuScale, 100 * MenuScale, 30 * MenuScale, "No", False) Then
+						If DrawButton(x + 300 * MenuScale, y + 150 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Menu_No, False) Then
 							ModUIState = 0
 							SelectedMod = Null
 						EndIf
 					Else If ModUIState = 2 Then
 						DrawFrame(x, y, 420 * MenuScale, 200 * MenuScale)
-						RowText("Are you sure you want to update this item? If so, you can enter a list of changes below:", x + 20 * MenuScale, y + 15 * MenuScale, 400 * MenuScale, 200 * MenuScale)
+						RowText(I_Loc\Mods_UpdateConfirm, x + 20 * MenuScale, y + 15 * MenuScale, 400 * MenuScale, 200 * MenuScale)
 						ModChangelog = InputBox(x + 20 * MenuScale, y + 80 * MenuScale, 380 * MenuScale, 30 * MenuScale, ModChangelog, 99)
-						Text(x + 20 * MenuScale, y + 125 * MenuScale, "Keep current description?")
+						Text(x + 20 * MenuScale, y + 125 * MenuScale, I_Loc\Mods_Keepdesc)
 						ShouldKeepModDescription = DrawTick(x + 325 * MenuScale, y + 121 * MenuScale, ShouldKeepModDescription)
-						If DrawButton(x + 50 * MenuScale, y + 155 * MenuScale, 100 * MenuScale, 30 * MenuScale, "Yes", False) Then
+						If DrawButton(x + 50 * MenuScale, y + 155 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Menu_Yes, False) Then
 							UpdateMod(SelectedMod, ModChangelog)
 							ModChangelog = ""
 							ModUIState = 0
 							SelectedMod = Null
 						EndIf
-						If DrawButton(x + 250 * MenuScale, y + 155 * MenuScale, 100 * MenuScale, 30 * MenuScale, "No", False) Then
+						If DrawButton(x + 250 * MenuScale, y + 155 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Menu_No, False) Then
 							ModChangelog = ""
 							ModUIState = 0
 							SelectedMod = Null
 						EndIf
 					Else
-						If DrawButton(x + 10 * MenuScale, y, 150 * MenuScale, 30 * MenuScale, "Reload mods", False, False, UpdatingMod<>Null) Then
+						If DrawButton(x + 10 * MenuScale, y, 150 * MenuScale, 30 * MenuScale, I_Loc\Mods_Reloadmods, False, False, UpdatingMod<>Null) Then
 							SerializeMods()
 							ReloadMods()
 						EndIf
 
-						If DrawButton(x + 10 * MenuScale, y + 40 * MenuScale, 150 * MenuScale, 30 * MenuScale, "Reload game", False, False, UpdatingMod<>Null) Then
+						If DrawButton(x + 10 * MenuScale, y + 40 * MenuScale, 150 * MenuScale, 30 * MenuScale, I_Loc\Mods_Reloadgame, False, False, UpdatingMod<>Null) Then
 							SerializeMods()
 							Restart()
 							Return
@@ -1373,8 +1373,7 @@ Function UpdateMainMenu()
 						If DrawButton(x + 10 * MenuScale, y + 80 * MenuScale, 150 * MenuScale, 50 * MenuScale, "", False, False, UpdatingMod<>Null) Then
 							ExecFile("Mods")
 						EndIf
-						Text(x + (10 + 150 / 2) * MenuScale, y + (80 + 50 / 2 - 10) * MenuScale, "Open local", True, True)
-						Text(x + (10 + 150 / 2) * MenuScale, y + (80 + 50 / 2 + 10) * MenuScale, "mods folder", True, True)
+						RowText(I_Loc\Mods_Openlocal, x + 10 * MenuScale, y + (80 + 10) * MenuScale, 150 * MenuScale, (50 - 15) * MenuScale, True)
 					EndIf
 				EndIf
 
@@ -1526,7 +1525,7 @@ Function UpdateLauncher()
 		Local x% = 20
 		Local y% = 240 - 65
 
-		Text(x, y, "Resolution: ")
+		Text(x, y, I_Loc\Launcher_Resolution)
 
 		x = x + 130
 		y = y - 5
@@ -1587,7 +1586,7 @@ Function UpdateLauncher()
 		x = 30
 		y = 369
 		Rect(x - 10, y, 340, 95)
-		Text(x - 10, y - 25, "Graphics:")
+		Text(x - 10, y - 25, I_Loc\Launcher_Graphics)
 		
 		y=y+10
 		For i = 1 To gfxDriverCount
@@ -1616,10 +1615,9 @@ Function UpdateLauncher()
 		Bit16Mode = DrawTick(40 + 430 - 15, 260 - 55 + 65 + 8, Bit16Mode,lock%)
 		LauncherEnabled = DrawTick(40 + 430 - 15, 260 - 55 + 95 + 8, LauncherEnabled)
 
-		Text(40 + 430 + 15, 262 - 55 + 5 - 8, "Fullscreen")
+		Text(40 + 430 + 15, 262 - 55 + 5 - 8, I_Loc\Launcher_FullscreenExclusive)
 		Color 255, 255, 255
-		Text(40 + 430 + 15, 262 - 55 + 35 - 8, "Borderless",False,False)
-		Text(40 + 430 + 15, 262 - 55 + 35 + 12, "windowed mode",False,False)
+		RowText(I_Loc\Launcher_Fullscreen, 40 + 430 + 15, 262 - 55 + 35 - 6, 150, 50)
 
 		If BorderlessWindowed Or (Not Fullscreen)
  		   Color 255, 0, 0
@@ -1628,29 +1626,29 @@ Function UpdateLauncher()
 		    Color 255, 255, 255
 		EndIf
 
-		Text(40 + 430 + 15, 262 - 55 + 65 + 8, "16 Bit")
+		Text(40 + 430 + 15, 262 - 55 + 65 + 8, I_Loc\Launcher_16bit)
 		Color 255, 255, 255
-		Text(40 + 430 + 15, 262 - 55 + 95 + 8, "Use launcher")
+		Text(40 + 430 + 15, 262 - 55 + 95 + 8, I_Loc\Launcher_Launcher)
 		
 		gfxWidth% = GfxModeWidthsByAspectRatio(SelectedAspectRatio, SelectedGfxMode) : gfxHeight% = GfxModeHeightsByAspectRatio(SelectedAspectRatio, SelectedGfxMode)
 
 		If Fullscreen
-			Text(260 + 15, 262 - 55 + 140, "Current Resolution: "+gfxWidth + "x" + gfxHeight + "," + (16+(16*(Not Bit16Mode))))
+			Text(260 + 15, 262 - 55 + 140, I_Loc\Launcher_ResolutionCurrent+gfxWidth + "x" + gfxHeight + "," + (16+(16*(Not Bit16Mode))))
 		Else
-			Text(260 + 15, 262 - 55 + 140, "Current Resolution: "+gfxWidth + "x" + gfxHeight + ",32")
+			Text(260 + 15, 262 - 55 + 140, I_Loc\Launcher_ResolutionCurrent+gfxWidth + "x" + gfxHeight + ",32")
 		EndIf
 
-		If DrawButton(LauncherWidth - 30 - 90 - 130 - 15, LauncherHeight - 50 - 55, 130, 30, "MAP CREATOR", False, False) Then
+		If DrawButton(LauncherWidth - 30 - 90 - 130 - 15, LauncherHeight - 50 - 55, 130, 30, I_Loc\Launcher_Mapcreator, False, False) Then
 			ExecFile(Chr(34)+"Map Creator\StartMapCreator.bat"+Chr(34))
 			quit = True
 			Exit
 		EndIf
 
-		If DrawButton(LauncherWidth - 30 - 90 - 130 - 15, LauncherHeight - 50, 130, 30, "DISCORD", False, False) Then
+		If DrawButton(LauncherWidth - 30 - 90 - 130 - 15, LauncherHeight - 50, 130, 30, I_Loc\Launcher_Discord, False, False) Then
 			ExecFile("https://discord.gg/guqwRtQPdq")
 		EndIf
 		
-		If DrawButton(LauncherWidth - 30 - 90, LauncherHeight - 50 - 55, 100, 30, "LAUNCH", False, False) Then
+		If DrawButton(LauncherWidth - 30 - 90, LauncherHeight - 50 - 55, 100, 30, I_Loc\Launcher_Launch, False, False) Then
 			GraphicWidth = gfxWidth
 			GraphicHeight = gfxHeight
 			RealGraphicWidth = GraphicWidth
@@ -1658,7 +1656,7 @@ Function UpdateLauncher()
 			Exit
 		EndIf
 		
-		If DrawButton(LauncherWidth - 30 - 90, LauncherHeight - 50, 100, 30, "EXIT", False, False) Then quit = True : Exit
+		If DrawButton(LauncherWidth - 30 - 90, LauncherHeight - 50, 100, 30, I_Loc\Launcher_Exit, False, False) Then quit = True : Exit
 		Flip
 	Forever
 	
@@ -1917,36 +1915,36 @@ Function DrawLoading(percent%, shortloading=False)
 				If Rand(5)=1 Then
 					Select Rand(2)
 						Case 1
-							SelectedLoadingScreen\txt[0] = "It will happen on " + CurrentDate() + "."
+							SelectedLoadingScreen\txt[0] = Format(I_Loc\Menu_LoadingCwm_1, CurrentDate())
 						Case 2
 							SelectedLoadingScreen\txt[0] = CurrentTime()
 					End Select
 				Else
 					Select Rand(13)
 						Case 1
-							SelectedLoadingScreen\txt[0] = "A very fine radio might prove to be useful."
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_2
 						Case 2
-							SelectedLoadingScreen\txt[0] = "ThIS PLaCE WiLL BUrN"
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_3
 						Case 3
-							SelectedLoadingScreen\txt[0] = "You cannot control it."
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_4
 						Case 4
-							SelectedLoadingScreen\txt[0] = "eof9nsd3jue4iwe1fgj"
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_5
 						Case 5
-							SelectedLoadingScreen\txt[0] = "YOU NEED TO TRUST IT"
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_6
 						Case 6 
-							SelectedLoadingScreen\txt[0] = "Look my friend in the eye when you address him, isn't that the way of the gentleman?"
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_7
 						Case 7
-							SelectedLoadingScreen\txt[0] = "???____??_???__????n?"
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_8
 						Case 8, 9
-							SelectedLoadingScreen\txt[0] = "Jorge has been expecting you."
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_9
 						Case 10
-							SelectedLoadingScreen\txt[0] = "???????????"
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_10
 						Case 11
-							SelectedLoadingScreen\txt[0] = "Make her a member of the midnight crew."
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_11
 						Case 12
-							SelectedLoadingScreen\txt[0] = "oncluded that coming here was a mistake. We have to turn back."
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_12
 						Case 13
-							SelectedLoadingScreen\txt[0] = "This alloy contains the essence of my life."
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_13
 					End Select
 				EndIf
 			EndIf
@@ -1979,13 +1977,13 @@ Function DrawLoading(percent%, shortloading=False)
 		EndIf
 		
 		Color 0,0,0
-		Text(GraphicWidth / 2 + 1 * MenuScale, GraphicHeight / 2 - 100 * MenuScale + 1 * MenuScale, "LOADING - " + percent + " %", True, True)
+		Text(GraphicWidth / 2 + 1 * MenuScale, GraphicHeight / 2 - 100 * MenuScale + 1 * MenuScale, Format(I_Loc\Menu_Loading, percent), True, True)
 		Color 255,255,255
-		Text(GraphicWidth / 2, GraphicHeight / 2 - 100 * MenuScale, "LOADING - " + percent + " %", True, True)
+		Text(GraphicWidth / 2, GraphicHeight / 2 - 100 * MenuScale, Format(I_Loc\Menu_Loading, percent), True, True)
 		
 		If percent = 100 Then 
 			If firstloop And SelectedLoadingScreen\title <> "CWM" Then PlaySound_Strict LoadTempSound(("SFX\Horror\Horror8.ogg"))
-			Text(GraphicWidth / 2, GraphicHeight - 50 * MenuScale, "PRESS ANY KEY TO CONTINUE", True, True)
+			Text(GraphicWidth / 2, GraphicHeight - 50 * MenuScale, I_Loc\Menu_Pressany, True, True)
 		Else
 			FlushKeys()
 			FlushMouse()
@@ -2192,8 +2190,8 @@ Function SlideBar#(x%, y%, width%, value#, ID%)
 	DrawImage(BlinkMeterIMG, x + width * value / 100.0 +3, y+3)
 	
 	Color 170,170,170 
-	Text (x - 20 * MenuScale - StringWidth("LOW"), y + 3*MenuScale, "LOW")					
-	Text (x + width + 20 * MenuScale + 14, y+3*MenuScale, "HIGH")	
+	Text (x - 20 * MenuScale - StringWidth(I_Loc\Option_SliderLow), y + 3*MenuScale, I_Loc\Option_SliderLow)					
+	Text (x + width + 20 * MenuScale + 14, y+3*MenuScale, I_Loc\Option_SliderHigh)	
 	
 	Return value
 	
@@ -2214,19 +2212,12 @@ Function RowText(A$, X, Y, W, H, align% = 0, Leading#=1)
 	
 	While Len(A) > 0
 		Local space = Instr(A$, " ")
-		If space = 0 Then space = Len(A$)
-		Local temp$ = Left(A$, space)
-		Local trimmed$ = Trim(temp) ;we might ignore a final space 
-		Local extra = 0 ;we haven't ignored it yet
-		;ignore final space If doing so would make a word fit at End of Line:
-		If (StringWidth (b$ + temp$) > W) And (StringWidth (b$ + trimmed$) <= W) Then
-			temp = trimmed
-			extra = 1
-		EndIf
+		If space = 0 Then space = Len(A$) + 1
+		Local temp$ = Left(A$, space - 1)
 		
 		If StringWidth (b$ + temp$) > W Then ;too big, so Print what will fit
 			If align Then
-				Text(X + W / 2 - (StringWidth(b) / 2), LinesShown * Height + Y, b)
+				Text(X + W / 2, LinesShown * Height + Y, b, True)
 			Else
 				Text(X, LinesShown * Height + Y, b)
 			EndIf			
@@ -2234,8 +2225,9 @@ Function RowText(A$, X, Y, W, H, align% = 0, Leading#=1)
 			LinesShown = LinesShown + 1
 			b$=""
 		Else ;append it To b$ (which will eventually be printed) And remove it from A$
+			If b <> "" Then b = b + " "
 			b$ = b$ + temp$
-			A$ = Right(A$, Len(A$) - (Len(temp$) + extra))
+			A$ = Right(A$, Max(0, Len(A$) - Len(temp$) - 1))
 		EndIf
 		
 		If ((LinesShown + 1) * Height) > H Then Exit ;the Next Line would be too tall, so leave
@@ -2243,56 +2235,7 @@ Function RowText(A$, X, Y, W, H, align% = 0, Leading#=1)
 	
 	If (b$ <> "") And((LinesShown + 1) <= H) Then
 		If align Then
-			Text(X + W / 2 - (StringWidth(b) / 2), LinesShown * Height + Y, b) ;Print any remaining Text If it'll fit vertically
-		Else
-			Text(X, LinesShown * Height + Y, b) ;Print any remaining Text If it'll fit vertically
-		EndIf
-	EndIf
-	
-End Function
-
-Function RowText2(A$, X, Y, W, H, align% = 0, Leading#=1)
-	;Display A$ starting at X,Y - no wider than W And no taller than H (all in pixels).
-	;Leading is optional extra vertical spacing in pixels
-	
-	If H<1 Then H=2048
-	
-	Local LinesShown = 0
-	Local Height = StringHeight(A$) + Leading
-	Local b$
-	
-	While Len(A) > 0
-		Local space = Instr(A$, " ")
-		If space = 0 Then space = Len(A$)
-		Local temp$ = Left(A$, space)
-		Local trimmed$ = Trim(temp) ;we might ignore a final space 
-		Local extra = 0 ;we haven't ignored it yet
-		;ignore final space If doing so would make a word fit at End of Line:
-		If (StringWidth (b$ + temp$) > W) And (StringWidth (b$ + trimmed$) <= W) Then
-			temp = trimmed
-			extra = 1
-		EndIf
-		
-		If StringWidth (b$ + temp$) > W Then ;too big, so Print what will fit
-			If align Then
-				Text(X + W / 2 - (StringWidth(b) / 2), LinesShown * Height + Y, b)
-			Else
-				Text(X, LinesShown * Height + Y, b)
-			EndIf
-			
-			LinesShown = LinesShown + 1
-			b$=""
-		Else ;append it To b$ (which will eventually be printed) And remove it from A$
-			b$ = b$ + temp$
-			A$ = Right(A$, Len(A$) - (Len(temp$) + extra))
-		EndIf
-		
-		If ((LinesShown + 1) * Height) > H Then Exit ;the Next Line would be too tall, so leave
-	Wend
-	
-	If (b$ <> "") And((LinesShown + 1) <= H) Then
-		If align Then
-			Text(X + W / 2 - (StringWidth(b) / 2), LinesShown * Height + Y, b) ;Print any remaining Text If it'll fit vertically
+			Text(X + W / 2, LinesShown * Height + Y, b, True) ;Print any remaining Text If it'll fit vertically
 		Else
 			Text(X, LinesShown * Height + Y, b) ;Print any remaining Text If it'll fit vertically
 		EndIf
@@ -2301,44 +2244,6 @@ Function RowText2(A$, X, Y, W, H, align% = 0, Leading#=1)
 End Function
 
 Function GetLineAmount(A$, W, H, Leading#=1)
-	;Display A$ starting at X,Y - no wider than W And no taller than H (all in pixels).
-	;Leading is optional extra vertical spacing in pixels
-	
-	If H<1 Then H=2048
-	
-	Local LinesShown = 0
-	Local Height = StringHeight(A$) + Leading
-	Local b$
-	
-	While Len(A) > 0
-		Local space = Instr(A$, " ")
-		If space = 0 Then space = Len(A$)
-		Local temp$ = Left(A$, space)
-		Local trimmed$ = Trim(temp) ;we might ignore a final space 
-		Local extra = 0 ;we haven't ignored it yet
-		;ignore final space If doing so would make a word fit at End of Line:
-		If (StringWidth (b$ + temp$) > W) And (StringWidth (b$ + trimmed$) <= W) Then
-			temp = trimmed
-			extra = 1
-		EndIf
-		
-		If StringWidth (b$ + temp$) > W Then ;too big, so Print what will fit
-			
-			LinesShown = LinesShown + 1
-			b$=""
-		Else ;append it To b$ (which will eventually be printed) And remove it from A$
-			b$ = b$ + temp$
-			A$ = Right(A$, Len(A$) - (Len(temp$) + extra))
-		EndIf
-		
-		If ((LinesShown + 1) * Height) > H Then Exit ;the Next Line would be too tall, so leave
-	Wend
-	
-	Return LinesShown+1
-	
-End Function
-
-Function GetLineAmount2(A$, W, H, Leading#=1)
 	;Display A$ starting at X,Y - no wider than W And no taller than H (all in pixels).
 	;Leading is optional extra vertical spacing in pixels
 	
@@ -2422,117 +2327,111 @@ Function DrawOptionsTooltip(x%,y%,width%,height%,option$,value#=0,ingame%=False)
 		;Graphic options
 			;[Block]
 		Case "vsync"
-			txt = Chr(34)+"Vertical sync"+Chr(34)+" waits for the display to finish its current refresh cycle before calculating the next frame, preventing issues such as "
-			txt = txt + "screen tearing. This ties the game's frame rate to your display's refresh rate and may cause some input lag."
+			txt = I_Loc\OptionTooltip_Vsync
 		Case "antialias"
-			txt = Chr(34)+"Anti-Aliasing"+Chr(34)+" is used to smooth the rendered image before displaying in order to reduce aliasing around the edges of models."
-			txt2 = "This option only takes effect in fullscreen."
+			txt = I_Loc\OptionTooltip_Antialias
+			txt2 = I_Loc\Option_HintFullscreen
 			R = 255
 		Case "gamma"
-			txt = Chr(34)+"Gamma correction"+Chr(34)+" is used to achieve a good brightness factor to balance out your display's gamma if the game appears either too dark or bright. "
-			txt = txt + "Setting it too high or low can cause the graphics to look less detailed."
+			txt = I_Loc\OptionTooltip_Gamma
 			R = 255
 			G = 255
 			B = 255
-			txt2 = "Current value: "+Int(value*100)+"% (default is 100%)"
+			txt2 = Format(I_Loc\Option_HintDefault, "%", Str(Int(value*100)), "100")
 		Case "texquality"
-			txt = Chr(34)+"Texture LOD Bias"+Chr(34)+" affects the distance at which texture detail will change to prevent aliasing. Change this option if textures flicker or look too blurry."
+			txt = I_Loc\OptionTooltip_Texlod
 		Case "vram"
-			txt = "Textures that are stored in the Video-RAM will load faster, but this also has negative effects on the texture quality as well."
-			txt2 = "This option cannot be changed in-game."
+			txt = I_Loc\OptionTooltip_Vram
+			txt2 = I_Loc\Option_HintMenuonly
 			R = 255
 		Case "hudoffset"
-			txt = Chr(34)+"HUD offset"+Chr(34)+" is used to move the stamina and blink meters, as well as the heads-up display of various items towards the center of the screen."
-			txt = txt + " Primarily intended for use with ultrawide monitors."
+			txt = I_Loc\OptionTooltip_Hudoffset
 			R = 255
 			G = 255
 			B = 255
-			txt2 = "Current value: "+Int(HUDOffsetScale*100)+"% (default is 0%)"
+			txt2 = Format(I_Loc\Option_HintDefault, "%", Str(Int(HUDOffsetScale*100)), "0")
 		Case "fov"
-			txt = Chr(34)+"Field of view"+Chr(34)+" (FOV) is the amount of game view that is on display during a game."
+			txt = I_Loc\OptionTooltip_Fov
 			R = 255
 			G = 255
 			B = 255
-			txt2 = "Current value: "+FOV+" (default is "+Str(DEFAULT_FOV)+")"
+			txt2 = Format(I_Loc\Option_HintDefault, "°", Str(FOV), Str(DEFAULT_FOV))
 			;[End Block]
 		;Sound options
 			;[Block]
 		Case "musicvol"
-			txt = "Adjusts the volume of background music. Sliding the bar fully to the left will mute all music."
+			txt = I_Loc\OptionTooltip_Musicvol
 			R = 255
 			G = 255
 			B = 255
-			txt2 = "Current value: "+Int(value*100)+"% (default is 50%)"
+			txt2 = Format(I_Loc\Option_HintDefault, "%", Str(Int(value*100)), "50")
 		Case "soundvol"
-			txt = "Adjusts the volume of sound effects. Sliding the bar fully to the left will mute all sounds."
+			txt = I_Loc\OptionTooltip_Soundvol
 			R = 255
 			G = 255
 			B = 255
-			txt2 = "Current value: "+Int(value*100)+"% (default is 100%)"
+			txt2 = Format(I_Loc\Option_HintDefault, "%", Str(Int(value*100)), "100")
 		Case "sfxautorelease"
-			txt = Chr(34)+"Sound auto-release"+Chr(34)+" will free a sound from memory if it not used after 5 seconds. Prevents memory allocation issues."
+			txt = I_Loc\OptionTooltip_Sfxautorelease
 			R = 255
-			txt2 = "This option cannot be changed in-game."
+			txt2 = I_Loc\Option_HintMenuonly
 		Case "usertrack"
-			txt = "Toggles the ability to play custom tracks over channel 1 of the radio. These tracks are loaded from the " + Chr(34) + "SFX\Radio\UserTracks\" + Chr(34)
-			txt = txt + " directory. Press " + Chr(34) + "1" + Chr(34) + " when the radio is selected to change track."
+			txt = I_Loc\OptionTooltip_Usertrack
 			R = 255
-			txt2 = "This option cannot be changed in-game."
+			txt2 = I_Loc\Option_HintMenuonly
 		Case "usertrackmode"
-			txt = "Sets the playing mode for the custom tracks. "+Chr(34)+"Repeat"+Chr(34)+" plays every file in alphabetical order. "+Chr(34)+"Random"+Chr(34)+" chooses the "
-			txt = txt + "next track at random."
+			txt = I_Loc\OptionTooltip_Usertrackmode
 			R = 255
 			G = 255
-			txt2 = "Note that the random mode does not prevent previously played tracks from repeating."
+			txt2 = I_Loc\OptionTooltip_UsertrackmodeNote
 		Case "usertrackscan"
-			txt = "Re-checks the user tracks directory for any new or removed sound files."
+			txt = I_Loc\OptionTooltip_Usertrackscan
 			;[End Block]
 		;Control options	
 			;[Block]
 		Case "mousesensitivity"
-			txt = "Adjusts the speed of the mouse pointer."
+			txt = I_Loc\OptionTooltip_Mousesensitivty
 			R = 255
 			G = 255
 			B = 255
-			txt2 = "Current value: "+Int((0.5+value)*100)+"% (default is 50%)"
+			txt2 = Format(I_Loc\Option_HintDefault, "%", Str(Int((0.5+value)*100)), "50")
 		Case "mouseinvert"
-			txt = Chr(34)+"Invert mouse Y-axis"+Chr(34)+" is self-explanatory."
+			txt = Format(I_Loc\Option_HintSelfexplanatory, I_Loc\OptionName_Mouseinvert)
 		Case "mousesmoothing"
-			txt = "Adjusts the amount of smoothing of the mouse pointer."
+			txt = I_Loc\OptionTooltip_Mousesmoothing
 			R = 255
 			G = 255
 			B = 255
-			txt2 = "Current value: "+Int(value*100)+"% (default is 100%)"
+			txt2 = Format(I_Loc\Option_HintDefault, "%", Str(Int(value*100)), "100")
 		Case "controls"
-			txt = "Configure the in-game control scheme."
+			txt = I_Loc\OptionTooltip_Binds
 			;[End Block]
 		;Advanced options	
 			;[Block]
 		Case "hud"
-			txt = "Display the blink and stamina meters."
+			txt = I_Loc\OptionTooltip_Showhud
 		Case "consoleenable"
-			txt = "Toggles the use of the developer console. Can be used in-game by pressing " + KeyName(KEY_CONSOLE) + "."
+			txt = I_Loc\OptionTooltip_Console
 			R = 255
-			txt2 = "Using the console will disable Steam achievements."
+			txt2 = I_Loc\OptionTooltip_ConsoleNote
 		Case "consoleerror"
-			txt = Chr(34)+"Open console on error"+Chr(34)+" is self-explanatory."
+			txt = Format(I_Loc\Option_HintSelfexplanatory, I_Loc\OptionName_Consoleerror)
 		Case "speedrunmode"
-			txt = "Displays a timer and changes how play time is tracked to conform to the requirements of speed running."
+			txt = I_Loc\OptionTooltip_Speedrunmode
 		Case "numericseeds"
-			txt = "Allows seeds to be entered as integers, which will be used to directly seed the game's internal random number generator."
-			txt = txt + " When no seed is entered, the elapsed millseconds since the computer started is used."
+			txt = I_Loc\OptionTooltip_Numericseeds
 		Case "achpopup"
-			txt = "Displays a pop-up notification when an achievement is unlocked."
+			txt = I_Loc\OptionTooltip_Achpopup
 		Case "launcher"
-			txt = "Allows re-enabling the launcher if it has been disabled."
+			txt = I_Loc\OptionTooltip_Launcher
 		Case "showfps"
-			txt = "Displays the frames per second counter at the top left-hand corner."
+			txt = I_Loc\OptionTooltip_Showfps
 		Case "framelimit"
-			txt = "Limits the frame rate that the game can run at to a desired value."
+			txt = I_Loc\OptionTooltip_Framelimit
 			If value > 0 And value < 60
 				R = 255
 				G = 255
-				txt2 = "Usually, 60 FPS or higher is preferred. If you are noticing excessive stuttering at this setting, try lowering it to make your framerate more consistent."
+				txt2 = I_Loc\OptionTooltip_FramelimitNote
 			EndIf
 			;[End Block]
 	End Select
@@ -2592,28 +2491,28 @@ Function DrawMapCreatorTooltip(x%,y%,width%,height%,mapname$)
 		CloseFile f%
 	Else
 		txt[0] = Left(mapname$,Len(mapname$)-6)
-		author$ = "[Unknown]"
-		descr$ = "[No description]"
+		author$ = I_Loc\LoadMap_Unknown
+		descr$ = I_Loc\LoadMap_Nodesc
 		ramount% = 0
 		hasForest% = False
 		hasMT% = False
 	EndIf
-	txt[1] = "Made by: "+author$
-	txt[2] = "Description: "+descr$
+	txt[1] = Format(I_Loc\LoadMap_Madeby, author)
+	txt[2] = Format(I_Loc\LoadMap_Desc, descr)
 	If ramount > 0 Then
-		txt[3] = "Room amount: "+ramount
+		txt[3] = Format(I_Loc\LoadMap_Roomcount, ramount)
 	Else
-		txt[3] = "Room amount: [Unknown]"
+		txt[3] = Format(I_Loc\LoadMap_Madeby, I_Loc\LoadMap_Unknown)
 	EndIf
 	If hasForest Then
-		txt[4] = "Has custom forest: Yes"
+		txt[4] = Format(I_Loc\LoadMap_Customforest, I_Loc\Menu_Yes)
 	Else
-		txt[4] = "Has custom forest: No"
+		txt[4] = Format(I_Loc\LoadMap_Customforest, I_Loc\Menu_No)
 	EndIf
 	If hasMT Then
-		txt[5] = "Has custom maintenance tunnel: Yes"
+		txt[5] = Format(I_Loc\LoadMap_Custommaintenance, I_Loc\Menu_Yes)
 	Else
-		txt[5] = "Has custom maintenance tunnel: No"
+		txt[5] = Format(I_Loc\LoadMap_Custommaintenance, I_Loc\Menu_No)
 	EndIf
 	
 	lines% = GetLineAmount(txt[2],fw,fh)

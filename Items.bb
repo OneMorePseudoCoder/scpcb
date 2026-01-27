@@ -530,7 +530,7 @@ Function PickItem(item.Items)
 	Next
 	
 	If WearingHazmat > 0 Then
-		Msg = "You cannot pick up any items while wearing a hazmat suit."
+		Msg = I_Loc\MessageItem_HazmatNopickup
 		MsgTimer = 70*5
 		Return
 	EndIf
@@ -546,10 +546,7 @@ Function PickItem(item.Items)
 								ShowEntity Light
 								LightFlash = 7
 								PlaySound_Strict(LoadTempSound("SFX\SCP\1123\Touch.ogg"))		
-								DeathMSG = "Subject D-9341 was shot dead after attempting to attack a member of Nine-Tailed Fox. Surveillance tapes show that the subject had been "
-								DeathMSG = DeathMSG + "wandering around the site approximately 9 minutes prior, shouting the phrase " + Chr(34) + "get rid of the four pests" + Chr(34)
-								DeathMSG = DeathMSG + " in chinese. SCP-1123 was found in [REDACTED] nearby, suggesting the subject had come into physical contact with it. How "
-								DeathMSG = DeathMSG + "exactly SCP-1123 was removed from its containment chamber is still unknown."
+								DeathMSG = I_Loc\DeathMessage_1123
 								Kill()
 							EndIf
 							For e.Events = Each Events
@@ -571,8 +568,7 @@ Function PickItem(item.Items)
 						ShowEntity Light
 						LightFlash = 1.0
 						PlaySound_Strict(IntroSFX(11))
-						DeathMSG = "Subject D-9341 found dead inside SCP-914's output booth next to what appears to be an ordinary nine-volt battery. The subject is covered in severe "
-						DeathMSG = DeathMSG + "electrical burns, and assumed to be killed via an electrical shock caused by the battery. The battery has been stored for further study."
+						DeathMSG = I_Loc\DeathMessage_Killbat
 						Kill()
 					Case "scp148"
 						GiveAchievement(Achv148)	
@@ -583,7 +579,7 @@ Function PickItem(item.Items)
 					Case "key6"
 						GiveAchievement(AchvOmni)
 					Case "veryfinevest"
-						Msg = "The vest is too heavy to pick up."
+						Msg = I_Loc\MessageItem_VestHeavy
 						MsgTimer = 70*6
 						Exit
 					Case "firstaid", "finefirstaid", "veryfinefirstaid", "firstaid2"
@@ -605,11 +601,11 @@ Function PickItem(item.Items)
 						Next
 						
 						If canpickitem=False Then
-							Msg = "You are not able to wear two hazmat suits at the same time."
+							Msg = I_Loc\MessageItem_HazmatConflictHazmat
 							MsgTimer = 70 * 5
 							Return
 						ElseIf canpickitem=2 Then
-							Msg = "You are not able to wear a vest and a hazmat suit at the same time."
+							Msg = I_Loc\MessageItem_VestConflictHazmat
 							MsgTimer = 70 * 5
 							Return
 						Else
@@ -631,11 +627,11 @@ Function PickItem(item.Items)
 						Next
 						
 						If canpickitem=False Then
-							Msg = "You are not able to wear two vests at the same time."
+							Msg = I_Loc\MessageItem_VestConflictVest
 							MsgTimer = 70 * 5
 							Return
 						ElseIf canpickitem=2 Then
-							Msg = "You are not able to wear a vest and a hazmat suit at the same time."
+							Msg = I_Loc\MessageItem_VestConflictHazmat
 							MsgTimer = 70 * 5
 							Return
 						Else
@@ -657,7 +653,7 @@ Function PickItem(item.Items)
 			EndIf
 		Next
 	Else
-		Msg = "You cannot carry any more items."
+		Msg = I_Loc\MessageItem_Full
 		MsgTimer = 70 * 5
 	EndIf
 	CatchErrors("PickItem")
@@ -665,7 +661,7 @@ End Function
 
 Function DropItem(item.Items,playdropsound%=True)
 	If WearingHazmat > 0 Then
-		Msg = "You cannot drop any items while wearing a hazmat suit."
+		Msg = I_Loc\MessageItem_HazmatNodrop
 		MsgTimer = 70*5
 		Return
 	EndIf

@@ -935,7 +935,7 @@ Function GenForestGrid(fr.Forest)
 
 			If Fullscreen Then DrawImage(CursorIMG,ScaledMouseX(),ScaledMouseY())
 			Color(255, 255, 255)
-			Text(GraphicWidth / 2, GraphicHeight - 25 * HUDScale, "PRESS ANY KEY TO CONTINUE", True, True)
+			Text(GraphicWidth / 2, GraphicHeight - 25 * HUDScale, I_Loc\Menu_Pressany, True, True)
 			
 			Flip()
 		Until GetKey() <> 0
@@ -6435,8 +6435,7 @@ Function UpdateSecurityCams()
 					EndIf
 					
 					If Sanity < (-1000) Then 
-						DeathMSG = Chr(34)+"What we know is that he died of cardiac arrest. My guess is that it was caused by SCP-895, although it has never been observed affecting video equipment from this far before. "
-						DeathMSG = DeathMSG + "Further testing is needed to determine whether SCP-895's "+Chr(34)+"Red Zone"+Chr(34)+" is increasing."+Chr(34)
+						DeathMSG = I_Loc\DeathMessage_895
 						
 						If VomitTimer < -10 Then
 							Kill()
@@ -7569,7 +7568,7 @@ Function CreateMap()
 
 			If Fullscreen Then DrawImage(CursorIMG,ScaledMouseX(),ScaledMouseY())
 			Color 255, 255, 255
-			Text(GraphicWidth / 2, GraphicHeight - 25 * HUDScale, "PRESS ANY KEY TO CONTINUE", True, True)
+			Text(GraphicWidth / 2, GraphicHeight - 25 * HUDScale, I_Loc\Menu_Pressany, True, True)
 			
 			Flip
 		Until GetKey() <> 0
