@@ -9104,7 +9104,8 @@ Function NullGame(playbuttonsfx%=True)
 
 	;DeInitExt
 	
-	ClearWorld
+	; Don't clear shaders
+	ClearWorld(1, 1, 1, 0)
 	Camera = 0
 	ark_blur_cam = 0
 	Collider = 0
