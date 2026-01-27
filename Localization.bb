@@ -9,6 +9,7 @@ Type LocalizationTable
     Field Launcher_FullscreenExclusive$
     Field Launcher_16bit$
     Field Launcher_Launcher$
+    Field Launcher_Hudscalefactor$
     Field Launcher_Mapcreator$
     Field Launcher_Discord$
     Field Launcher_Launch$
@@ -453,6 +454,7 @@ I_Loc\Launcher_Fullscreen = GetModdedINIString(StringsFile, "Launcher", "fullscr
 I_Loc\Launcher_FullscreenExclusive = GetModdedINIString(StringsFile, "Launcher", "fullscreen.exclusive")
 I_Loc\Launcher_16bit = GetModdedINIString(StringsFile, "Launcher", "16bit")
 I_Loc\Launcher_Launcher = GetModdedINIString(StringsFile, "Launcher", "launcher")
+I_Loc\Launcher_Hudscalefactor = GetModdedINIString(StringsFile, "Launcher", "hudscalefactor")
 I_Loc\Launcher_Mapcreator = GetModdedINIString(StringsFile, "Launcher", "mapcreator")
 I_Loc\Launcher_Discord = GetModdedINIString(StringsFile, "Launcher", "discord")
 I_Loc\Launcher_Launch = GetModdedINIString(StringsFile, "Launcher", "launch")
