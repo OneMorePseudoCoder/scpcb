@@ -6842,7 +6842,7 @@ Function DrawGUI()
 							EndIf
 							If (MilliSecs() Mod 1000) > 300 Then
 								If SelectedItem\itemtemplate\name <> "snav310" And SelectedItem\itemtemplate\name <> "snavulti" Then
-									Text(x - width/2 + 10, y - height/2 + 10, "MAP DATABASE OFFLINE")
+									Text(x - width/2 + 10, y - height/2 + 10, I_Loc\HUD_NavDatabase)
 								EndIf
 								
 								yawvalue = EntityYaw(Collider)-90
