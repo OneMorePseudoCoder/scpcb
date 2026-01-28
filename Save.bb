@@ -1125,12 +1125,8 @@ Function LoadGame(file$)
 			ItemAmount = ItemAmount + 1
 		EndIf
 		
-		For itt.ItemTemplates = Each ItemTemplates
-			If (itt\tempname = tempName) And (itt\name = ittName) Then
-				If itt\isAnim<>0 Then SetAnimTime it\model,ReadFloat(f)
-				Exit
-			EndIf
-		Next
+		If it\itemtemplate\isAnim<>0 Then SetAnimTime it\model,ReadFloat(f)
+
 		it\invSlots = ReadByte(f)
 		it\ID = ReadInt(f)
 		
@@ -1844,12 +1840,8 @@ Function LoadGameQuick(file$)
 			ItemAmount = ItemAmount + 1
 		EndIf
 		
-		For itt.ItemTemplates = Each ItemTemplates
-			If itt\tempname = tempName Then
-				If itt\isAnim<>0 Then SetAnimTime it\model,ReadFloat(f)
-				Exit
-			EndIf
-		Next
+		If it\itemtemplate\isAnim<>0 Then SetAnimTime it\model,ReadFloat(f)
+
 		it\invSlots = ReadByte(f)
 		it\ID = ReadInt(f)
 		
