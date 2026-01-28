@@ -67,7 +67,7 @@ Function UpdateEvents()
 						CameraFogRange(Camera, CameraFogNear, CameraFogFar)
 						CameraFogMode(Camera, 1)
 						If SelectedDifficulty\saveType = SAVEANYWHERE Then
-							Msg = Format(I_Loc\MessageSave_Anywhere, KeyName(KEY_SAVE))
+							Msg = Format(I_Loc\MessageSave_Anywhere, GetKeyName(KEY_SAVE))
 							MsgTimer = 70*4
 						ElseIf SelectedDifficulty\saveType = SAVEONSCREENS Then
 							Msg = I_Loc\MessageSave_Screens
@@ -229,7 +229,7 @@ Function UpdateEvents()
                                                 PositionEntity Curr173\Collider, 0,0,0
                                             EndIf
 											ResetEntity Curr173\Collider
-											Msg = Format(I_Loc\MessageHelp_Run, KeyName(KEY_SPRINT))
+											Msg = Format(I_Loc\MessageHelp_Run, GetKeyName(KEY_SPRINT))
 											MsgTimer = 70*8
 										EndIf
 									EndIf
@@ -431,7 +431,7 @@ Function UpdateEvents()
 								
 							ElseIf e\EventState3 < 40
 								If Inventory(0)<>Null Then
-									Msg = Format(I_Loc\MessageHelp_Inventory, KeyName(KEY_INV))
+									Msg = Format(I_Loc\MessageHelp_Inventory, GetKeyName(KEY_INV))
 									MsgTimer=70*7
 									e\EventState3 = 40
 									Exit
@@ -1014,7 +1014,7 @@ Function UpdateEvents()
 							If IntroSFX(17)<>0 Then
 								If EntityVisible(Curr173\Collider, Collider) Then
 									If EntityInView(Curr173\obj, Camera) Then
-										Msg = Format(I_Loc\MessageHelp_Blink, KeyName(KEY_BLINK))
+										Msg = Format(I_Loc\MessageHelp_Blink, GetKeyName(KEY_BLINK))
 										MsgTimer = 70*4
 										PlaySound_Strict IntroSFX(17)
 										IntroSFX(17)=0
@@ -1300,8 +1300,6 @@ Function UpdateEvents()
 										For r.Rooms = Each Rooms
 											If r\RoomTemplate\Name = "start" Then
 												DebugLog "tostart"
-												;Msg = "Press "+KeyName(KEY_SAVE)+" to save."
-												;MsgTimer = 70*8
 												
 												PlayerRoom = r
 												

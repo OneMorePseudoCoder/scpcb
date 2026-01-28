@@ -29,7 +29,6 @@ Function RuntimeErrorExt%(Message$)
 End Function
 
 Include "StrictLoads.bb"
-Include "KeyName.bb"
 
 Global DataDir$ = InitDataDir()
 Global OptionFile$ = InitOptionsFile()
@@ -3319,7 +3318,7 @@ While IsRunning
 			EndIf
 		Else If SelectedDifficulty\saveType = SAVEONSCREENS And (SelectedScreen<>Null Or SelectedMonitor<>Null)
 			If (Msg<>I_Loc\MessageSave_Saved And Msg<>I_Loc\MessageSave_DisabledLocation And Msg<>I_Loc\MessageSave_DisabledMoment) Or MsgTimer<=0 Then
-				Msg = Format(I_Loc\MessageSave_Anywhere, KeyName(KEY_SAVE))
+				Msg = Format(I_Loc\MessageSave_Anywhere, GetKeyName(KEY_SAVE))
 				MsgTimer = 70*4
 			EndIf
 			
@@ -7530,26 +7529,26 @@ Function DrawMenu()
 					y = y + 10*MenuScale
 					
 					Text(x, y + 20 * MenuScale, I_Loc\OptionName_BindMoveForward)
-					InputBox(x + 200 * MenuScale, y + 20 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_UP,210)),5)		
+					InputBox(x + 200 * MenuScale, y + 20 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_UP,210)),5)		
 					Text(x, y + 40 * MenuScale, I_Loc\OptionName_BindMoveLeft)
-					InputBox(x + 200 * MenuScale, y + 40 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_LEFT,210)),3)	
+					InputBox(x + 200 * MenuScale, y + 40 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_LEFT,210)),3)	
 					Text(x, y + 60 * MenuScale, I_Loc\OptionName_BindMoveBack)
-					InputBox(x + 200 * MenuScale, y + 60 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_DOWN,210)),6)				
+					InputBox(x + 200 * MenuScale, y + 60 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_DOWN,210)),6)				
 					Text(x, y + 80 * MenuScale, I_Loc\OptionName_BindMoveRight)
-					InputBox(x + 200 * MenuScale, y + 80 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_RIGHT,210)),4)
+					InputBox(x + 200 * MenuScale, y + 80 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_RIGHT,210)),4)
 					
 					Text(x, y + 100 * MenuScale, I_Loc\OptionName_BindBlink)
-					InputBox(x + 200 * MenuScale, y + 100 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_BLINK,210)),7)				
+					InputBox(x + 200 * MenuScale, y + 100 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_BLINK,210)),7)				
 					Text(x, y + 120 * MenuScale, I_Loc\OptionName_BindSprint)
-					InputBox(x + 200 * MenuScale, y + 120 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_SPRINT,210)),8)
+					InputBox(x + 200 * MenuScale, y + 120 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_SPRINT,210)),8)
 					Text(x, y + 140 * MenuScale, I_Loc\OptionName_BindInv)
-					InputBox(x + 200 * MenuScale, y + 140 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_INV,210)),9)
+					InputBox(x + 200 * MenuScale, y + 140 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_INV,210)),9)
 					Text(x, y + 160 * MenuScale, I_Loc\OptionName_BindCrouch)
-					InputBox(x + 200 * MenuScale, y + 160 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_CROUCH,210)),10)
+					InputBox(x + 200 * MenuScale, y + 160 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_CROUCH,210)),10)
 					Text(x, y + 180 * MenuScale, I_Loc\OptionName_BindSave)
-					InputBox(x + 200 * MenuScale, y + 180 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_SAVE,210)),11)	
+					InputBox(x + 200 * MenuScale, y + 180 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_SAVE,210)),11)	
 					Text(x, y + 200 * MenuScale, I_Loc\OptionName_BindConsole)
-					InputBox(x + 200 * MenuScale, y + 200 * MenuScale,100*MenuScale,20*MenuScale,KeyName(Min(KEY_CONSOLE,210)),12)
+					InputBox(x + 200 * MenuScale, y + 200 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_CONSOLE,210)),12)
 
 					If MouseOn(x,y,300*MenuScale,220*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"controls")
