@@ -104,33 +104,33 @@ Function UpdateMainMenu()
 			
 			Select Rand(0, 22)
 				Case 0, 2, 3
-					MenuStr = I_Loc\Menu_Random_1
+					MenuStr = I_Loc\Menu_Random[1]
 				Case 4, 5
-					MenuStr = I_Loc\Menu_Random_2
+					MenuStr = I_Loc\Menu_Random[2]
 				Case 6, 7, 8
-					MenuStr = I_Loc\Menu_Random_3
+					MenuStr = I_Loc\Menu_Random[3]
 				Case 9, 10, 11
-					MenuStr = I_Loc\Menu_Random_4
+					MenuStr = I_Loc\Menu_Random[4]
 				Case 12, 19
-					MenuStr = I_Loc\Menu_Random_5
+					MenuStr = I_Loc\Menu_Random[5]
 				Case 13
-					MenuStr = I_Loc\Menu_Random_6
+					MenuStr = I_Loc\Menu_Random[6]
 				Case 14
-					MenuStr = I_Loc\Menu_Random_7
+					MenuStr = I_Loc\Menu_Random[7]
 				Case 15
-					MenuStr = I_Loc\Menu_Random_8
+					MenuStr = I_Loc\Menu_Random[8]
 				Case 16
-					MenuStr = I_Loc\Menu_Random_9
+					MenuStr = I_Loc\Menu_Random[9]
 				Case 17
-					MenuStr = I_Loc\Menu_Random_10
+					MenuStr = I_Loc\Menu_Random[10]
 				Case 18
-					MenuStr = I_Loc\Menu_Random_11
+					MenuStr = I_Loc\Menu_Random[11]
 				Case 20
-					MenuStr = I_Loc\Menu_Random_12
+					MenuStr = I_Loc\Menu_Random[12]
 				Case 21
-					MenuStr = I_Loc\Menu_Random_13
+					MenuStr = I_Loc\Menu_Random[13]
 				Case 22
-					MenuStr = I_Loc\Menu_Random_14
+					MenuStr = I_Loc\Menu_Random[14]
 			End Select
 		EndIf
 	EndIf
@@ -1914,36 +1914,36 @@ Function DrawLoading(percent%, shortloading=False)
 				If Rand(5)=1 Then
 					Select Rand(2)
 						Case 1
-							SelectedLoadingScreen\txt[0] = Format(I_Loc\Menu_LoadingCwm_1, CurrentDate())
+							SelectedLoadingScreen\txt[0] = Format(I_Loc\Menu_LoadingCwm[1], CurrentDate())
 						Case 2
 							SelectedLoadingScreen\txt[0] = CurrentTime()
 					End Select
 				Else
 					Select Rand(13)
 						Case 1
-							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_2
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm[2]
 						Case 2
-							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_3
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm[3]
 						Case 3
-							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_4
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm[4]
 						Case 4
-							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_5
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm[5]
 						Case 5
-							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_6
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm[6]
 						Case 6 
-							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_7
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm[7]
 						Case 7
-							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_8
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm[8]
 						Case 8, 9
-							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_9
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm[9]
 						Case 10
-							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_10
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm[10]
 						Case 11
-							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_11
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm[11]
 						Case 12
-							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_12
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm[12]
 						Case 13
-							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_13
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm[13]
 					End Select
 				EndIf
 			EndIf

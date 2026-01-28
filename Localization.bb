@@ -37,20 +37,7 @@ Type LocalizationTable
     Field Menu_Quit$
     Field Menu_QuitUpper$
     Field Menu_QuitMenu$
-    Field Menu_Random_1$
-    Field Menu_Random_2$
-    Field Menu_Random_3$
-    Field Menu_Random_4$
-    Field Menu_Random_5$
-    Field Menu_Random_6$
-    Field Menu_Random_7$
-    Field Menu_Random_8$
-    Field Menu_Random_9$
-    Field Menu_Random_10$
-    Field Menu_Random_11$
-    Field Menu_Random_12$
-    Field Menu_Random_13$
-    Field Menu_Random_14$
+    Field Menu_Random$[14]
     Field Menu_Pause$
     Field Menu_Dead$
     Field Menu_Difficulty$
@@ -67,19 +54,7 @@ Type LocalizationTable
     Field Menu_End914$
     Field Menu_End$
     Field Menu_Loading$
-    Field Menu_LoadingCwm_1$
-    Field Menu_LoadingCwm_2$
-    Field Menu_LoadingCwm_3$
-    Field Menu_LoadingCwm_4$
-    Field Menu_LoadingCwm_5$
-    Field Menu_LoadingCwm_6$
-    Field Menu_LoadingCwm_7$
-    Field Menu_LoadingCwm_8$
-    Field Menu_LoadingCwm_9$
-    Field Menu_LoadingCwm_10$
-    Field Menu_LoadingCwm_11$
-    Field Menu_LoadingCwm_12$
-    Field Menu_LoadingCwm_13$
+    Field Menu_LoadingCwm$[13]
     Field Option_Graphics$
     Field Option_Audio$
     Field Option_Controls$
@@ -254,27 +229,14 @@ Type LocalizationTable
     Field Message_427_4$
     Field Message_860Doorbudge$
     Field Message_914PlayerCoarse$
-    Field Message_966Presence_1$
-    Field Message_966Presence_2$
-    Field Message_966Presence_3$
-    Field Message_966Presence_4$
-    Field Message_966Presence_5$
-    Field Message_966Presence_6$
-    Field Message_966Sleep_1$
-    Field Message_966Sleep_2$
-    Field Message_966Sleep_3$
-    Field Message_966Sleep_4$
+    Field Message_966Presence$[6]
+    Field Message_966Sleep$[4]
     Field Message_1025ChickenpoxItchy$
-    Field Message_1025Appendicitis_1$
-    Field Message_1025Appendicitis_2$
+    Field Message_1025Appendicitis1$
+    Field Message_1025Appendicitis2$
     Field Message_1048a1$
-    Field Message_1048a2_1$
-    Field Message_1048a2_2$
-    Field Message_1048a2_3$
-    Field Message_1048a3_1$
-    Field Message_1048a3_2$
-    Field Message_1048a3_3$
-    Field Message_1048a3_4$
+    Field Message_1048a2$[3]
+    Field Message_1048a3$[4]
     Field Message_1162ExchangeFailure$
     Field Message_1162ExchangeSuccess$
     Field Message_BloodlossFaint$
@@ -367,11 +329,7 @@ Type LocalizationTable
     Field MessageItem_PillUse$
     Field MessageItem_PillUseHealnausea$
     Field MessageItem_CigaretteUseUnable$
-    Field MessageItem_CigaretteUse_1$
-    Field MessageItem_CigaretteUse_2$
-    Field MessageItem_CigaretteUse_3$
-    Field MessageItem_CigaretteUse_4$
-    Field MessageItem_CigaretteUse_5$
+    Field MessageItem_CigaretteUse$[5]
     Field MessageItem_420jUse714$
     Field MessageItem_420jUse$
     Field MessageItem_420jUseNap$
@@ -448,10 +406,7 @@ Type LocalizationTable
     Field DeathMessage_NtfBloodloss$
     Field DeathMessage_Tesla$
     Field DeathMessage_Killbat$
-    Field DeathMessage_Suicide_1$
-    Field DeathMessage_Suicide_2$
-    Field DeathMessage_Suicide_3$
-    Field DeathMessage_Suicide_4$
+    Field DeathMessage_Suicide$[4]
     Field DeathMessage_Gassed$
 End Type
 
@@ -492,20 +447,20 @@ I_Loc\Menu_QuitQuestion = GetModdedINIString(StringsFile, "Menu", "quit.question
 I_Loc\Menu_Quit = GetModdedINIString(StringsFile, "Menu", "quit")
 I_Loc\Menu_QuitUpper = GetModdedINIString(StringsFile, "Menu", "quit.upper")
 I_Loc\Menu_QuitMenu = GetModdedINIString(StringsFile, "Menu", "quit.menu")
-I_Loc\Menu_Random_1 = GetModdedINIString(StringsFile, "Menu", "random_1")
-I_Loc\Menu_Random_2 = GetModdedINIString(StringsFile, "Menu", "random_2")
-I_Loc\Menu_Random_3 = GetModdedINIString(StringsFile, "Menu", "random_3")
-I_Loc\Menu_Random_4 = GetModdedINIString(StringsFile, "Menu", "random_4")
-I_Loc\Menu_Random_5 = GetModdedINIString(StringsFile, "Menu", "random_5")
-I_Loc\Menu_Random_6 = GetModdedINIString(StringsFile, "Menu", "random_6")
-I_Loc\Menu_Random_7 = GetModdedINIString(StringsFile, "Menu", "random_7")
-I_Loc\Menu_Random_8 = GetModdedINIString(StringsFile, "Menu", "random_8")
-I_Loc\Menu_Random_9 = GetModdedINIString(StringsFile, "Menu", "random_9")
-I_Loc\Menu_Random_10 = GetModdedINIString(StringsFile, "Menu", "random_10")
-I_Loc\Menu_Random_11 = GetModdedINIString(StringsFile, "Menu", "random_11")
-I_Loc\Menu_Random_12 = GetModdedINIString(StringsFile, "Menu", "random_12")
-I_Loc\Menu_Random_13 = GetModdedINIString(StringsFile, "Menu", "random_13")
-I_Loc\Menu_Random_14 = GetModdedINIString(StringsFile, "Menu", "random_14")
+I_Loc\Menu_Random[1] = GetModdedINIString(StringsFile, "Menu", "random_1")
+I_Loc\Menu_Random[2] = GetModdedINIString(StringsFile, "Menu", "random_2")
+I_Loc\Menu_Random[3] = GetModdedINIString(StringsFile, "Menu", "random_3")
+I_Loc\Menu_Random[4] = GetModdedINIString(StringsFile, "Menu", "random_4")
+I_Loc\Menu_Random[5] = GetModdedINIString(StringsFile, "Menu", "random_5")
+I_Loc\Menu_Random[6] = GetModdedINIString(StringsFile, "Menu", "random_6")
+I_Loc\Menu_Random[7] = GetModdedINIString(StringsFile, "Menu", "random_7")
+I_Loc\Menu_Random[8] = GetModdedINIString(StringsFile, "Menu", "random_8")
+I_Loc\Menu_Random[9] = GetModdedINIString(StringsFile, "Menu", "random_9")
+I_Loc\Menu_Random[10] = GetModdedINIString(StringsFile, "Menu", "random_10")
+I_Loc\Menu_Random[11] = GetModdedINIString(StringsFile, "Menu", "random_11")
+I_Loc\Menu_Random[12] = GetModdedINIString(StringsFile, "Menu", "random_12")
+I_Loc\Menu_Random[13] = GetModdedINIString(StringsFile, "Menu", "random_13")
+I_Loc\Menu_Random[14] = GetModdedINIString(StringsFile, "Menu", "random_14")
 I_Loc\Menu_Pause = GetModdedINIString(StringsFile, "Menu", "pause")
 I_Loc\Menu_Dead = GetModdedINIString(StringsFile, "Menu", "dead")
 I_Loc\Menu_Difficulty = GetModdedINIString(StringsFile, "Menu", "difficulty")
@@ -522,19 +477,19 @@ I_Loc\Menu_EndDocs = GetModdedINIString(StringsFile, "Menu", "end.docs")
 I_Loc\Menu_End914 = GetModdedINIString(StringsFile, "Menu", "end.914")
 I_Loc\Menu_End = GetModdedINIString(StringsFile, "Menu", "end")
 I_Loc\Menu_Loading = GetModdedINIString(StringsFile, "Menu", "loading")
-I_Loc\Menu_LoadingCwm_1 = GetModdedINIString(StringsFile, "Menu", "loading.cwm_1")
-I_Loc\Menu_LoadingCwm_2 = GetModdedINIString(StringsFile, "Menu", "loading.cwm_2")
-I_Loc\Menu_LoadingCwm_3 = GetModdedINIString(StringsFile, "Menu", "loading.cwm_3")
-I_Loc\Menu_LoadingCwm_4 = GetModdedINIString(StringsFile, "Menu", "loading.cwm_4")
-I_Loc\Menu_LoadingCwm_5 = GetModdedINIString(StringsFile, "Menu", "loading.cwm_5")
-I_Loc\Menu_LoadingCwm_6 = GetModdedINIString(StringsFile, "Menu", "loading.cwm_6")
-I_Loc\Menu_LoadingCwm_7 = GetModdedINIString(StringsFile, "Menu", "loading.cwm_7")
-I_Loc\Menu_LoadingCwm_8 = GetModdedINIString(StringsFile, "Menu", "loading.cwm_8")
-I_Loc\Menu_LoadingCwm_9 = GetModdedINIString(StringsFile, "Menu", "loading.cwm_9")
-I_Loc\Menu_LoadingCwm_10 = GetModdedINIString(StringsFile, "Menu", "loading.cwm_10")
-I_Loc\Menu_LoadingCwm_11 = GetModdedINIString(StringsFile, "Menu", "loading.cwm_11")
-I_Loc\Menu_LoadingCwm_12 = GetModdedINIString(StringsFile, "Menu", "loading.cwm_12")
-I_Loc\Menu_LoadingCwm_13 = GetModdedINIString(StringsFile, "Menu", "loading.cwm_13")
+I_Loc\Menu_LoadingCwm[1] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_1")
+I_Loc\Menu_LoadingCwm[2] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_2")
+I_Loc\Menu_LoadingCwm[3] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_3")
+I_Loc\Menu_LoadingCwm[4] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_4")
+I_Loc\Menu_LoadingCwm[5] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_5")
+I_Loc\Menu_LoadingCwm[6] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_6")
+I_Loc\Menu_LoadingCwm[7] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_7")
+I_Loc\Menu_LoadingCwm[8] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_8")
+I_Loc\Menu_LoadingCwm[9] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_9")
+I_Loc\Menu_LoadingCwm[10] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_10")
+I_Loc\Menu_LoadingCwm[11] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_11")
+I_Loc\Menu_LoadingCwm[12] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_12")
+I_Loc\Menu_LoadingCwm[13] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_13")
 I_Loc\Option_Graphics = GetModdedINIString(StringsFile, "Option", "graphics")
 I_Loc\Option_Audio = GetModdedINIString(StringsFile, "Option", "audio")
 I_Loc\Option_Controls = GetModdedINIString(StringsFile, "Option", "controls")
@@ -693,43 +648,43 @@ I_Loc\NPC_1048a = GetModdedINIString(StringsFile, "NPC", "1048a")
 I_Loc\NPC_Human = GetModdedINIString(StringsFile, "NPC", "human")
 I_Loc\NPC_Unidentified = GetModdedINIString(StringsFile, "NPC", "unidentified")
 I_Loc\Message_008Glassbreak = GetModdedINIString(StringsFile, "Message", "008.glassbreak")
-I_Loc\Message_008_1 = GetModdedINIString(StringsFile, "Message", "008_1")
-I_Loc\Message_008_2 = GetModdedINIString(StringsFile, "Message", "008_2")
-I_Loc\Message_008_3 = GetModdedINIString(StringsFile, "Message", "008_3")
-I_Loc\Message_008_4 = GetModdedINIString(StringsFile, "Message", "008_4")
-I_Loc\Message_012_1 = GetModdedINIString(StringsFile, "Message", "012_1")
-I_Loc\Message_012_2 = GetModdedINIString(StringsFile, "Message", "012_2")
-I_Loc\Message_012_3 = GetModdedINIString(StringsFile, "Message", "012_3")
-I_Loc\Message_012_4 = GetModdedINIString(StringsFile, "Message", "012_4")
+I_Loc\Message_008_1 = GetModdedINIString(StringsFile, "Message", "008.1")
+I_Loc\Message_008_2 = GetModdedINIString(StringsFile, "Message", "008.2")
+I_Loc\Message_008_3 = GetModdedINIString(StringsFile, "Message", "008.3")
+I_Loc\Message_008_4 = GetModdedINIString(StringsFile, "Message", "008.4")
+I_Loc\Message_012_1 = GetModdedINIString(StringsFile, "Message", "012.1")
+I_Loc\Message_012_2 = GetModdedINIString(StringsFile, "Message", "012.2")
+I_Loc\Message_012_3 = GetModdedINIString(StringsFile, "Message", "012.3")
+I_Loc\Message_012_4 = GetModdedINIString(StringsFile, "Message", "012.4")
 I_Loc\Message_294Two = GetModdedINIString(StringsFile, "Message", "294.two")
 I_Loc\Message_294One = GetModdedINIString(StringsFile, "Message", "294.one")
-I_Loc\Message_427_1 = GetModdedINIString(StringsFile, "Message", "427_1")
-I_Loc\Message_427_2 = GetModdedINIString(StringsFile, "Message", "427_2")
-I_Loc\Message_427_3 = GetModdedINIString(StringsFile, "Message", "427_3")
-I_Loc\Message_427_4 = GetModdedINIString(StringsFile, "Message", "427_4")
+I_Loc\Message_427_1 = GetModdedINIString(StringsFile, "Message", "427.1")
+I_Loc\Message_427_2 = GetModdedINIString(StringsFile, "Message", "427.2")
+I_Loc\Message_427_3 = GetModdedINIString(StringsFile, "Message", "427.3")
+I_Loc\Message_427_4 = GetModdedINIString(StringsFile, "Message", "427.4")
 I_Loc\Message_860Doorbudge = GetModdedINIString(StringsFile, "Message", "860.doorbudge")
 I_Loc\Message_914PlayerCoarse = GetModdedINIString(StringsFile, "Message", "914.player.coarse")
-I_Loc\Message_966Presence_1 = GetModdedINIString(StringsFile, "Message", "966.presence_1")
-I_Loc\Message_966Presence_2 = GetModdedINIString(StringsFile, "Message", "966.presence_2")
-I_Loc\Message_966Presence_3 = GetModdedINIString(StringsFile, "Message", "966.presence_3")
-I_Loc\Message_966Presence_4 = GetModdedINIString(StringsFile, "Message", "966.presence_4")
-I_Loc\Message_966Presence_5 = GetModdedINIString(StringsFile, "Message", "966.presence_5")
-I_Loc\Message_966Presence_6 = GetModdedINIString(StringsFile, "Message", "966.presence_6")
-I_Loc\Message_966Sleep_1 = GetModdedINIString(StringsFile, "Message", "966.sleep_1")
-I_Loc\Message_966Sleep_2 = GetModdedINIString(StringsFile, "Message", "966.sleep_2")
-I_Loc\Message_966Sleep_3 = GetModdedINIString(StringsFile, "Message", "966.sleep_3")
-I_Loc\Message_966Sleep_4 = GetModdedINIString(StringsFile, "Message", "966.sleep_4")
+I_Loc\Message_966Presence[1] = GetModdedINIString(StringsFile, "Message", "966.presence_1")
+I_Loc\Message_966Presence[2] = GetModdedINIString(StringsFile, "Message", "966.presence_2")
+I_Loc\Message_966Presence[3] = GetModdedINIString(StringsFile, "Message", "966.presence_3")
+I_Loc\Message_966Presence[4] = GetModdedINIString(StringsFile, "Message", "966.presence_4")
+I_Loc\Message_966Presence[5] = GetModdedINIString(StringsFile, "Message", "966.presence_5")
+I_Loc\Message_966Presence[6] = GetModdedINIString(StringsFile, "Message", "966.presence_6")
+I_Loc\Message_966Sleep[1] = GetModdedINIString(StringsFile, "Message", "966.sleep_1")
+I_Loc\Message_966Sleep[2] = GetModdedINIString(StringsFile, "Message", "966.sleep_2")
+I_Loc\Message_966Sleep[3] = GetModdedINIString(StringsFile, "Message", "966.sleep_3")
+I_Loc\Message_966Sleep[4] = GetModdedINIString(StringsFile, "Message", "966.sleep_4")
 I_Loc\Message_1025ChickenpoxItchy = GetModdedINIString(StringsFile, "Message", "1025.chickenpox.itchy")
-I_Loc\Message_1025Appendicitis_1 = GetModdedINIString(StringsFile, "Message", "1025.appendicitis_1")
-I_Loc\Message_1025Appendicitis_2 = GetModdedINIString(StringsFile, "Message", "1025.appendicitis_2")
+I_Loc\Message_1025Appendicitis1 = GetModdedINIString(StringsFile, "Message", "1025.appendicitis.1")
+I_Loc\Message_1025Appendicitis2 = GetModdedINIString(StringsFile, "Message", "1025.appendicitis.2")
 I_Loc\Message_1048a1 = GetModdedINIString(StringsFile, "Message", "1048a.1")
-I_Loc\Message_1048a2_1 = GetModdedINIString(StringsFile, "Message", "1048a.2_1")
-I_Loc\Message_1048a2_2 = GetModdedINIString(StringsFile, "Message", "1048a.2_2")
-I_Loc\Message_1048a2_3 = GetModdedINIString(StringsFile, "Message", "1048a.2_3")
-I_Loc\Message_1048a3_1 = GetModdedINIString(StringsFile, "Message", "1048a.3_1")
-I_Loc\Message_1048a3_2 = GetModdedINIString(StringsFile, "Message", "1048a.3_2")
-I_Loc\Message_1048a3_3 = GetModdedINIString(StringsFile, "Message", "1048a.3_3")
-I_Loc\Message_1048a3_4 = GetModdedINIString(StringsFile, "Message", "1048a.3_4")
+I_Loc\Message_1048a2[1] = GetModdedINIString(StringsFile, "Message", "1048a.2_1")
+I_Loc\Message_1048a2[2] = GetModdedINIString(StringsFile, "Message", "1048a.2_2")
+I_Loc\Message_1048a2[3] = GetModdedINIString(StringsFile, "Message", "1048a.2_3")
+I_Loc\Message_1048a3[1] = GetModdedINIString(StringsFile, "Message", "1048a.3_1")
+I_Loc\Message_1048a3[2] = GetModdedINIString(StringsFile, "Message", "1048a.3_2")
+I_Loc\Message_1048a3[3] = GetModdedINIString(StringsFile, "Message", "1048a.3_3")
+I_Loc\Message_1048a3[4] = GetModdedINIString(StringsFile, "Message", "1048a.3_4")
 I_Loc\Message_1162ExchangeFailure = GetModdedINIString(StringsFile, "Message", "1162.exchange.failure")
 I_Loc\Message_1162ExchangeSuccess = GetModdedINIString(StringsFile, "Message", "1162.exchange.success")
 I_Loc\Message_BloodlossFaint = GetModdedINIString(StringsFile, "Message", "bloodloss.faint")
@@ -822,11 +777,11 @@ I_Loc\MessageItem_VeryfinesyringeUseStomacheache = GetModdedINIString(StringsFil
 I_Loc\MessageItem_PillUse = GetModdedINIString(StringsFile, "Message Item", "pill.use")
 I_Loc\MessageItem_PillUseHealnausea = GetModdedINIString(StringsFile, "Message Item", "pill.use.healnausea")
 I_Loc\MessageItem_CigaretteUseUnable = GetModdedINIString(StringsFile, "Message Item", "cigarette.use.unable")
-I_Loc\MessageItem_CigaretteUse_1 = GetModdedINIString(StringsFile, "Message Item", "cigarette.use_1")
-I_Loc\MessageItem_CigaretteUse_2 = GetModdedINIString(StringsFile, "Message Item", "cigarette.use_2")
-I_Loc\MessageItem_CigaretteUse_3 = GetModdedINIString(StringsFile, "Message Item", "cigarette.use_3")
-I_Loc\MessageItem_CigaretteUse_4 = GetModdedINIString(StringsFile, "Message Item", "cigarette.use_4")
-I_Loc\MessageItem_CigaretteUse_5 = GetModdedINIString(StringsFile, "Message Item", "cigarette.use_5")
+I_Loc\MessageItem_CigaretteUse[1] = GetModdedINIString(StringsFile, "Message Item", "cigarette.use_1")
+I_Loc\MessageItem_CigaretteUse[2] = GetModdedINIString(StringsFile, "Message Item", "cigarette.use_2")
+I_Loc\MessageItem_CigaretteUse[3] = GetModdedINIString(StringsFile, "Message Item", "cigarette.use_3")
+I_Loc\MessageItem_CigaretteUse[4] = GetModdedINIString(StringsFile, "Message Item", "cigarette.use_4")
+I_Loc\MessageItem_CigaretteUse[5] = GetModdedINIString(StringsFile, "Message Item", "cigarette.use_5")
 I_Loc\MessageItem_420jUse714 = GetModdedINIString(StringsFile, "Message Item", "420j.use.714")
 I_Loc\MessageItem_420jUse = GetModdedINIString(StringsFile, "Message Item", "420j.use")
 I_Loc\MessageItem_420jUseNap = GetModdedINIString(StringsFile, "Message Item", "420j.use.nap")
@@ -903,8 +858,8 @@ I_Loc\DeathMessage_Ntf = GetModdedINIString(StringsFile, "Death Message", "ntf")
 I_Loc\DeathMessage_NtfBloodloss = GetModdedINIString(StringsFile, "Death Message", "ntf.bloodloss")
 I_Loc\DeathMessage_Tesla = GetModdedINIString(StringsFile, "Death Message", "tesla")
 I_Loc\DeathMessage_Killbat = GetModdedINIString(StringsFile, "Death Message", "killbat")
-I_Loc\DeathMessage_Suicide_1 = GetModdedINIString(StringsFile, "Death Message", "suicide_1")
-I_Loc\DeathMessage_Suicide_2 = GetModdedINIString(StringsFile, "Death Message", "suicide_2")
-I_Loc\DeathMessage_Suicide_3 = GetModdedINIString(StringsFile, "Death Message", "suicide_3")
-I_Loc\DeathMessage_Suicide_4 = GetModdedINIString(StringsFile, "Death Message", "suicide_4")
+I_Loc\DeathMessage_Suicide[1] = GetModdedINIString(StringsFile, "Death Message", "suicide_1")
+I_Loc\DeathMessage_Suicide[2] = GetModdedINIString(StringsFile, "Death Message", "suicide_2")
+I_Loc\DeathMessage_Suicide[3] = GetModdedINIString(StringsFile, "Death Message", "suicide_3")
+I_Loc\DeathMessage_Suicide[4] = GetModdedINIString(StringsFile, "Death Message", "suicide_4")
 I_Loc\DeathMessage_Gassed = GetModdedINIString(StringsFile, "Death Message", "gassed")

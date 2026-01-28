@@ -1342,16 +1342,7 @@ Function UpdateConsole()
 				Case "kill","suicide"
 					;[Block]
 					KillTimer = -1
-					Select Rand(4)
-						Case 1
-							DeathMSG = I_Loc\DeathMessage_Suicide_1
-						Case 2
-							DeathMSG = I_Loc\DeathMessage_Suicide_2
-						Case 3
-							DeathMSG = I_Loc\DeathMessage_Suicide_3
-						Case 4
-							DeathMSG = I_Loc\DeathMessage_Suicide_4
-					End Select
+					DeathMSG = I_Loc\DeathMessage_Suicide[Rand(4)]
 					;[End Block]
 				Case "playmusic"
 					;[Block]
@@ -4725,10 +4716,10 @@ Function MouseLook()
 						SCP1025state[i]=SCP1025state[i]+FPSfactor*0.0005
 					EndIf
 					If SCP1025state[i]>20.0 Then
-						If SCP1025state[i]-FPSfactor<=20.0 Then Msg=I_Loc\Message_1025Appendicitis_2 : MsgTimer = 70*4
+						If SCP1025state[i]-FPSfactor<=20.0 Then Msg=I_Loc\Message_1025Appendicitis2 : MsgTimer = 70*4
 						Stamina = Stamina - FPSfactor * 0.3
 					ElseIf SCP1025state[i]>10.0
-						If SCP1025state[i]-FPSfactor<=10.0 Then Msg=I_Loc\Message_1025Appendicitis_1 : MsgTimer = 70*4
+						If SCP1025state[i]-FPSfactor<=10.0 Then Msg=I_Loc\Message_1025Appendicitis1 : MsgTimer = 70*4
 					EndIf
 				Case 4 ;asthma
 					If Stamina < 35 Then
@@ -6522,18 +6513,18 @@ Function DrawGUI()
 						If SelectedItem\state = 0 Then
 							Select Rand(6)
 								Case 1
-									Msg = I_Loc\MessageItem_CigaretteUse_1
+									Msg = I_Loc\MessageItem_CigaretteUse[1]
 								Case 2
 									Msg = I_Loc\MessageItem_CigaretteUseUnable
 								Case 3
-									Msg = I_Loc\MessageItem_CigaretteUse_2
+									Msg = I_Loc\MessageItem_CigaretteUse[2]
 									RemoveItem(SelectedItem)
 								Case 4
-									Msg = I_Loc\MessageItem_CigaretteUse_3
+									Msg = I_Loc\MessageItem_CigaretteUse[3]
 								Case 5
-									Msg = I_Loc\MessageItem_CigaretteUse_4
+									Msg = I_Loc\MessageItem_CigaretteUse[4]
 								Case 6
-									Msg = I_Loc\MessageItem_CigaretteUse_5
+									Msg = I_Loc\MessageItem_CigaretteUse[5]
 									RemoveItem(SelectedItem)
 							End Select
 							SelectedItem\state = 1 
