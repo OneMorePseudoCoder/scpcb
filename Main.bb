@@ -3381,7 +3381,7 @@ While IsRunning
 		End If
 		
 		Color 255, 255, 255
-		If ShowFPS Then SetFont ConsoleFont : Text 20, 20, "FPS: " + FPS : SetFont Font1
+		If ShowFPS Then SetFont ConsoleFont : Text 20, 20, Format(I_Loc\HUD_Fps, FPS) : SetFont Font1
 		
 		If EndingTimer < 0 Then
 			If SelectedEnding <> "" Then DrawEnding()
@@ -3894,7 +3894,7 @@ Function DrawEnding()
 				
 				Color(255, 255, 255)
 				SetFont Font2
-				Text(x + width / 2 + 40*MenuScale, y + 20*MenuScale, "THE END", True)
+				Text(x + width / 2 + 40*MenuScale, y + 20*MenuScale, I_Loc\Menu_End, True)
 				SetFont Font1
 				
 				If AchievementsMenu=0 Then 
@@ -4135,49 +4135,6 @@ Function DrawCredits()
 	EndIf
     
 End Function
-
-;[Block]
-;Function SetSaveMSG(txt$)
-;	
-;	Save_MSG = txt
-;	Save_MSG_Timer = 0.0
-;	Save_MSG_Y = 0.0
-;	
-;End Function
-;
-;Function UpdateSaveMSG()
-;	Local scale# = GraphicHeight/768.0
-;	;Local width% = 200*scale
-;	Local width = StringWidth(Save_MSG)+20*scale
-;	Local height% = 30*scale
-;	Local x% = (GraphicWidth/2)-(width/2)
-;	Local y% = (-height)+Save_MSG_Y
-;	
-;	If Save_MSG <> ""
-;		If Save_MSG_Timer < 70*5
-;			If Save_MSG_Y < height
-;				Save_MSG_Y = Min(Save_MSG_Y+2*FPSfactor2,height)
-;			Else
-;				Save_MSG_Y = height
-;			EndIf
-;			Save_MSG_Timer = Save_MSG_Timer + FPSfactor2
-;		Else
-;			If Save_MSG_Y > 0
-;				Save_MSG_Y = Max(Save_MSG_Y-2*FPSfactor2,0)
-;			Else
-;				Save_MSG = ""
-;				Save_MSG_Timer = 0.0
-;				Save_MSG_Y = 0.0
-;			EndIf
-;		EndIf
-;		DrawFrame(x,y,width,height)
-;		Color 255,255,255
-;		SetFont Font1
-;		Text(GraphicWidth/2,y+(height/2),Save_MSG,True,True)
-;	EndIf
-;	
-;End Function
-;[End Block]
 
 ;--------------------------------------- player controls -------------------------------------------
 
@@ -6449,7 +6406,6 @@ Function DrawGUI()
 							Color (30,30,30)
 							
 							If SelectedItem\state <= 100 Then
-								;Text (x - 60, y - 20, "BATTERY")
 								For i = 0 To 4
 									Rect(x, y+8*i*HUDScale, (43 - i * 6)*HUDScale, 4*HUDScale, Ceil(SelectedItem\state / 20.0) > 4 - i )
 								Next
@@ -6603,13 +6559,10 @@ Function DrawGUI()
 								DropItem(SelectedItem)
 							Else
 								If SelectedItem\itemtemplate\name="hazmatsuit" Then
-									;Msg = "Hazmat1."
 									WearingHazmat = 1
 								ElseIf SelectedItem\itemtemplate\name="hazmatsuit2" Then
-									;Msg = "Hazmat2."
 									WearingHazmat = 2
 								Else
-									;Msg = "Hazmat3."
 									WearingHazmat = 3
 								EndIf
 								If SelectedItem\itemtemplate\sound <> 66 Then PlaySound_Strict(PickSFX(SelectedItem\itemtemplate\sound))
@@ -6919,17 +6872,14 @@ Function DrawGUI()
 					
 					If SelectedItem\state=100 Then
 						If Wearing1499>0 Then
-							;Msg = "1499remove."
 							SecondaryLightOn = PrevSecondaryLightOn
 							Wearing1499 = False
 							;DropItem(SelectedItem)
 							If SelectedItem\itemtemplate\sound <> 66 Then PlaySound_Strict(PickSFX(SelectedItem\itemtemplate\sound))
 						Else
 							If SelectedItem\itemtemplate\name="scp1499" Then
-								;Msg = "scp1499."
 								Wearing1499 = 1
 							Else
-								;Msg = "super1499."
 								Wearing1499 = 2
 							EndIf
 							If SelectedItem\itemtemplate\sound <> 66 Then PlaySound_Strict(PickSFX(SelectedItem\itemtemplate\sound))
@@ -7370,8 +7320,8 @@ Function DrawMenu()
 		
 		If AchievementsMenu <= 0 And OptionsMenu <= 0 And QuitMSG <= 0
 			SetFont Font1
-			Text x, y, "Difficulty: "+SelectedDifficulty\name
-			Text x, y+20*MenuScale, I_Loc\Menu_Save+ " "+CurrSave
+			Text x, y, I_Loc\Menu_Difficulty+" "+SelectedDifficulty\name
+			Text x, y+20*MenuScale, I_Loc\Menu_Save+" "+CurrSave
 			Text x, y+40*MenuScale, GetSeedString()
 		ElseIf AchievementsMenu <= 0 And OptionsMenu > 0 And QuitMSG <= 0 And KillTimer >= 0
 			If DrawButton(x + 101 * MenuScale, y + 390 * MenuScale, 230 * MenuScale, 60 * MenuScale, I_Loc\Menu_Back) Then
@@ -7530,9 +7480,9 @@ Function DrawMenu()
 						Text x, y, I_Loc\OptionName_Usertrackmode
 						UserTrackMode = DrawTick(x + 270 * MenuScale, y + MenuScale, UserTrackMode)
 						If UserTrackMode
-							Text x, y + 20 * MenuScale, "Repeat"
+							Text x, y + 20 * MenuScale, I_Loc\OptionName_UsertrackmodeRepeat
 						Else
-							Text x, y + 20 * MenuScale, "Random"
+							Text x, y + 20 * MenuScale, I_Loc\OptionName_UsertrackmodeRandom
 						EndIf
 						If MouseOn(x+270*MenuScale,y+MenuScale,20*MenuScale,20*MenuScale) And OnSliderID=0
 							DrawOptionsTooltip(tx,ty,tw,th,"usertrackmode")
@@ -7723,7 +7673,7 @@ Function DrawMenu()
 						CurrFrameLimit# = Max(CurrFrameLimit, 0.01)
 						Framelimit% = 19+(CurrFrameLimit*100.0)
 						Color 255,255,0
-						Text(x + 5 * MenuScale, y + 25 * MenuScale, Framelimit%+" FPS")
+						Text(x + 5 * MenuScale, y + 25 * MenuScale, Format(I_Loc\OptionName_FramelimitFps, Framelimit%))
 						If (MouseOn(x+150*MenuScale,y+30*MenuScale,100*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=1
 							DrawOptionsTooltip(tx,ty,tw,th,"framelimit",Framelimit)
 						EndIf

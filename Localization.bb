@@ -65,6 +65,7 @@ Type LocalizationTable
     Field Menu_EndRooms$
     Field Menu_EndDocs$
     Field Menu_End914$
+    Field Menu_End$
     Field Menu_Loading$
     Field Menu_LoadingCwm_1$
     Field Menu_LoadingCwm_2$
@@ -101,7 +102,10 @@ Type LocalizationTable
     Field OptionName_Sfxautorelease$
     Field OptionName_Usertrack$
     Field OptionName_Usertrackmode$
+    Field OptionName_UsertrackmodeRepeat$
+    Field OptionName_UsertrackmodeRandom$
     Field OptionName_Usertrackscan$
+    Field OptionName_UsertrackscanFound$
     Field OptionName_Mousesensitivity$
     Field OptionName_Mouseinvert$
     Field OptionName_Mousesmoothing$
@@ -125,6 +129,7 @@ Type LocalizationTable
     Field OptionName_Launcher$
     Field OptionName_Showfps$
     Field OptionName_Framelimit$
+    Field OptionName_FramelimitFps$
     Field OptionTooltip_Vsync$
     Field OptionTooltip_Antialias$
     Field OptionTooltip_Gamma$
@@ -163,13 +168,16 @@ Type LocalizationTable
     Field Mods_UpdateFailed$
     Field Mods_Viewterms$
     Field Mods_Keepdesc$
+    Field Mods_Nomods$
     Field LoadGame_Load$
     Field LoadGame_Delete$
     Field LoadGame_DeleteConfirm$
+    Field LoadGame_Nosaved$
     Field NewGame_Name$
     Field NewGame_Enableintro$
     Field NewGame_Start$
     Field NewGame_Loadmap$
+    Field NewGame_LoadmapUpper$
     Field NewGame_Deselect$
     Field NewGame_Untitled$
     Field Difficulty_Safe$
@@ -193,6 +201,8 @@ Type LocalizationTable
     Field LoadMap_Custommaintenance$
     Field LoadMap_Unknown$
     Field LoadMap_Nodesc$
+    Field LoadMap_Nomaps$
+    Field HUD_Fps$
     Field HUD_AchvUnlocked$
     Field HUD_RadioChannel$
     Field HUD_RadioUsertrack$
@@ -510,6 +520,7 @@ I_Loc\Menu_EndAchv = GetModdedINIString(StringsFile, "Menu", "end.achv")
 I_Loc\Menu_EndRooms = GetModdedINIString(StringsFile, "Menu", "end.rooms")
 I_Loc\Menu_EndDocs = GetModdedINIString(StringsFile, "Menu", "end.docs")
 I_Loc\Menu_End914 = GetModdedINIString(StringsFile, "Menu", "end.914")
+I_Loc\Menu_End = GetModdedINIString(StringsFile, "Menu", "end")
 I_Loc\Menu_Loading = GetModdedINIString(StringsFile, "Menu", "loading")
 I_Loc\Menu_LoadingCwm_1 = GetModdedINIString(StringsFile, "Menu", "loading.cwm_1")
 I_Loc\Menu_LoadingCwm_2 = GetModdedINIString(StringsFile, "Menu", "loading.cwm_2")
@@ -546,7 +557,10 @@ I_Loc\OptionName_Soundvol = GetModdedINIString(StringsFile, "Option Name", "soun
 I_Loc\OptionName_Sfxautorelease = GetModdedINIString(StringsFile, "Option Name", "sfxautorelease")
 I_Loc\OptionName_Usertrack = GetModdedINIString(StringsFile, "Option Name", "usertrack")
 I_Loc\OptionName_Usertrackmode = GetModdedINIString(StringsFile, "Option Name", "usertrackmode")
+I_Loc\OptionName_UsertrackmodeRepeat = GetModdedINIString(StringsFile, "Option Name", "usertrackmode.repeat")
+I_Loc\OptionName_UsertrackmodeRandom = GetModdedINIString(StringsFile, "Option Name", "usertrackmode.random")
 I_Loc\OptionName_Usertrackscan = GetModdedINIString(StringsFile, "Option Name", "usertrackscan")
+I_Loc\OptionName_UsertrackscanFound = GetModdedINIString(StringsFile, "Option Name", "usertrackscan.found")
 I_Loc\OptionName_Mousesensitivity = GetModdedINIString(StringsFile, "Option Name", "mousesensitivity")
 I_Loc\OptionName_Mouseinvert = GetModdedINIString(StringsFile, "Option Name", "mouseinvert")
 I_Loc\OptionName_Mousesmoothing = GetModdedINIString(StringsFile, "Option Name", "mousesmoothing")
@@ -570,6 +584,7 @@ I_Loc\OptionName_Achpopup = GetModdedINIString(StringsFile, "Option Name", "achp
 I_Loc\OptionName_Launcher = GetModdedINIString(StringsFile, "Option Name", "launcher")
 I_Loc\OptionName_Showfps = GetModdedINIString(StringsFile, "Option Name", "showfps")
 I_Loc\OptionName_Framelimit = GetModdedINIString(StringsFile, "Option Name", "framelimit")
+I_Loc\OptionName_FramelimitFps = GetModdedINIString(StringsFile, "Option Name", "framelimit.fps")
 I_Loc\OptionTooltip_Vsync = GetModdedINIString(StringsFile, "Option Tooltip", "vsync")
 I_Loc\OptionTooltip_Antialias = GetModdedINIString(StringsFile, "Option Tooltip", "antialias")
 I_Loc\OptionTooltip_Gamma = GetModdedINIString(StringsFile, "Option Tooltip", "gamma")
@@ -608,13 +623,16 @@ I_Loc\Mods_UpdateConfirm = GetModdedINIString(StringsFile, "Mods", "update.confi
 I_Loc\Mods_UpdateFailed = GetModdedINIString(StringsFile, "Mods", "update.failed")
 I_Loc\Mods_Viewterms = GetModdedINIString(StringsFile, "Mods", "viewterms")
 I_Loc\Mods_Keepdesc = GetModdedINIString(StringsFile, "Mods", "keepdesc")
+I_Loc\Mods_Nomods = GetModdedINIString(StringsFile, "Mods", "nomods")
 I_Loc\LoadGame_Load = GetModdedINIString(StringsFile, "Load Game", "load")
 I_Loc\LoadGame_Delete = GetModdedINIString(StringsFile, "Load Game", "delete")
 I_Loc\LoadGame_DeleteConfirm = GetModdedINIString(StringsFile, "Load Game", "delete.confirm")
+I_Loc\LoadGame_Nosaved = GetModdedINIString(StringsFile, "Load Game", "nosaved")
 I_Loc\NewGame_Name = GetModdedINIString(StringsFile, "New Game", "name")
 I_Loc\NewGame_Enableintro = GetModdedINIString(StringsFile, "New Game", "enableintro")
 I_Loc\NewGame_Start = GetModdedINIString(StringsFile, "New Game", "start")
 I_Loc\NewGame_Loadmap = GetModdedINIString(StringsFile, "New Game", "loadmap")
+I_Loc\NewGame_LoadmapUpper = GetModdedINIString(StringsFile, "New Game", "loadmap.upper")
 I_Loc\NewGame_Deselect = GetModdedINIString(StringsFile, "New Game", "deselect")
 I_Loc\NewGame_Untitled = GetModdedINIString(StringsFile, "New Game", "untitled")
 I_Loc\Difficulty_Safe = GetModdedINIString(StringsFile, "Difficulty", "safe")
@@ -638,6 +656,8 @@ I_Loc\LoadMap_Customforest = GetModdedINIString(StringsFile, "Load Map", "custom
 I_Loc\LoadMap_Custommaintenance = GetModdedINIString(StringsFile, "Load Map", "custommaintenance")
 I_Loc\LoadMap_Unknown = GetModdedINIString(StringsFile, "Load Map", "unknown")
 I_Loc\LoadMap_Nodesc = GetModdedINIString(StringsFile, "Load Map", "nodesc")
+I_Loc\LoadMap_Nomaps = GetModdedINIString(StringsFile, "Load Map", "nomaps")
+I_Loc\HUD_Fps = GetModdedINIString(StringsFile, "HUD", "fps")
 I_Loc\HUD_AchvUnlocked = GetModdedINIString(StringsFile, "HUD", "achv.unlocked")
 I_Loc\HUD_RadioChannel = GetModdedINIString(StringsFile, "HUD", "radio.channel")
 I_Loc\HUD_RadioUsertrack = GetModdedINIString(StringsFile, "HUD", "radio.usertrack")

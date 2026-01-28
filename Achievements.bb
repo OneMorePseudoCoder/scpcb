@@ -74,8 +74,6 @@ Function GiveAchievement(achvname%, showMessage%=True)
 		Achievements(achvname)=True
 		Local loc2% = -1
 		If AchvMSGenabled And showMessage Then
-			;Msg = "Achievement Unlocked - "+AchievementName
-			;MsgTimer=70*7
 			CreateAchievementMsg(achvname,AchievementStrings(achvname))
 		EndIf
 		; The "Fair Play" achievement cannot be found on Steam because every achievement there requires the console to not be used.
