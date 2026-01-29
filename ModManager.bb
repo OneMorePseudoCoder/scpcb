@@ -130,8 +130,16 @@ Function SerializeMods()
     CloseFile(f)
 End Function
 
+Const LOCALIZATIONS_DIR$ = "Localization\"
+
 Function UpdateActiveMods()
     Delete Each ActiveMods
+    Local mm.ActiveMods
+    Local locale$ = GetOptionString("general", "locale")
+    If locale <> "" And FileType(LOCALIZATIONS_DIR + locale) = 2 Then
+        mm = New ActiveMods
+        mm\Path = LOCALIZATIONS_DIR + locale + "\"
+    EndIf
     For m.Mods = Each Mods
         If m\IsActive Then
             mm.ActiveMods = New ActiveMods

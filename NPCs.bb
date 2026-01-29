@@ -4059,20 +4059,7 @@ Function UpdateNPCs()
 					If (WearingNightVision=0) Then
 						HideEntity n\obj
 						If dist<1 And n\Reload <= 0 Then
-							Select Rand(6)
-								Case 1
-									Msg=I_Loc\Message_966Presence_1
-								Case 2
-									Msg=I_Loc\Message_966Presence_2
-								Case 3
-									Msg=I_Loc\Message_966Presence_3
-								Case 4
-									Msg=I_Loc\Message_966Presence_4
-								Case 5
-									Msg=I_Loc\Message_966Presence_5
-								Case 6
-									Msg=I_Loc\Message_966Presence_6
-							End Select
+							Msg = I_Loc\Message_966Presence[Rand(6)]
                             n\Reload = 20*70
 							MsgTimer=8*70
 						EndIf
@@ -4161,17 +4148,7 @@ Function UpdateNPCs()
 								
 								If (Not Wearing714) And (WearingGasMask<3) And (WearingHazmat<3) And dist<16 Then
 									If StaminaEffect<1.5 Then
-										Select Rand(4)
-											Case 1
-												Msg = I_Loc\Message_966Sleep_1
-											Case 2
-												Msg = I_Loc\Message_966Sleep_2
-											Case 3
-												Msg = I_Loc\Message_966Sleep_3
-											Case 4
-												Msg = I_Loc\Message_966Sleep_4
-										End Select
-										
+										Msg = I_Loc\Message_966Sleep[Rand(4)]
 										MsgTimer = 7*70
 									EndIf
 									
@@ -4429,28 +4406,10 @@ Function UpdateNPCs()
 						BlurTimer = n\State2*2.0
 						
 						If (n\State2>250.0 And n\State2-FPSfactor <= 250.0) Then
-							Select Rand(3)
-								Case 1
-									Msg = I_Loc\Message_1048a2_1
-								Case 2
-									Msg = I_Loc\Message_1048a2_2
-								Case 3
-									Msg = I_Loc\Message_1048a2_3
-							End Select
-							
+							Msg = I_Loc\Message_1048a2[Rand(3)]
 							MsgTimer = 70.0 * 3.0
 						Else If (n\State2>600.0 And n\State2-FPSfactor <= 600.0)
-							Select Rand(4)
-								Case 1
-									Msg = I_Loc\Message_1048a3_1
-								Case 2
-									Msg = I_Loc\Message_1048a3_2
-								Case 3
-									Msg = I_Loc\Message_1048a3_3
-								Case 4
-									Msg = I_Loc\Message_1048a3_4
-							End Select
-							
+							Msg = I_Loc\Message_1048a3[Rand(4)]
 							MsgTimer = 70.0 * 5.0
 						EndIf
 						

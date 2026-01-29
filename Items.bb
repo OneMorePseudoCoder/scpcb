@@ -279,9 +279,11 @@ Type Items
 	Field SecondInv.Items[20]
 	Field ID%
 	Field invSlots%
+
+	Field drinkName$
 End Type 
 
-Function CreateItem.Items(name$, x#, y#, z#, r%=0,g%=0,b%=0,a#=1.0,invSlots%=0)
+Function CreateItem.Items(name$, x#, y#, z#, invSlots%=0)
 	CatchErrors("Uncaught (CreateItem)")
 	
 	Local i.Items = New Items
@@ -313,31 +315,6 @@ Function CreateItem.Items(name$, x#, y#, z#, r%=0,g%=0,b%=0,a#=1.0,invSlots%=0)
 	i\dist = EntityDistance(Collider, i\collider)
 	i\DropSpeed = 0.0
 	
-	If name = "cup" Then
-		i\state = 1.0
-		
-		i\r=r
-		i\g=g
-		i\b=b
-		i\a=a
-		
-		Local liquid = CopyEntity(LiquidObj)
-		ScaleEntity liquid, i\itemtemplate\scale,i\itemtemplate\scale,i\itemtemplate\scale,True
-		PositionEntity liquid, EntityX(i\collider,True),EntityY(i\collider,True),EntityZ(i\collider,True)
-		EntityParent liquid, i\model
-		EntityColor liquid, r,g,b
-		
-		If a < 0 Then 
-			EntityFX liquid, 1
-			EntityAlpha liquid, Abs(a)
-		Else
-			EntityAlpha liquid, Abs(a)
-		EndIf
-		
-		
-		EntityShininess liquid, 1.0
-	EndIf
-	
 	i\invimg = i\itemtemplate\invimg
 	If (name="clipboard") And (invSlots=0) Then
 		invSlots = 10
@@ -354,6 +331,42 @@ Function CreateItem.Items(name$, x#, y#, z#, r%=0,g%=0,b%=0,a#=1.0,invSlots%=0)
 	LastItemID=i\ID
 	
 	CatchErrors("CreateItem")
+	Return i
+End Function
+
+Function CreateCup.Items(drinkName$, x#, y#, z#, r%, g%, b%, a#=1.0)
+	CatchErrors("Uncaught (CreateCup)")
+
+	Local i.Items = CreateItem("cup", x, y, z)
+
+	i\drinkName = drinkName
+	i\displayname = Format(I_Loc\Cup_Of, drinkName)
+
+	i\state = 1.0
+		
+	i\r=r
+	i\g=g
+	i\b=b
+	i\a=a
+	
+	Local liquid = CopyEntity(LiquidObj)
+	ScaleEntity liquid, i\itemtemplate\scale,i\itemtemplate\scale,i\itemtemplate\scale,True
+	PositionEntity liquid, EntityX(i\collider,True),EntityY(i\collider,True),EntityZ(i\collider,True)
+	EntityParent liquid, i\model
+	EntityColor liquid, r,g,b
+	
+	If a < 0 Then 
+		EntityFX liquid, 1
+		EntityAlpha liquid, Abs(a)
+		DebugLog "DOING DAAAA " + Abs(a)
+	Else
+		EntityAlpha liquid, Abs(a)
+		DebugLog "DOING DAAAA " + Abs(a)
+	EndIf
+	
+	EntityShininess liquid, 1.0
+	
+	CatchErrors("CreateCup")
 	Return i
 End Function
 

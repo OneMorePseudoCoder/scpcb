@@ -153,16 +153,23 @@ Global HUDScaleFactor# = GetOptionFloat("graphics", "hud scale factor")
 Const StringsFile$ = "Data\strings.ini"
 Include "Localization.bb"
 
-If LauncherEnabled And (Not IsRestart) Then 
-	AspectRatioRatio = 1.0
-	UpdateLauncher()
-Else If Fullscreen And (Not GfxMode3DExists(GraphicWidth, GraphicHeight, 32)) Then
-	; Exclusive fullscreen ONLY supports the reported resolutions
-	AspectRatioRatio = 1.0
+Global I_Loc.LocalizationTable
+If I_Loc <> Null Then Delete I_Loc ; Happens on reload
+I_Loc = New LocalizationTable
+For m.ActiveMods = Each ActiveMods
+	Local modPath$ = m\Path + StringsFile
+	If FileType(modPath) = 1 Then LoadLocalization(I_Loc, modPath)
+Next
+LoadLocalization(I_Loc, StringsFile)
+
+; Exclusive fullscreen ONLY supports the reported resolutions
+If LauncherEnabled And (Not IsRestart) Lor Fullscreen And (Not GfxMode3DExists(GraphicWidth, GraphicHeight, 32-16*Bit16Mode)) Then
 	UpdateLauncher()
 EndIf
+
+SetGfxDriver(SelectedGFXDriver)
 Global GFXDriverName$ = GFXDriverName(1)
-	
+
 ;New "fake fullscreen" - ENDSHN Psst, it's called borderless windowed mode --Love Mark,
 If BorderlessWindowed
 	DebugLog "Using Faked Fullscreen"
@@ -263,8 +270,6 @@ Global BlinkMeterIMG% = LoadImage_Strict("GFX\blinkmeter.jpg")
 ScaleImage(BlinkMeterIMG, HUDScale, HUDScale)
 
 DrawLoading(0, True)
-
-DrawLoading(5, True)
 
 ; - -Viewport.
 Global viewport_center_x% = RealGraphicWidth / 2, viewport_center_y% = RealGraphicHeight / 2
@@ -1330,16 +1335,7 @@ Function UpdateConsole()
 				Case "kill","suicide"
 					;[Block]
 					KillTimer = -1
-					Select Rand(4)
-						Case 1
-							DeathMSG = I_Loc\DeathMessage_Suicide_1
-						Case 2
-							DeathMSG = I_Loc\DeathMessage_Suicide_2
-						Case 3
-							DeathMSG = I_Loc\DeathMessage_Suicide_3
-						Case 4
-							DeathMSG = I_Loc\DeathMessage_Suicide_4
-					End Select
+					DeathMSG = I_Loc\DeathMessage_Suicide[Rand(4)]
 					;[End Block]
 				Case "playmusic"
 					;[Block]
@@ -2759,13 +2755,7 @@ Function InitEvents()
 	CreateEvent("room966","room966", 0)
 	
 	CreateEvent("room1123", "room1123", 0, 0)
-	;CreateEvent("room2test1074","room2test1074",0)
-	;CreateEvent("room038","room038",0,0)
-	;CreateEvent("room009","room009",0,0)
-	;CreateEvent("medibay", "medibay", 0)
-	;CreateEvent("room409", "room409", 0)
-	;CreateEvent("room178", "room178", 0)
-	;CreateEvent("room020", "room020", 0)
+	
 	CreateEvent("room2tesla", "room2tesla_lcz", 0, 0.9)
 	CreateEvent("room2tesla", "room2tesla_hcz", 0, 0.9)
 	
@@ -3818,7 +3808,7 @@ Function DrawEnding()
 	
 	GiveAchievement(Achv055)
 	If (Not UsedConsole) Then GiveAchievement(AchvConsole)
-	If SelectedDifficulty\name = "Keter" Then GiveAchievement(AchvKeter)
+	If SelectedDifficulty = difficulties[KETER] Then GiveAchievement(AchvKeter)
 	Local x,y,width,height, temp
 	Local itt.ItemTemplates, r.Rooms
 	
@@ -4680,10 +4670,10 @@ Function MouseLook()
 						SCP1025state[i]=SCP1025state[i]+FPSfactor*0.0005
 					EndIf
 					If SCP1025state[i]>20.0 Then
-						If SCP1025state[i]-FPSfactor<=20.0 Then Msg=I_Loc\Message_1025Appendicitis_2 : MsgTimer = 70*4
+						If SCP1025state[i]-FPSfactor<=20.0 Then Msg=I_Loc\Message_1025Appendicitis2 : MsgTimer = 70*4
 						Stamina = Stamina - FPSfactor * 0.3
 					ElseIf SCP1025state[i]>10.0
-						If SCP1025state[i]-FPSfactor<=10.0 Then Msg=I_Loc\Message_1025Appendicitis_1 : MsgTimer = 70*4
+						If SCP1025state[i]-FPSfactor<=10.0 Then Msg=I_Loc\Message_1025Appendicitis1 : MsgTimer = 70*4
 					EndIf
 				Case 4 ;asthma
 					If Stamina < 35 Then
@@ -5509,10 +5499,10 @@ Function DrawGUI()
 						Inventory(MouseSlot) = SelectedItem
 						SelectedItem = Null
 					ElseIf Inventory(MouseSlot) <> SelectedItem
-						Local paperSelector$ = ""
-						If SelectedItem\itemtemplate\group = "paper" Then paperSelector = SelectedItem\itemtemplate\name
+						Local groupSelector$ = ""
+						If SelectedItem\itemtemplate\group = "paper" Lor SelectedItem\itemtemplate\group = "misc" Then groupSelector = SelectedItem\itemtemplate\name
 						Select SelectedItem\itemtemplate\name
-							Case paperSelector,"key1","key2","key3","key4","key5","key6","misc","oldpaper","badge","oldbadge","ticket","25ct","coin","key","scp860"
+							Case groupSelector,"key1","key2","key3","key4","key5","key6","oldpaper","badge","oldbadge","ticket","25ct","coin","key","scp860"
 								;[Block]
 								If Inventory(MouseSlot)\itemtemplate\name = "clipboard" Then
 									;Add an item to clipboard
@@ -6002,12 +5992,7 @@ Function DrawGUI()
 				Case "cup"
 					;[Block]
 					If CanUseItem(False,False,True)
-						strtemp = Trim(Lower(SelectedItem\displayname)) ; TODOOOOO
-						If Left(strtemp, 6) = "cup of" Then
-							strtemp = Right(strtemp, Len(strtemp)-7)
-						ElseIf Left(strtemp, 8) = "a cup of"
-							strtemp = Right(strtemp, Len(strtemp)-9)
-						EndIf
+						strtemp = SelectedItem\drinkName
 
 						Local iniStr$ = "DATA\SCP-294.ini"
 						Local loc% = -1
@@ -6473,23 +6458,23 @@ Function DrawGUI()
 					;[Block]
 					If CanUseItem(False,False,True)
 						If SelectedItem\state = 0 Then
+							SelectedItem\state = 1
 							Select Rand(6)
 								Case 1
-									Msg = I_Loc\MessageItem_CigaretteUse_1
+									Msg = I_Loc\MessageItem_CigaretteUse[1]
 								Case 2
 									Msg = I_Loc\MessageItem_CigaretteUseUnable
 								Case 3
-									Msg = I_Loc\MessageItem_CigaretteUse_2
+									Msg = I_Loc\MessageItem_CigaretteUse[2]
 									RemoveItem(SelectedItem)
 								Case 4
-									Msg = I_Loc\MessageItem_CigaretteUse_3
+									Msg = I_Loc\MessageItem_CigaretteUse[3]
 								Case 5
-									Msg = I_Loc\MessageItem_CigaretteUse_4
+									Msg = I_Loc\MessageItem_CigaretteUse[4]
 								Case 6
-									Msg = I_Loc\MessageItem_CigaretteUse_5
+									Msg = I_Loc\MessageItem_CigaretteUse[5]
 									RemoveItem(SelectedItem)
 							End Select
-							SelectedItem\state = 1 
 						Else
 							Msg = I_Loc\MessageItem_CigaretteUseUnable
 						EndIf
@@ -7319,7 +7304,7 @@ Function DrawMenu()
 		
 		If AchievementsMenu <= 0 And OptionsMenu <= 0 And QuitMSG <= 0
 			SetFont Font1
-			Text x, y, I_Loc\Menu_Difficulty+" "+SelectedDifficulty\name
+			Text x, y, I_Loc\Menu_Difficulty+" "+SelectedDifficulty\localName
 			Text x, y+20*MenuScale, I_Loc\Menu_Save+" "+CurrSave
 			Text x, y+40*MenuScale, GetSeedString()
 		ElseIf AchievementsMenu <= 0 And OptionsMenu > 0 And QuitMSG <= 0 And KillTimer >= 0
@@ -9039,8 +9024,11 @@ Function NullGame(playbuttonsfx%=True)
 
 	;DeInitExt
 	
+	CatchErrors("Clear World")
 	; Don't clear shaders
 	ClearWorld(1, 1, 1, 0)
+	CatchErrors("Uncaught (Clear World)")
+
 	Camera = 0
 	ark_blur_cam = 0
 	Collider = 0
@@ -10118,16 +10106,13 @@ Function Use914(item.Items, setting$, x#, y#, z#)
 					d.Decals = CreateDecal(0, x, 8 * RoomScale + 0.010, z, 90, Rand(360), 0)
 					d\Size = 0.2 : EntityAlpha(d\obj, 0.8) : ScaleSprite(d\obj, d\Size, d\Size)
 				Case "1:1"
-					it2 = CreateItem("cup", x,y,z, 255-item\r,255-item\g,255-item\b,item\a)
-					it2\displayname = item\displayname
+					it2 = CreateCup(item\drinkName, x,y,z, 255-item\r,255-item\g,255-item\b,item\a)
 					it2\state = item\state
 				Case "fine"
-					it2 = CreateItem("cup", x,y,z, Min(item\r*Rnd(0.9,1.1),255),Min(item\g*Rnd(0.9,1.1),255),Min(item\b*Rnd(0.9,1.1),255),item\a)
-					it2\displayname = item\displayname
+					it2 = CreateCup(item\drinkName, x,y,z, Min(item\r*Rnd(0.9,1.1),255),Min(item\g*Rnd(0.9,1.1),255),Min(item\b*Rnd(0.9,1.1),255),item\a)
 					it2\state = item\state+1.0
 				Case "very fine"
-					it2 = CreateItem("cup", x,y,z, Min(item\r*Rnd(0.5,1.5),255),Min(item\g*Rnd(0.5,1.5),255),Min(item\b*Rnd(0.5,1.5),255),item\a)
-					it2\displayname = item\displayname
+					it2 = CreateCup(item\drinkName, x,y,z, Min(item\r*Rnd(0.5,1.5),255),Min(item\g*Rnd(0.5,1.5),255),Min(item\b*Rnd(0.5,1.5),255),item\a)
 					it2\state = item\state*2
 					If Rand(5)=1 Then
 						ExplosionTimer = 135
@@ -10281,11 +10266,12 @@ Function Use294()
 			
 			If temp And Input294<>"" Then ;dispense
 				Input294 = Trim(Lower(Input294))
-				If Left(Input294, Min(7,Len(Input294))) = "cup of " Then
-					Input294 = Right(Input294, Len(Input294)-7)
-				ElseIf Left(Input294, Min(9,Len(Input294))) = "a cup of " 
-					Input294 = Right(Input294, Len(Input294)-9)
-				EndIf
+				For i = 1 To 2
+					Local prefix$ = I_Loc\Cup_OfPrefix[i] + " "
+					If Left(Input294, Min(Len(prefix),Len(Input294))) = prefix Then
+						Input294 = Right(Input294, Len(Input294)-Len(prefix))
+					EndIf
+				Next
 				
 				Local iniStr$ = "DATA\SCP-294.ini"
 				Local loc% = -1
@@ -10340,8 +10326,7 @@ Function Use294()
 					;If alpha = 0 Then alpha = 1.0
 					If glow Then alpha = -alpha
 					
-					it.items = CreateItem("cup", EntityX(PlayerRoom\Objects[1],True),EntityY(PlayerRoom\Objects[1],True),EntityZ(PlayerRoom\Objects[1],True), r,g,b,alpha)
-					it\displayname = "Cup of "+Input294
+					it.items = CreateCup(Input294, EntityX(PlayerRoom\Objects[1],True),EntityY(PlayerRoom\Objects[1],True),EntityZ(PlayerRoom\Objects[1],True), r,g,b,alpha)
 					EntityType (it\collider, HIT_ITEM)
 					
 				Else

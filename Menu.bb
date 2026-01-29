@@ -103,33 +103,33 @@ Function UpdateMainMenu()
 			
 			Select Rand(0, 22)
 				Case 0, 2, 3
-					MenuStr = I_Loc\Menu_Random_1
+					MenuStr = I_Loc\Menu_Random[1]
 				Case 4, 5
-					MenuStr = I_Loc\Menu_Random_2
+					MenuStr = I_Loc\Menu_Random[2]
 				Case 6, 7, 8
-					MenuStr = I_Loc\Menu_Random_3
+					MenuStr = I_Loc\Menu_Random[3]
 				Case 9, 10, 11
-					MenuStr = I_Loc\Menu_Random_4
+					MenuStr = I_Loc\Menu_Random[4]
 				Case 12, 19
-					MenuStr = I_Loc\Menu_Random_5
+					MenuStr = I_Loc\Menu_Random[5]
 				Case 13
-					MenuStr = I_Loc\Menu_Random_6
+					MenuStr = I_Loc\Menu_Random[6]
 				Case 14
-					MenuStr = I_Loc\Menu_Random_7
+					MenuStr = I_Loc\Menu_Random[7]
 				Case 15
-					MenuStr = I_Loc\Menu_Random_8
+					MenuStr = I_Loc\Menu_Random[8]
 				Case 16
-					MenuStr = I_Loc\Menu_Random_9
+					MenuStr = I_Loc\Menu_Random[9]
 				Case 17
-					MenuStr = I_Loc\Menu_Random_10
+					MenuStr = I_Loc\Menu_Random[10]
 				Case 18
-					MenuStr = I_Loc\Menu_Random_11
+					MenuStr = I_Loc\Menu_Random[11]
 				Case 20
-					MenuStr = I_Loc\Menu_Random_12
+					MenuStr = I_Loc\Menu_Random[12]
 				Case 21
-					MenuStr = I_Loc\Menu_Random_13
+					MenuStr = I_Loc\Menu_Random[13]
 				Case 22
-					MenuStr = I_Loc\Menu_Random_14
+					MenuStr = I_Loc\Menu_Random[14]
 			End Select
 		EndIf
 	EndIf
@@ -357,9 +357,10 @@ Function UpdateMainMenu()
 				;Local modeName$, modeDescription$, selectedDescription$
 				Text (x + 20 * MenuScale, y + 150 * MenuScale, I_Loc\Menu_Difficulty)				
 				For i = SAFE To CUSTOM
-					If DrawTick(x + 20 * MenuScale, y + (180+30*i) * MenuScale, (SelectedDifficulty = difficulties(i))) Then SelectedDifficulty = difficulties(i)
-					Color(difficulties(i)\r,difficulties(i)\g,difficulties(i)\b)
-					Text(x + 50 * MenuScale, y + (185+30*i) * MenuScale, difficulties(i)\name)
+					Local dif.Difficulty = Difficulties[i]
+					If DrawTick(x + 20 * MenuScale, y + (180+30*i) * MenuScale, (SelectedDifficulty = dif)) Then SelectedDifficulty = dif
+					Color(dif\r,dif\g,dif\b)
+					Text(x + 50 * MenuScale, y + (185+30*i) * MenuScale, dif\localName)
 				Next
 				
 				Color(255, 255, 255)
@@ -1413,6 +1414,8 @@ Dim GfxModeCountPerAspectRatio%(0)
 Dim GfxModeWidthsByAspectRatio%(0, 0), GfxModeHeightsByAspectRatio%(0, 0)
 
 Function UpdateLauncher()
+	AspectRatioRatio = 1.0
+
 	MenuScale = 1
 	
 	Graphics3DExt(LauncherWidth, LauncherHeight, 0, 2)
@@ -1863,36 +1866,36 @@ Function DrawLoading(percent%, shortloading=False)
 				If Rand(5)=1 Then
 					Select Rand(2)
 						Case 1
-							SelectedLoadingScreen\txt[0] = Format(I_Loc\Menu_LoadingCwm_1, CurrentDate())
+							SelectedLoadingScreen\txt[0] = Format(I_Loc\Menu_LoadingCwm[1], CurrentDate())
 						Case 2
 							SelectedLoadingScreen\txt[0] = CurrentTime()
 					End Select
 				Else
 					Select Rand(13)
 						Case 1
-							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_2
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm[2]
 						Case 2
-							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_3
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm[3]
 						Case 3
-							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_4
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm[4]
 						Case 4
-							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_5
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm[5]
 						Case 5
-							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_6
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm[6]
 						Case 6 
-							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_7
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm[7]
 						Case 7
-							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_8
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm[8]
 						Case 8, 9
-							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_9
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm[9]
 						Case 10
-							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_10
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm[10]
 						Case 11
-							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_11
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm[11]
 						Case 12
-							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_12
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm[12]
 						Case 13
-							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm_13
+							SelectedLoadingScreen\txt[0] = I_Loc\Menu_LoadingCwm[13]
 					End Select
 				EndIf
 			EndIf
