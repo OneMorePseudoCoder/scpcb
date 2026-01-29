@@ -5545,10 +5545,10 @@ Function DrawGUI()
 						Inventory(MouseSlot) = SelectedItem
 						SelectedItem = Null
 					ElseIf Inventory(MouseSlot) <> SelectedItem
-						Local paperSelector$ = ""
-						If SelectedItem\itemtemplate\group = "paper" Then paperSelector = SelectedItem\itemtemplate\name
+						Local groupSelector$ = ""
+						If SelectedItem\itemtemplate\group = "paper" Lor SelectedItem\itemtemplate\group = "misc" Then groupSelector = SelectedItem\itemtemplate\name
 						Select SelectedItem\itemtemplate\name
-							Case paperSelector,"key1","key2","key3","key4","key5","key6","misc","oldpaper","badge","oldbadge","ticket","25ct","coin","key","scp860"
+							Case groupSelector,"key1","key2","key3","key4","key5","key6","oldpaper","badge","oldbadge","ticket","25ct","coin","key","scp860"
 								;[Block]
 								If Inventory(MouseSlot)\itemtemplate\name = "clipboard" Then
 									;Add an item to clipboard
