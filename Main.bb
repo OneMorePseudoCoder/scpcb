@@ -161,17 +161,23 @@ Global HUDScaleFactor# = GetOptionFloat("graphics", "hud scale factor")
 Const StringsFile$ = "Data\strings.ini"
 Include "Localization.bb"
 
-If LauncherEnabled And (Not IsRestart) Then 
-	AspectRatioRatio = 1.0
-	UpdateLauncher()
-Else If Fullscreen And (Not GfxMode3DExists(GraphicWidth, GraphicHeight, 32-16*Bit16Mode)) Then
-	; Exclusive fullscreen ONLY supports the reported resolutions
-	AspectRatioRatio = 1.0
+Global I_Loc.LocalizationTable
+If I_Loc <> Null Then Delete I_Loc ; Happens on reload
+I_Loc = New LocalizationTable
+For m.ActiveMods = Each ActiveMods
+	Local modPath$ = m\Path + StringsFile
+	If FileType(modPath) = 1 Then LoadLocalization(I_Loc, modPath)
+Next
+LoadLocalization(I_Loc, StringsFile)
+
+; Exclusive fullscreen ONLY supports the reported resolutions
+If LauncherEnabled And (Not IsRestart) Lor Fullscreen And (Not GfxMode3DExists(GraphicWidth, GraphicHeight, 32-16*Bit16Mode)) Then
 	UpdateLauncher()
 EndIf
+
 SetGfxDriver(SelectedGFXDriver)
 Global GFXDriverName$ = GFXDriverName(SelectedGFXDriver)
-	
+
 ;New "fake fullscreen" - ENDSHN Psst, it's called borderless windowed mode --Love Mark,
 If BorderlessWindowed
 	DebugLog "Using Faked Fullscreen"
@@ -275,8 +281,6 @@ Global BlinkMeterIMG% = LoadImage_Strict("GFX\blinkmeter.jpg")
 ScaleImage(BlinkMeterIMG, HUDScale, HUDScale)
 
 DrawLoading(0, True)
-
-DrawLoading(5, True)
 
 ; - -Viewport.
 Global viewport_center_x% = RealGraphicWidth / 2, viewport_center_y% = RealGraphicHeight / 2

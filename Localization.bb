@@ -414,461 +414,539 @@ Type LocalizationTable
     Field Cup_Oj$
 End Type
 
-Global I_Loc.LocalizationTable = New LocalizationTable
-I_Loc\Launcher_Aspectratio = GetModdedINIString(StringsFile, "Launcher", "aspectratio")
-I_Loc\Launcher_Resolution = GetModdedINIString(StringsFile, "Launcher", "resolution")
-I_Loc\Launcher_ResolutionCurrent = GetModdedINIString(StringsFile, "Launcher", "resolution.current")
-I_Loc\Launcher_Graphics = GetModdedINIString(StringsFile, "Launcher", "graphics")
-I_Loc\Launcher_Fullscreen = GetModdedINIString(StringsFile, "Launcher", "fullscreen")
-I_Loc\Launcher_FullscreenExclusive = GetModdedINIString(StringsFile, "Launcher", "fullscreen.exclusive")
-I_Loc\Launcher_16bit = GetModdedINIString(StringsFile, "Launcher", "16bit")
-I_Loc\Launcher_Launcher = GetModdedINIString(StringsFile, "Launcher", "launcher")
-I_Loc\Launcher_Hudscalefactor = GetModdedINIString(StringsFile, "Launcher", "hudscalefactor")
-I_Loc\Launcher_Mapcreator = GetModdedINIString(StringsFile, "Launcher", "mapcreator")
-I_Loc\Launcher_Discord = GetModdedINIString(StringsFile, "Launcher", "discord")
-I_Loc\Launcher_Launch = GetModdedINIString(StringsFile, "Launcher", "launch")
-I_Loc\Launcher_Exit = GetModdedINIString(StringsFile, "Launcher", "exit")
-I_Loc\Menu_Back = GetModdedINIString(StringsFile, "Menu", "back")
-I_Loc\Menu_BackUpper = GetModdedINIString(StringsFile, "Menu", "back.upper")
-I_Loc\Menu_Page = GetModdedINIString(StringsFile, "Menu", "page")
-I_Loc\Menu_Yes = GetModdedINIString(StringsFile, "Menu", "yes")
-I_Loc\Menu_No = GetModdedINIString(StringsFile, "Menu", "no")
-I_Loc\Menu_Ok = GetModdedINIString(StringsFile, "Menu", "ok")
-I_Loc\Menu_Pressany = GetModdedINIString(StringsFile, "Menu", "pressany")
-I_Loc\Menu_New = GetModdedINIString(StringsFile, "Menu", "new")
-I_Loc\Menu_NewUpper = GetModdedINIString(StringsFile, "Menu", "new.upper")
-I_Loc\Menu_Load = GetModdedINIString(StringsFile, "Menu", "load")
-I_Loc\Menu_LoadUpper = GetModdedINIString(StringsFile, "Menu", "load.upper")
-I_Loc\Menu_Achievements = GetModdedINIString(StringsFile, "Menu", "achievements")
-I_Loc\Menu_AchievementsUpper = GetModdedINIString(StringsFile, "Menu", "achievements.upper")
-I_Loc\Menu_Mods = GetModdedINIString(StringsFile, "Menu", "mods")
-I_Loc\Menu_ModsUpper = GetModdedINIString(StringsFile, "Menu", "mods.upper")
-I_Loc\Menu_Options = GetModdedINIString(StringsFile, "Menu", "options")
-I_Loc\Menu_OptionsUpper = GetModdedINIString(StringsFile, "Menu", "options.upper")
-I_Loc\Menu_Resume = GetModdedINIString(StringsFile, "Menu", "resume")
-I_Loc\Menu_Savequit = GetModdedINIString(StringsFile, "Menu", "savequit")
-I_Loc\Menu_QuitQuestion = GetModdedINIString(StringsFile, "Menu", "quit.question")
-I_Loc\Menu_Quit = GetModdedINIString(StringsFile, "Menu", "quit")
-I_Loc\Menu_QuitUpper = GetModdedINIString(StringsFile, "Menu", "quit.upper")
-I_Loc\Menu_QuitMenu = GetModdedINIString(StringsFile, "Menu", "quit.menu")
-I_Loc\Menu_Random[1] = GetModdedINIString(StringsFile, "Menu", "random_1")
-I_Loc\Menu_Random[2] = GetModdedINIString(StringsFile, "Menu", "random_2")
-I_Loc\Menu_Random[3] = GetModdedINIString(StringsFile, "Menu", "random_3")
-I_Loc\Menu_Random[4] = GetModdedINIString(StringsFile, "Menu", "random_4")
-I_Loc\Menu_Random[5] = GetModdedINIString(StringsFile, "Menu", "random_5")
-I_Loc\Menu_Random[6] = GetModdedINIString(StringsFile, "Menu", "random_6")
-I_Loc\Menu_Random[7] = GetModdedINIString(StringsFile, "Menu", "random_7")
-I_Loc\Menu_Random[8] = GetModdedINIString(StringsFile, "Menu", "random_8")
-I_Loc\Menu_Random[9] = GetModdedINIString(StringsFile, "Menu", "random_9")
-I_Loc\Menu_Random[10] = GetModdedINIString(StringsFile, "Menu", "random_10")
-I_Loc\Menu_Random[11] = GetModdedINIString(StringsFile, "Menu", "random_11")
-I_Loc\Menu_Random[12] = GetModdedINIString(StringsFile, "Menu", "random_12")
-I_Loc\Menu_Random[13] = GetModdedINIString(StringsFile, "Menu", "random_13")
-I_Loc\Menu_Random[14] = GetModdedINIString(StringsFile, "Menu", "random_14")
-I_Loc\Menu_Pause = GetModdedINIString(StringsFile, "Menu", "pause")
-I_Loc\Menu_Dead = GetModdedINIString(StringsFile, "Menu", "dead")
-I_Loc\Menu_Difficulty = GetModdedINIString(StringsFile, "Menu", "difficulty")
-I_Loc\Menu_Save = GetModdedINIString(StringsFile, "Menu", "save")
-I_Loc\Menu_Seed = GetModdedINIString(StringsFile, "Menu", "seed")
-I_Loc\Menu_SeedNumeric = GetModdedINIString(StringsFile, "Menu", "seed.numeric")
-I_Loc\Menu_Map = GetModdedINIString(StringsFile, "Menu", "map")
-I_Loc\Menu_EndEnding = GetModdedINIString(StringsFile, "Menu", "end.ending")
-I_Loc\Menu_EndTime = GetModdedINIString(StringsFile, "Menu", "end.time")
-I_Loc\Menu_EndScps = GetModdedINIString(StringsFile, "Menu", "end.scps")
-I_Loc\Menu_EndAchv = GetModdedINIString(StringsFile, "Menu", "end.achv")
-I_Loc\Menu_EndRooms = GetModdedINIString(StringsFile, "Menu", "end.rooms")
-I_Loc\Menu_EndDocs = GetModdedINIString(StringsFile, "Menu", "end.docs")
-I_Loc\Menu_End914 = GetModdedINIString(StringsFile, "Menu", "end.914")
-I_Loc\Menu_End = GetModdedINIString(StringsFile, "Menu", "end")
-I_Loc\Menu_Loading = GetModdedINIString(StringsFile, "Menu", "loading")
-I_Loc\Menu_LoadingCwm[1] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_1")
-I_Loc\Menu_LoadingCwm[2] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_2")
-I_Loc\Menu_LoadingCwm[3] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_3")
-I_Loc\Menu_LoadingCwm[4] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_4")
-I_Loc\Menu_LoadingCwm[5] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_5")
-I_Loc\Menu_LoadingCwm[6] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_6")
-I_Loc\Menu_LoadingCwm[7] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_7")
-I_Loc\Menu_LoadingCwm[8] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_8")
-I_Loc\Menu_LoadingCwm[9] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_9")
-I_Loc\Menu_LoadingCwm[10] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_10")
-I_Loc\Menu_LoadingCwm[11] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_11")
-I_Loc\Menu_LoadingCwm[12] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_12")
-I_Loc\Menu_LoadingCwm[13] = GetModdedINIString(StringsFile, "Menu", "loading.cwm_13")
-I_Loc\Option_Graphics = GetModdedINIString(StringsFile, "Option", "graphics")
-I_Loc\Option_Audio = GetModdedINIString(StringsFile, "Option", "audio")
-I_Loc\Option_Controls = GetModdedINIString(StringsFile, "Option", "controls")
-I_Loc\Option_Advanced = GetModdedINIString(StringsFile, "Option", "advanced")
-I_Loc\Option_SliderLow = GetModdedINIString(StringsFile, "Option", "slider.low")
-I_Loc\Option_SliderHigh = GetModdedINIString(StringsFile, "Option", "slider.high")
-I_Loc\Option_HintDefault = GetModdedINIString(StringsFile, "Option", "hint.default")
-I_Loc\Option_HintMenuonly = GetModdedINIString(StringsFile, "Option", "hint.menuonly")
-I_Loc\Option_HintFullscreen = GetModdedINIString(StringsFile, "Option", "hint.fullscreen")
-I_Loc\Option_HintSelfexplanatory = GetModdedINIString(StringsFile, "Option", "hint.selfexplanatory")
-I_Loc\OptionName_Vsync = GetModdedINIString(StringsFile, "Option Name", "vsync")
-I_Loc\OptionName_Antialias = GetModdedINIString(StringsFile, "Option Name", "antialias")
-I_Loc\OptionName_Gamma = GetModdedINIString(StringsFile, "Option Name", "gamma")
-I_Loc\OptionName_Texlod = GetModdedINIString(StringsFile, "Option Name", "texlod")
-I_Loc\OptionName_Vram = GetModdedINIString(StringsFile, "Option Name", "vram")
-I_Loc\OptionName_Hudoffset = GetModdedINIString(StringsFile, "Option Name", "hudoffset")
-I_Loc\OptionName_Fov = GetModdedINIString(StringsFile, "Option Name", "fov")
-I_Loc\OptionName_Musicvol = GetModdedINIString(StringsFile, "Option Name", "musicvol")
-I_Loc\OptionName_Soundvol = GetModdedINIString(StringsFile, "Option Name", "soundvol")
-I_Loc\OptionName_Sfxautorelease = GetModdedINIString(StringsFile, "Option Name", "sfxautorelease")
-I_Loc\OptionName_Usertrack = GetModdedINIString(StringsFile, "Option Name", "usertrack")
-I_Loc\OptionName_Usertrackmode = GetModdedINIString(StringsFile, "Option Name", "usertrackmode")
-I_Loc\OptionName_UsertrackmodeRepeat = GetModdedINIString(StringsFile, "Option Name", "usertrackmode.repeat")
-I_Loc\OptionName_UsertrackmodeRandom = GetModdedINIString(StringsFile, "Option Name", "usertrackmode.random")
-I_Loc\OptionName_Usertrackscan = GetModdedINIString(StringsFile, "Option Name", "usertrackscan")
-I_Loc\OptionName_UsertrackscanFound = GetModdedINIString(StringsFile, "Option Name", "usertrackscan.found")
-I_Loc\OptionName_Mousesensitivity = GetModdedINIString(StringsFile, "Option Name", "mousesensitivity")
-I_Loc\OptionName_Mouseinvert = GetModdedINIString(StringsFile, "Option Name", "mouseinvert")
-I_Loc\OptionName_Mousesmoothing = GetModdedINIString(StringsFile, "Option Name", "mousesmoothing")
-I_Loc\OptionName_Binds = GetModdedINIString(StringsFile, "Option Name", "binds")
-I_Loc\OptionName_BindMoveForward = GetModdedINIString(StringsFile, "Option Name", "bind.move.forward")
-I_Loc\OptionName_BindMoveLeft = GetModdedINIString(StringsFile, "Option Name", "bind.move.left")
-I_Loc\OptionName_BindMoveBack = GetModdedINIString(StringsFile, "Option Name", "bind.move.back")
-I_Loc\OptionName_BindMoveRight = GetModdedINIString(StringsFile, "Option Name", "bind.move.right")
-I_Loc\OptionName_BindSave = GetModdedINIString(StringsFile, "Option Name", "bind.save")
-I_Loc\OptionName_BindBlink = GetModdedINIString(StringsFile, "Option Name", "bind.blink")
-I_Loc\OptionName_BindSprint = GetModdedINIString(StringsFile, "Option Name", "bind.sprint")
-I_Loc\OptionName_BindInv = GetModdedINIString(StringsFile, "Option Name", "bind.inv")
-I_Loc\OptionName_BindCrouch = GetModdedINIString(StringsFile, "Option Name", "bind.crouch")
-I_Loc\OptionName_BindConsole = GetModdedINIString(StringsFile, "Option Name", "bind.console")
-I_Loc\OptionName_Showhud = GetModdedINIString(StringsFile, "Option Name", "showhud")
-I_Loc\OptionName_Console = GetModdedINIString(StringsFile, "Option Name", "console")
-I_Loc\OptionName_Consoleerror = GetModdedINIString(StringsFile, "Option Name", "consoleerror")
-I_Loc\OptionName_Speedrunmode = GetModdedINIString(StringsFile, "Option Name", "speedrunmode")
-I_Loc\OptionName_Numericseeds = GetModdedINIString(StringsFile, "Option Name", "numericseeds")
-I_Loc\OptionName_Achpopup = GetModdedINIString(StringsFile, "Option Name", "achpopup")
-I_Loc\OptionName_Launcher = GetModdedINIString(StringsFile, "Option Name", "launcher")
-I_Loc\OptionName_Showfps = GetModdedINIString(StringsFile, "Option Name", "showfps")
-I_Loc\OptionName_Framelimit = GetModdedINIString(StringsFile, "Option Name", "framelimit")
-I_Loc\OptionName_FramelimitFps = GetModdedINIString(StringsFile, "Option Name", "framelimit.fps")
-I_Loc\OptionTooltip_Vsync = GetModdedINIString(StringsFile, "Option Tooltip", "vsync")
-I_Loc\OptionTooltip_Antialias = GetModdedINIString(StringsFile, "Option Tooltip", "antialias")
-I_Loc\OptionTooltip_Gamma = GetModdedINIString(StringsFile, "Option Tooltip", "gamma")
-I_Loc\OptionTooltip_Texlod = GetModdedINIString(StringsFile, "Option Tooltip", "texlod")
-I_Loc\OptionTooltip_Vram = GetModdedINIString(StringsFile, "Option Tooltip", "vram")
-I_Loc\OptionTooltip_Hudoffset = GetModdedINIString(StringsFile, "Option Tooltip", "hudoffset")
-I_Loc\OptionTooltip_Fov = GetModdedINIString(StringsFile, "Option Tooltip", "fov")
-I_Loc\OptionTooltip_Musicvol = GetModdedINIString(StringsFile, "Option Tooltip", "musicvol")
-I_Loc\OptionTooltip_Soundvol = GetModdedINIString(StringsFile, "Option Tooltip", "soundvol")
-I_Loc\OptionTooltip_Sfxautorelease = GetModdedINIString(StringsFile, "Option Tooltip", "sfxautorelease")
-I_Loc\OptionTooltip_Usertrack = GetModdedINIString(StringsFile, "Option Tooltip", "usertrack")
-I_Loc\OptionTooltip_Usertrackmode = GetModdedINIString(StringsFile, "Option Tooltip", "usertrackmode")
-I_Loc\OptionTooltip_UsertrackmodeNote = GetModdedINIString(StringsFile, "Option Tooltip", "usertrackmode.note")
-I_Loc\OptionTooltip_Usertrackscan = GetModdedINIString(StringsFile, "Option Tooltip", "usertrackscan")
-I_Loc\OptionTooltip_Mousesensitivty = GetModdedINIString(StringsFile, "Option Tooltip", "mousesensitivty")
-I_Loc\OptionTooltip_Mousesmoothing = GetModdedINIString(StringsFile, "Option Tooltip", "mousesmoothing")
-I_Loc\OptionTooltip_Binds = GetModdedINIString(StringsFile, "Option Tooltip", "binds")
-I_Loc\OptionTooltip_Showhud = GetModdedINIString(StringsFile, "Option Tooltip", "showhud")
-I_Loc\OptionTooltip_Console = GetModdedINIString(StringsFile, "Option Tooltip", "console")
-I_Loc\OptionTooltip_ConsoleNote = GetModdedINIString(StringsFile, "Option Tooltip", "console.note")
-I_Loc\OptionTooltip_Speedrunmode = GetModdedINIString(StringsFile, "Option Tooltip", "speedrunmode")
-I_Loc\OptionTooltip_Numericseeds = GetModdedINIString(StringsFile, "Option Tooltip", "numericseeds")
-I_Loc\OptionTooltip_Achpopup = GetModdedINIString(StringsFile, "Option Tooltip", "achpopup")
-I_Loc\OptionTooltip_Launcher = GetModdedINIString(StringsFile, "Option Tooltip", "launcher")
-I_Loc\OptionTooltip_Showfps = GetModdedINIString(StringsFile, "Option Tooltip", "showfps")
-I_Loc\OptionTooltip_Framelimit = GetModdedINIString(StringsFile, "Option Tooltip", "framelimit")
-I_Loc\OptionTooltip_FramelimitNote = GetModdedINIString(StringsFile, "Option Tooltip", "framelimit.note")
-I_Loc\Mods_Upload = GetModdedINIString(StringsFile, "Mods", "upload")
-I_Loc\Mods_Update = GetModdedINIString(StringsFile, "Mods", "update")
-I_Loc\Mods_Visit = GetModdedINIString(StringsFile, "Mods", "visit")
-I_Loc\Mods_Reloadmods = GetModdedINIString(StringsFile, "Mods", "reloadmods")
-I_Loc\Mods_Reloadgame = GetModdedINIString(StringsFile, "Mods", "reloadgame")
-I_Loc\Mods_Openlocal = GetModdedINIString(StringsFile, "Mods", "openlocal")
-I_Loc\Mods_UploadConfirm = GetModdedINIString(StringsFile, "Mods", "upload.confirm")
-I_Loc\Mods_UpdateConfirm = GetModdedINIString(StringsFile, "Mods", "update.confirm")
-I_Loc\Mods_UpdateFailed = GetModdedINIString(StringsFile, "Mods", "update.failed")
-I_Loc\Mods_Viewterms = GetModdedINIString(StringsFile, "Mods", "viewterms")
-I_Loc\Mods_Keepdesc = GetModdedINIString(StringsFile, "Mods", "keepdesc")
-I_Loc\Mods_Nomods = GetModdedINIString(StringsFile, "Mods", "nomods")
-I_Loc\LoadGame_Load = GetModdedINIString(StringsFile, "Load Game", "load")
-I_Loc\LoadGame_Delete = GetModdedINIString(StringsFile, "Load Game", "delete")
-I_Loc\LoadGame_DeleteConfirm = GetModdedINIString(StringsFile, "Load Game", "delete.confirm")
-I_Loc\LoadGame_Nosaved = GetModdedINIString(StringsFile, "Load Game", "nosaved")
-I_Loc\NewGame_Name = GetModdedINIString(StringsFile, "New Game", "name")
-I_Loc\NewGame_Enableintro = GetModdedINIString(StringsFile, "New Game", "enableintro")
-I_Loc\NewGame_Start = GetModdedINIString(StringsFile, "New Game", "start")
-I_Loc\NewGame_Loadmap = GetModdedINIString(StringsFile, "New Game", "loadmap")
-I_Loc\NewGame_LoadmapUpper = GetModdedINIString(StringsFile, "New Game", "loadmap.upper")
-I_Loc\NewGame_Deselect = GetModdedINIString(StringsFile, "New Game", "deselect")
-I_Loc\NewGame_Untitled = GetModdedINIString(StringsFile, "New Game", "untitled")
-I_Loc\Difficulty_Safe = GetModdedINIString(StringsFile, "Difficulty", "safe")
-I_Loc\Difficulty_SafeDesc = GetModdedINIString(StringsFile, "Difficulty", "safe.desc")
-I_Loc\Difficulty_Euclid = GetModdedINIString(StringsFile, "Difficulty", "euclid")
-I_Loc\Difficulty_EuclidDesc = GetModdedINIString(StringsFile, "Difficulty", "euclid.desc")
-I_Loc\Difficulty_Keter = GetModdedINIString(StringsFile, "Difficulty", "keter")
-I_Loc\Difficulty_KeterDesc = GetModdedINIString(StringsFile, "Difficulty", "keter.desc")
-I_Loc\Difficulty_Esoteric = GetModdedINIString(StringsFile, "Difficulty", "esoteric")
-I_Loc\Difficulty_Permadeath = GetModdedINIString(StringsFile, "Difficulty", "permadeath")
-I_Loc\Difficulty_Saveanywhere = GetModdedINIString(StringsFile, "Difficulty", "saveanywhere")
-I_Loc\Difficulty_Aggressivenpcs = GetModdedINIString(StringsFile, "Difficulty", "aggressivenpcs")
-I_Loc\Difficulty_Other = GetModdedINIString(StringsFile, "Difficulty", "other")
-I_Loc\Difficulty_OtherEasy = GetModdedINIString(StringsFile, "Difficulty", "other.easy")
-I_Loc\Difficulty_OtherNormal = GetModdedINIString(StringsFile, "Difficulty", "other.normal")
-I_Loc\Difficulty_OtherHard = GetModdedINIString(StringsFile, "Difficulty", "other.hard")
-I_Loc\LoadMap_Madeby = GetModdedINIString(StringsFile, "Load Map", "madeby")
-I_Loc\LoadMap_Desc = GetModdedINIString(StringsFile, "Load Map", "desc")
-I_Loc\LoadMap_Roomcount = GetModdedINIString(StringsFile, "Load Map", "roomcount")
-I_Loc\LoadMap_Customforest = GetModdedINIString(StringsFile, "Load Map", "customforest")
-I_Loc\LoadMap_Custommaintenance = GetModdedINIString(StringsFile, "Load Map", "custommaintenance")
-I_Loc\LoadMap_Unknown = GetModdedINIString(StringsFile, "Load Map", "unknown")
-I_Loc\LoadMap_Nodesc = GetModdedINIString(StringsFile, "Load Map", "nodesc")
-I_Loc\LoadMap_Nomaps = GetModdedINIString(StringsFile, "Load Map", "nomaps")
-I_Loc\HUD_Fps = GetModdedINIString(StringsFile, "HUD", "fps")
-I_Loc\HUD_AchvUnlocked = GetModdedINIString(StringsFile, "HUD", "achv.unlocked")
-I_Loc\HUD_RadioChannel = GetModdedINIString(StringsFile, "HUD", "radio.channel")
-I_Loc\HUD_RadioUsertrack = GetModdedINIString(StringsFile, "HUD", "radio.usertrack")
-I_Loc\HUD_RadioUsertrackDisabled = GetModdedINIString(StringsFile, "HUD", "radio.usertrack.disabled")
-I_Loc\HUD_RadioUsertrackNotracks = GetModdedINIString(StringsFile, "HUD", "radio.usertrack.notracks")
-I_Loc\HUD_RadioCb = GetModdedINIString(StringsFile, "HUD", "radio.cb")
-I_Loc\HUD_RadioRadio = GetModdedINIString(StringsFile, "HUD", "radio.radio")
-I_Loc\HUD_RadioEmergency = GetModdedINIString(StringsFile, "HUD", "radio.emergency")
-I_Loc\HUD_NavError = GetModdedINIString(StringsFile, "HUD", "nav.error")
-I_Loc\HUD_NavErrorLocation = GetModdedINIString(StringsFile, "HUD", "nav.error.location")
-I_Loc\HUD_NavDatabase = GetModdedINIString(StringsFile, "HUD", "nav.database")
-I_Loc\HUD_NvgBatlow = GetModdedINIString(StringsFile, "HUD", "nvg.batlow")
-I_Loc\HUD_NvgRefresh = GetModdedINIString(StringsFile, "HUD", "nvg.refresh")
-I_Loc\HUD_NvgRefreshSeconds = GetModdedINIString(StringsFile, "HUD", "nvg.refresh.seconds")
-I_Loc\HUD_NvgMeters = GetModdedINIString(StringsFile, "HUD", "nvg.meters")
-I_Loc\HUD_294Range = GetModdedINIString(StringsFile, "HUD", "294.range")
-I_Loc\HUD_294Dispense = GetModdedINIString(StringsFile, "HUD", "294.dispense")
-I_Loc\HUD_KeypadCode = GetModdedINIString(StringsFile, "HUD", "keypad.code")
-I_Loc\HUD_KeypadDenied = GetModdedINIString(StringsFile, "HUD", "keypad.denied")
-I_Loc\HUD_SpeedrunSaveloaded = GetModdedINIString(StringsFile, "HUD", "speedrun.saveloaded")
-I_Loc\NPC_049 = GetModdedINIString(StringsFile, "NPC", "049")
-I_Loc\NPC_066 = GetModdedINIString(StringsFile, "NPC", "066")
-I_Loc\NPC_096 = GetModdedINIString(StringsFile, "NPC", "096")
-I_Loc\NPC_106 = GetModdedINIString(StringsFile, "NPC", "106")
-I_Loc\NPC_173 = GetModdedINIString(StringsFile, "NPC", "173")
-I_Loc\NPC_372 = GetModdedINIString(StringsFile, "NPC", "372")
-I_Loc\NPC_5131 = GetModdedINIString(StringsFile, "NPC", "5131")
-I_Loc\NPC_895 = GetModdedINIString(StringsFile, "NPC", "895")
-I_Loc\NPC_939 = GetModdedINIString(StringsFile, "NPC", "939")
-I_Loc\NPC_966 = GetModdedINIString(StringsFile, "NPC", "966")
-I_Loc\NPC_1048 = GetModdedINIString(StringsFile, "NPC", "1048")
-I_Loc\NPC_1048a = GetModdedINIString(StringsFile, "NPC", "1048a")
-I_Loc\NPC_Human = GetModdedINIString(StringsFile, "NPC", "human")
-I_Loc\NPC_Unidentified = GetModdedINIString(StringsFile, "NPC", "unidentified")
-I_Loc\Message_008Glassbreak = GetModdedINIString(StringsFile, "Message", "008.glassbreak")
-I_Loc\Message_008_1 = GetModdedINIString(StringsFile, "Message", "008.1")
-I_Loc\Message_008_2 = GetModdedINIString(StringsFile, "Message", "008.2")
-I_Loc\Message_008_3 = GetModdedINIString(StringsFile, "Message", "008.3")
-I_Loc\Message_008_4 = GetModdedINIString(StringsFile, "Message", "008.4")
-I_Loc\Message_012_1 = GetModdedINIString(StringsFile, "Message", "012.1")
-I_Loc\Message_012_2 = GetModdedINIString(StringsFile, "Message", "012.2")
-I_Loc\Message_012_3 = GetModdedINIString(StringsFile, "Message", "012.3")
-I_Loc\Message_012_4 = GetModdedINIString(StringsFile, "Message", "012.4")
-I_Loc\Message_294Two = GetModdedINIString(StringsFile, "Message", "294.two")
-I_Loc\Message_294One = GetModdedINIString(StringsFile, "Message", "294.one")
-I_Loc\Message_427_1 = GetModdedINIString(StringsFile, "Message", "427.1")
-I_Loc\Message_427_2 = GetModdedINIString(StringsFile, "Message", "427.2")
-I_Loc\Message_427_3 = GetModdedINIString(StringsFile, "Message", "427.3")
-I_Loc\Message_427_4 = GetModdedINIString(StringsFile, "Message", "427.4")
-I_Loc\Message_860Doorbudge = GetModdedINIString(StringsFile, "Message", "860.doorbudge")
-I_Loc\Message_914PlayerCoarse = GetModdedINIString(StringsFile, "Message", "914.player.coarse")
-I_Loc\Message_966Presence[1] = GetModdedINIString(StringsFile, "Message", "966.presence_1")
-I_Loc\Message_966Presence[2] = GetModdedINIString(StringsFile, "Message", "966.presence_2")
-I_Loc\Message_966Presence[3] = GetModdedINIString(StringsFile, "Message", "966.presence_3")
-I_Loc\Message_966Presence[4] = GetModdedINIString(StringsFile, "Message", "966.presence_4")
-I_Loc\Message_966Presence[5] = GetModdedINIString(StringsFile, "Message", "966.presence_5")
-I_Loc\Message_966Presence[6] = GetModdedINIString(StringsFile, "Message", "966.presence_6")
-I_Loc\Message_966Sleep[1] = GetModdedINIString(StringsFile, "Message", "966.sleep_1")
-I_Loc\Message_966Sleep[2] = GetModdedINIString(StringsFile, "Message", "966.sleep_2")
-I_Loc\Message_966Sleep[3] = GetModdedINIString(StringsFile, "Message", "966.sleep_3")
-I_Loc\Message_966Sleep[4] = GetModdedINIString(StringsFile, "Message", "966.sleep_4")
-I_Loc\Message_1025ChickenpoxItchy = GetModdedINIString(StringsFile, "Message", "1025.chickenpox.itchy")
-I_Loc\Message_1025Appendicitis1 = GetModdedINIString(StringsFile, "Message", "1025.appendicitis.1")
-I_Loc\Message_1025Appendicitis2 = GetModdedINIString(StringsFile, "Message", "1025.appendicitis.2")
-I_Loc\Message_1048a1 = GetModdedINIString(StringsFile, "Message", "1048a.1")
-I_Loc\Message_1048a2[1] = GetModdedINIString(StringsFile, "Message", "1048a.2_1")
-I_Loc\Message_1048a2[2] = GetModdedINIString(StringsFile, "Message", "1048a.2_2")
-I_Loc\Message_1048a2[3] = GetModdedINIString(StringsFile, "Message", "1048a.2_3")
-I_Loc\Message_1048a3[1] = GetModdedINIString(StringsFile, "Message", "1048a.3_1")
-I_Loc\Message_1048a3[2] = GetModdedINIString(StringsFile, "Message", "1048a.3_2")
-I_Loc\Message_1048a3[3] = GetModdedINIString(StringsFile, "Message", "1048a.3_3")
-I_Loc\Message_1048a3[4] = GetModdedINIString(StringsFile, "Message", "1048a.3_4")
-I_Loc\Message_1162ExchangeFailure = GetModdedINIString(StringsFile, "Message", "1162.exchange.failure")
-I_Loc\Message_1162ExchangeSuccess = GetModdedINIString(StringsFile, "Message", "1162.exchange.success")
-I_Loc\Message_BloodlossFaint = GetModdedINIString(StringsFile, "Message", "bloodloss.faint")
-I_Loc\Message_Stophiding = GetModdedINIString(StringsFile, "Message", "stophiding")
-I_Loc\MessageButton_KeyRequired = GetModdedINIString(StringsFile, "Message Button", "key.required")
-I_Loc\MessageButton_KeyRequiredLevel = GetModdedINIString(StringsFile, "Message Button", "key.required.level")
-I_Loc\MessageButton_KeyInserted = GetModdedINIString(StringsFile, "Message Button", "key.inserted")
-I_Loc\MessageButton_KeyNothing = GetModdedINIString(StringsFile, "Message Button", "key.nothing")
-I_Loc\MessageButton_DnaSuccess = GetModdedINIString(StringsFile, "Message Button", "dna.success")
-I_Loc\MessageButton_DnaSelf = GetModdedINIString(StringsFile, "Message Button", "dna.self")
-I_Loc\MessageButton_Nothing = GetModdedINIString(StringsFile, "Message Button", "nothing")
-I_Loc\MessageButton_DoorLocked = GetModdedINIString(StringsFile, "Message Button", "door.locked")
-I_Loc\MessageButton_ElevatorCall = GetModdedINIString(StringsFile, "Message Button", "elevator.call")
-I_Loc\MessageButton_ElevatorFloor = GetModdedINIString(StringsFile, "Message Button", "elevator.floor")
-I_Loc\MessageButton_ElevatorAlready = GetModdedINIString(StringsFile, "Message Button", "elevator.already")
-I_Loc\MessageButton_ElevatorStop = GetModdedINIString(StringsFile, "Message Button", "elevator.stop")
-I_Loc\MessageButton_ElevatorFaster = GetModdedINIString(StringsFile, "Message Button", "elevator.faster")
-I_Loc\MessageButton_ElevatorMav = GetModdedINIString(StringsFile, "Message Button", "elevator.mav")
-I_Loc\MessageButton_ElevatorBroken = GetModdedINIString(StringsFile, "Message Button", "elevator.broken")
-I_Loc\MessageItem_Full = GetModdedINIString(StringsFile, "Message Item", "full")
-I_Loc\MessageItem_Cantcombine = GetModdedINIString(StringsFile, "Message Item", "cantcombine")
-I_Loc\MessageItem_WalletFull = GetModdedINIString(StringsFile, "Message Item", "wallet.full")
-I_Loc\MessageItem_WalletAdd = GetModdedINIString(StringsFile, "Message Item", "wallet.add")
-I_Loc\MessageItem_ClipboardFull = GetModdedINIString(StringsFile, "Message Item", "clipboard.full")
-I_Loc\MessageItem_ClipboardAdd = GetModdedINIString(StringsFile, "Message Item", "clipboard.add")
-I_Loc\MessageItem_ClipboardAddPaper = GetModdedINIString(StringsFile, "Message Item", "clipboard.add.paper")
-I_Loc\MessageItem_ClipboardAddBadge = GetModdedINIString(StringsFile, "Message Item", "clipboard.add.badge")
-I_Loc\MessageItem_HazmatNouse = GetModdedINIString(StringsFile, "Message Item", "hazmat.nouse")
-I_Loc\MessageItem_HazmatNouseAny = GetModdedINIString(StringsFile, "Message Item", "hazmat.nouse.any")
-I_Loc\MessageItem_HazmatNodrop = GetModdedINIString(StringsFile, "Message Item", "hazmat.nodrop")
-I_Loc\MessageItem_HazmatNopickup = GetModdedINIString(StringsFile, "Message Item", "hazmat.nopickup")
-I_Loc\MessageItem_HazmatConflictHazmat = GetModdedINIString(StringsFile, "Message Item", "hazmat.conflict.hazmat")
-I_Loc\MessageItem_GasmaskNouse = GetModdedINIString(StringsFile, "Message Item", "gasmask.nouse")
-I_Loc\MessageItem_NvgNouse = GetModdedINIString(StringsFile, "Message Item", "nvg.nouse")
-I_Loc\MessageItem_NvgConflictHazmat = GetModdedINIString(StringsFile, "Message Item", "nvg.conflict.hazmat")
-I_Loc\MessageItem_NvgConflictScp1499 = GetModdedINIString(StringsFile, "Message Item", "nvg.conflict.scp1499")
-I_Loc\MessageItem_GasmaskConflictScp1499 = GetModdedINIString(StringsFile, "Message Item", "gasmask.conflict.scp1499")
-I_Loc\MessageItem_GasmaskConflictHazmat = GetModdedINIString(StringsFile, "Message Item", "gasmask.conflict.hazmat")
-I_Loc\MessageItem_Scp1499ConflictHazmat = GetModdedINIString(StringsFile, "Message Item", "scp1499.conflict.hazmat")
-I_Loc\MessageItem_VestConflictHazmat = GetModdedINIString(StringsFile, "Message Item", "vest.conflict.hazmat")
-I_Loc\MessageItem_VestConflictVest = GetModdedINIString(StringsFile, "Message Item", "vest.conflict.vest")
-I_Loc\MessageItem_GasmaskOn = GetModdedINIString(StringsFile, "Message Item", "gasmask.on")
-I_Loc\MessageItem_GasmaskOnEasy = GetModdedINIString(StringsFile, "Message Item", "gasmask.on.easy")
-I_Loc\MessageItem_GasmaskOff = GetModdedINIString(StringsFile, "Message Item", "gasmask.off")
-I_Loc\MessageItem_VestOff = GetModdedINIString(StringsFile, "Message Item", "vest.off")
-I_Loc\MessageItem_VestOn = GetModdedINIString(StringsFile, "Message Item", "vest.on")
-I_Loc\MessageItem_VestOnHeavy = GetModdedINIString(StringsFile, "Message Item", "vest.on.heavy")
-I_Loc\MessageItem_VestHeavy = GetModdedINIString(StringsFile, "Message Item", "vest.heavy")
-I_Loc\MessageItem_HazmatOn = GetModdedINIString(StringsFile, "Message Item", "hazmat.on")
-I_Loc\MessageItem_HazmatOff = GetModdedINIString(StringsFile, "Message Item", "hazmat.off")
-I_Loc\MessageItem_Scp714On = GetModdedINIString(StringsFile, "Message Item", "scp714.on")
-I_Loc\MessageItem_Scp714Off = GetModdedINIString(StringsFile, "Message Item", "scp714.off")
-I_Loc\MessageItem_NvgOn = GetModdedINIString(StringsFile, "Message Item", "nvg.on")
-I_Loc\MessageItem_NvgOff = GetModdedINIString(StringsFile, "Message Item", "nvg.off")
-I_Loc\MessageItem_NvgBatReplace = GetModdedINIString(StringsFile, "Message Item", "nvg.bat.replace")
-I_Loc\MessageItem_NvgBatNoplace = GetModdedINIString(StringsFile, "Message Item", "nvg.bat.noplace")
-I_Loc\MessageItem_NvgBatDead = GetModdedINIString(StringsFile, "Message Item", "nvg.bat.dead")
-I_Loc\MessageItem_RadioUse = GetModdedINIString(StringsFile, "Message Item", "radio.use")
-I_Loc\MessageItem_RadioBatReplace = GetModdedINIString(StringsFile, "Message Item", "radio.bat.replace")
-I_Loc\MessageItem_RadioBatNoplace = GetModdedINIString(StringsFile, "Message Item", "radio.bat.noplace")
-I_Loc\MessageItem_RadioBatNofit = GetModdedINIString(StringsFile, "Message Item", "radio.bat.nofit")
-I_Loc\MessageItem_NavBatReplace = GetModdedINIString(StringsFile, "Message Item", "nav.bat.replace")
-I_Loc\MessageItem_NavBatNoplace = GetModdedINIString(StringsFile, "Message Item", "nav.bat.noplace")
-I_Loc\MessageItem_NavBatNofit = GetModdedINIString(StringsFile, "Message Item", "nav.bat.nofit")
-I_Loc\MessageItem_FirstaidUseFull = GetModdedINIString(StringsFile, "Message Item", "firstaid.use.full")
-I_Loc\MessageItem_FirstaidUse1 = GetModdedINIString(StringsFile, "Message Item", "firstaid.use.1")
-I_Loc\MessageItem_FirstaidUse2 = GetModdedINIString(StringsFile, "Message Item", "firstaid.use.2")
-I_Loc\MessageItem_FirstaidUse3 = GetModdedINIString(StringsFile, "Message Item", "firstaid.use.3")
-I_Loc\MessageItem_FirstaidUse4 = GetModdedINIString(StringsFile, "Message Item", "firstaid.use.4")
-I_Loc\MessageItem_FirstaidUse5 = GetModdedINIString(StringsFile, "Message Item", "firstaid.use.5")
-I_Loc\MessageItem_FinefirstaidUse1 = GetModdedINIString(StringsFile, "Message Item", "finefirstaid.use.1")
-I_Loc\MessageItem_FinefirstaidUse2 = GetModdedINIString(StringsFile, "Message Item", "finefirstaid.use.2")
-I_Loc\MessageItem_FinefirstaidUse3 = GetModdedINIString(StringsFile, "Message Item", "finefirstaid.use.3")
-I_Loc\MessageItem_BluefirstaidUseSuperman = GetModdedINIString(StringsFile, "Message Item", "bluefirstaid.use.superman")
-I_Loc\MessageItem_BluefirstaidUseInvert = GetModdedINIString(StringsFile, "Message Item", "bluefirstaid.use.invert")
-I_Loc\MessageItem_BluefirstaidUseNausea = GetModdedINIString(StringsFile, "Message Item", "bluefirstaid.use.nausea")
-I_Loc\MessageItem_BluefirstaidUseHeal = GetModdedINIString(StringsFile, "Message Item", "bluefirstaid.use.heal")
-I_Loc\MessageItem_BluefirstaidUseHurt = GetModdedINIString(StringsFile, "Message Item", "bluefirstaid.use.hurt")
-I_Loc\MessageItem_VeryfinefirstaidUseFullheal = GetModdedINIString(StringsFile, "Message Item", "veryfinefirstaid.use.fullheal")
-I_Loc\MessageItem_VeryfinefirstaidUseHurt = GetModdedINIString(StringsFile, "Message Item", "veryfinefirstaid.use.hurt")
-I_Loc\MessageItem_VeryfinefirstaidUseHeal = GetModdedINIString(StringsFile, "Message Item", "veryfinefirstaid.use.heal")
-I_Loc\MessageItem_VeryfinefirstaidUseNausea = GetModdedINIString(StringsFile, "Message Item", "veryfinefirstaid.use.nausea")
-I_Loc\MessageItem_VeryfinefirstaidUsePocketdimension = GetModdedINIString(StringsFile, "Message Item", "veryfinefirstaid.use.pocketdimension")
-I_Loc\MessageItem_EyedropsTear = GetModdedINIString(StringsFile, "Message Item", "eyedrops.tear")
-I_Loc\MessageItem_SyringeUse = GetModdedINIString(StringsFile, "Message Item", "syringe.use")
-I_Loc\MessageItem_FinesyringeUse = GetModdedINIString(StringsFile, "Message Item", "finesyringe.use")
-I_Loc\MessageItem_VeryfinesyringeUseHuge = GetModdedINIString(StringsFile, "Message Item", "veryfinesyringe.use.huge")
-I_Loc\MessageItem_VeryfinesyringeUseVeryhuge = GetModdedINIString(StringsFile, "Message Item", "veryfinesyringe.use.veryhuge")
-I_Loc\MessageItem_VeryfinesyringeUseStomacheache = GetModdedINIString(StringsFile, "Message Item", "veryfinesyringe.use.stomacheache")
-I_Loc\MessageItem_PillUse = GetModdedINIString(StringsFile, "Message Item", "pill.use")
-I_Loc\MessageItem_PillUseHealnausea = GetModdedINIString(StringsFile, "Message Item", "pill.use.healnausea")
-I_Loc\MessageItem_CigaretteUseUnable = GetModdedINIString(StringsFile, "Message Item", "cigarette.use.unable")
-I_Loc\MessageItem_CigaretteUse[1] = GetModdedINIString(StringsFile, "Message Item", "cigarette.use_1")
-I_Loc\MessageItem_CigaretteUse[2] = GetModdedINIString(StringsFile, "Message Item", "cigarette.use_2")
-I_Loc\MessageItem_CigaretteUse[3] = GetModdedINIString(StringsFile, "Message Item", "cigarette.use_3")
-I_Loc\MessageItem_CigaretteUse[4] = GetModdedINIString(StringsFile, "Message Item", "cigarette.use_4")
-I_Loc\MessageItem_CigaretteUse[5] = GetModdedINIString(StringsFile, "Message Item", "cigarette.use_5")
-I_Loc\MessageItem_420jUse714 = GetModdedINIString(StringsFile, "Message Item", "420j.use.714")
-I_Loc\MessageItem_420jUse = GetModdedINIString(StringsFile, "Message Item", "420j.use")
-I_Loc\MessageItem_420jUseNap = GetModdedINIString(StringsFile, "Message Item", "420j.use.nap")
-I_Loc\MessageItem_427On = GetModdedINIString(StringsFile, "Message Item", "427.on")
-I_Loc\MessageItem_427Off = GetModdedINIString(StringsFile, "Message Item", "427.off")
-I_Loc\MessageItem_1162UseBadge = GetModdedINIString(StringsFile, "Message Item", "1162.use.badge")
-I_Loc\MessageItem_1162UseKey = GetModdedINIString(StringsFile, "Message Item", "1162.use.key")
-I_Loc\MessageItem_1162UseHearing = GetModdedINIString(StringsFile, "Message Item", "1162.use.hearing")
-I_Loc\MessageItem_1162UseTicket = GetModdedINIString(StringsFile, "Message Item", "1162.use.ticket")
-I_Loc\MessageHelp_Paper = GetModdedINIString(StringsFile, "Message Help", "paper")
-I_Loc\MessageHelp_Inventory = GetModdedINIString(StringsFile, "Message Help", "inventory")
-I_Loc\MessageHelp_View = GetModdedINIString(StringsFile, "Message Help", "view")
-I_Loc\MessageHelp_Blink = GetModdedINIString(StringsFile, "Message Help", "blink")
-I_Loc\MessageHelp_Run = GetModdedINIString(StringsFile, "Message Help", "run")
-I_Loc\MessageHelp_Remove = GetModdedINIString(StringsFile, "Message Help", "remove")
-I_Loc\MessageSave_Anywhere = GetModdedINIString(StringsFile, "Message Save", "anywhere")
-I_Loc\MessageSave_Screens = GetModdedINIString(StringsFile, "Message Save", "screens")
-I_Loc\MessageSave_Disabled = GetModdedINIString(StringsFile, "Message Save", "disabled")
-I_Loc\MessageSave_DisabledLocation = GetModdedINIString(StringsFile, "Message Save", "disabled.location")
-I_Loc\MessageSave_DisabledMoment = GetModdedINIString(StringsFile, "Message Save", "disabled.moment")
-I_Loc\MessageSave_DisabledLoading = GetModdedINIString(StringsFile, "Message Save", "disabled.loading")
-I_Loc\MessageSave_Saved = GetModdedINIString(StringsFile, "Message Save", "saved")
-I_Loc\MessageShot_Neck = GetModdedINIString(StringsFile, "Message Shot", "neck")
-I_Loc\MessageShot_Chest = GetModdedINIString(StringsFile, "Message Shot", "chest")
-I_Loc\MessageShot_ChestVest = GetModdedINIString(StringsFile, "Message Shot", "chest.vest")
-I_Loc\MessageShot_ChestFinevestLight = GetModdedINIString(StringsFile, "Message Shot", "chest.finevest.light")
-I_Loc\MessageShot_ChestFinevestHeavy = GetModdedINIString(StringsFile, "Message Shot", "chest.finevest.heavy")
-I_Loc\MessageShot_Leftleg = GetModdedINIString(StringsFile, "Message Shot", "leftleg")
-I_Loc\MessageShot_Rightleg = GetModdedINIString(StringsFile, "Message Shot", "rightleg")
-I_Loc\MessageShot_Rightshoulder = GetModdedINIString(StringsFile, "Message Shot", "rightshoulder")
-I_Loc\MessageShot_Leftshoulder = GetModdedINIString(StringsFile, "Message Shot", "leftshoulder")
-I_Loc\DeathMessage_008 = GetModdedINIString(StringsFile, "Death Message", "008")
-I_Loc\DeathMessage_008Gate = GetModdedINIString(StringsFile, "Death Message", "008.gate")
-I_Loc\DeathMessage_008GateA = GetModdedINIString(StringsFile, "Death Message", "008.gate.a")
-I_Loc\DeathMessage_008GateB = GetModdedINIString(StringsFile, "Death Message", "008.gate.b")
-I_Loc\DeathMessage_008zombie = GetModdedINIString(StringsFile, "Death Message", "008zombie")
-I_Loc\DeathMessage_012 = GetModdedINIString(StringsFile, "Death Message", "012")
-I_Loc\DeathMessage_035Chamber = GetModdedINIString(StringsFile, "Death Message", "035.chamber")
-I_Loc\DeathMessage_035Tentacle = GetModdedINIString(StringsFile, "Death Message", "035.tentacle")
-I_Loc\DeathMessage_035TentacleOffice = GetModdedINIString(StringsFile, "Death Message", "035.tentacle.office")
-I_Loc\DeathMessage_049 = GetModdedINIString(StringsFile, "Death Message", "049")
-I_Loc\DeathMessage_049Chamber = GetModdedINIString(StringsFile, "Death Message", "049.chamber")
-I_Loc\DeathMessage_0492 = GetModdedINIString(StringsFile, "Death Message", "0492")
-I_Loc\DeathMessage_096 = GetModdedINIString(StringsFile, "Death Message", "096")
-I_Loc\DeathMessage_106Pd = GetModdedINIString(StringsFile, "Death Message", "106.pd")
-I_Loc\DeathMessage_106PdCrushed = GetModdedINIString(StringsFile, "Death Message", "106.pd.crushed")
-I_Loc\DeathMessage_106PdFall = GetModdedINIString(StringsFile, "Death Message", "106.pd.fall")
-I_Loc\DeathMessage_173 = GetModdedINIString(StringsFile, "Death Message", "173")
-I_Loc\DeathMessage_173Camera = GetModdedINIString(StringsFile, "Death Message", "173.camera")
-I_Loc\DeathMessage_173Intro = GetModdedINIString(StringsFile, "Death Message", "173.intro")
-I_Loc\DeathMessage_173Doors = GetModdedINIString(StringsFile, "Death Message", "173.doors")
-I_Loc\DeathMessage_205 = GetModdedINIString(StringsFile, "Death Message", "205")
-I_Loc\DeathMessage_420js = GetModdedINIString(StringsFile, "Death Message", "420js")
-I_Loc\DeathMessage_427 = GetModdedINIString(StringsFile, "Death Message", "427")
-I_Loc\DeathMessage_895 = GetModdedINIString(StringsFile, "Death Message", "895")
-I_Loc\DeathMessage_895Nvg = GetModdedINIString(StringsFile, "Death Message", "895.nvg")
-I_Loc\DeathMessage_895Finenvg = GetModdedINIString(StringsFile, "Death Message", "895.finenvg")
-I_Loc\DeathMessage_914Rough = GetModdedINIString(StringsFile, "Death Message", "914.rough")
-I_Loc\DeathMessage_914Superman = GetModdedINIString(StringsFile, "Death Message", "914.superman")
-I_Loc\DeathMessage_939 = GetModdedINIString(StringsFile, "Death Message", "939")
-I_Loc\DeathMessage_1025Cardiacarrest = GetModdedINIString(StringsFile, "Death Message", "1025.cardiacarrest")
-I_Loc\DeathMessage_1123 = GetModdedINIString(StringsFile, "Death Message", "1123")
-I_Loc\DeathMessage_1048a = GetModdedINIString(StringsFile, "Death Message", "1048a")
-I_Loc\DeathMessage_1162 = GetModdedINIString(StringsFile, "Death Message", "1162")
-I_Loc\DeathMessage_1499 = GetModdedINIString(StringsFile, "Death Message", "1499")
-I_Loc\DeathMessage_14991 = GetModdedINIString(StringsFile, "Death Message", "14991")
-I_Loc\DeathMessage_14991Dimension = GetModdedINIString(StringsFile, "Death Message", "14991.dimension")
-I_Loc\DeathMessage_GuardIntro = GetModdedINIString(StringsFile, "Death Message", "guard.intro")
-I_Loc\DeathMessage_GuardGateB = GetModdedINIString(StringsFile, "Death Message", "guard.gate.b")
-I_Loc\DeathMessage_Apache = GetModdedINIString(StringsFile, "Death Message", "apache")
-I_Loc\DeathMessage_ApacheGateA = GetModdedINIString(StringsFile, "Death Message", "apache.gate.a")
-I_Loc\DeathMessage_ApacheGateB = GetModdedINIString(StringsFile, "Death Message", "apache.gate.b")
-I_Loc\DeathMessage_Ntf = GetModdedINIString(StringsFile, "Death Message", "ntf")
-I_Loc\DeathMessage_NtfBloodloss = GetModdedINIString(StringsFile, "Death Message", "ntf.bloodloss")
-I_Loc\DeathMessage_Tesla = GetModdedINIString(StringsFile, "Death Message", "tesla")
-I_Loc\DeathMessage_Killbat = GetModdedINIString(StringsFile, "Death Message", "killbat")
-I_Loc\DeathMessage_Suicide[1] = GetModdedINIString(StringsFile, "Death Message", "suicide_1")
-I_Loc\DeathMessage_Suicide[2] = GetModdedINIString(StringsFile, "Death Message", "suicide_2")
-I_Loc\DeathMessage_Suicide[3] = GetModdedINIString(StringsFile, "Death Message", "suicide_3")
-I_Loc\DeathMessage_Suicide[4] = GetModdedINIString(StringsFile, "Death Message", "suicide_4")
-I_Loc\DeathMessage_Gassed = GetModdedINIString(StringsFile, "Death Message", "gassed")
-I_Loc\Cup_Of = GetModdedINIString(StringsFile, "Cup", "of")
-I_Loc\Cup_OfPrefix[1] = GetModdedINIString(StringsFile, "Cup", "of.prefix_1")
-I_Loc\Cup_OfPrefix[2] = GetModdedINIString(StringsFile, "Cup", "of.prefix_2")
-I_Loc\Cup_Coffee = GetModdedINIString(StringsFile, "Cup", "coffee")
-I_Loc\Cup_Oj = GetModdedINIString(StringsFile, "Cup", "oj")
+Function LoadLocalization(loc.LocalizationTable, file$)
+    Local section$
+    Local f% = OpenFile(file)
+    While Not Eof(f)
+        Local l$ = Trim(ReadLine(f))
+        If l <> "" And Instr(l, "#") <> 1 And Instr(l, ";") <> 1 Then
+            Local splitterPos = Instr(l, "=")
+            If splitterPos = 0 And Instr(l, "[") = 1 Then
+                section = Trim(Mid(l, 2, Len(l) - 2))
+            Else
+                Local key$ = Trim(Left(l, splitterPos - 1))
+                Local value$ = Trim(Right(l, Len(l) - splitterPos))
+                Select section
+                    Case "Launcher"
+                        Select key
+                            Case "aspectratio" If loc\Launcher_Aspectratio = "" Then loc\Launcher_Aspectratio = value
+                            Case "resolution" If loc\Launcher_Resolution = "" Then loc\Launcher_Resolution = value
+                            Case "resolution.current" If loc\Launcher_ResolutionCurrent = "" Then loc\Launcher_ResolutionCurrent = value
+                            Case "graphics" If loc\Launcher_Graphics = "" Then loc\Launcher_Graphics = value
+                            Case "fullscreen" If loc\Launcher_Fullscreen = "" Then loc\Launcher_Fullscreen = value
+                            Case "fullscreen.exclusive" If loc\Launcher_FullscreenExclusive = "" Then loc\Launcher_FullscreenExclusive = value
+                            Case "16bit" If loc\Launcher_16bit = "" Then loc\Launcher_16bit = value
+                            Case "launcher" If loc\Launcher_Launcher = "" Then loc\Launcher_Launcher = value
+                            Case "hudscalefactor" If loc\Launcher_Hudscalefactor = "" Then loc\Launcher_Hudscalefactor = value
+                            Case "mapcreator" If loc\Launcher_Mapcreator = "" Then loc\Launcher_Mapcreator = value
+                            Case "discord" If loc\Launcher_Discord = "" Then loc\Launcher_Discord = value
+                            Case "launch" If loc\Launcher_Launch = "" Then loc\Launcher_Launch = value
+                            Case "exit" If loc\Launcher_Exit = "" Then loc\Launcher_Exit = value
+                        End Select
+                    Case "Menu"
+                        Select key
+                            Case "back" If loc\Menu_Back = "" Then loc\Menu_Back = value
+                            Case "back.upper" If loc\Menu_BackUpper = "" Then loc\Menu_BackUpper = value
+                            Case "page" If loc\Menu_Page = "" Then loc\Menu_Page = value
+                            Case "yes" If loc\Menu_Yes = "" Then loc\Menu_Yes = value
+                            Case "no" If loc\Menu_No = "" Then loc\Menu_No = value
+                            Case "ok" If loc\Menu_Ok = "" Then loc\Menu_Ok = value
+                            Case "pressany" If loc\Menu_Pressany = "" Then loc\Menu_Pressany = value
+                            Case "new" If loc\Menu_New = "" Then loc\Menu_New = value
+                            Case "new.upper" If loc\Menu_NewUpper = "" Then loc\Menu_NewUpper = value
+                            Case "load" If loc\Menu_Load = "" Then loc\Menu_Load = value
+                            Case "load.upper" If loc\Menu_LoadUpper = "" Then loc\Menu_LoadUpper = value
+                            Case "achievements" If loc\Menu_Achievements = "" Then loc\Menu_Achievements = value
+                            Case "achievements.upper" If loc\Menu_AchievementsUpper = "" Then loc\Menu_AchievementsUpper = value
+                            Case "mods" If loc\Menu_Mods = "" Then loc\Menu_Mods = value
+                            Case "mods.upper" If loc\Menu_ModsUpper = "" Then loc\Menu_ModsUpper = value
+                            Case "options" If loc\Menu_Options = "" Then loc\Menu_Options = value
+                            Case "options.upper" If loc\Menu_OptionsUpper = "" Then loc\Menu_OptionsUpper = value
+                            Case "resume" If loc\Menu_Resume = "" Then loc\Menu_Resume = value
+                            Case "savequit" If loc\Menu_Savequit = "" Then loc\Menu_Savequit = value
+                            Case "quit.question" If loc\Menu_QuitQuestion = "" Then loc\Menu_QuitQuestion = value
+                            Case "quit" If loc\Menu_Quit = "" Then loc\Menu_Quit = value
+                            Case "quit.upper" If loc\Menu_QuitUpper = "" Then loc\Menu_QuitUpper = value
+                            Case "quit.menu" If loc\Menu_QuitMenu = "" Then loc\Menu_QuitMenu = value
+                            Case "random_1" If loc\Menu_Random[1] = "" Then loc\Menu_Random[1] = value
+                            Case "random_2" If loc\Menu_Random[2] = "" Then loc\Menu_Random[2] = value
+                            Case "random_3" If loc\Menu_Random[3] = "" Then loc\Menu_Random[3] = value
+                            Case "random_4" If loc\Menu_Random[4] = "" Then loc\Menu_Random[4] = value
+                            Case "random_5" If loc\Menu_Random[5] = "" Then loc\Menu_Random[5] = value
+                            Case "random_6" If loc\Menu_Random[6] = "" Then loc\Menu_Random[6] = value
+                            Case "random_7" If loc\Menu_Random[7] = "" Then loc\Menu_Random[7] = value
+                            Case "random_8" If loc\Menu_Random[8] = "" Then loc\Menu_Random[8] = value
+                            Case "random_9" If loc\Menu_Random[9] = "" Then loc\Menu_Random[9] = value
+                            Case "random_10" If loc\Menu_Random[10] = "" Then loc\Menu_Random[10] = value
+                            Case "random_11" If loc\Menu_Random[11] = "" Then loc\Menu_Random[11] = value
+                            Case "random_12" If loc\Menu_Random[12] = "" Then loc\Menu_Random[12] = value
+                            Case "random_13" If loc\Menu_Random[13] = "" Then loc\Menu_Random[13] = value
+                            Case "random_14" If loc\Menu_Random[14] = "" Then loc\Menu_Random[14] = value
+                            Case "pause" If loc\Menu_Pause = "" Then loc\Menu_Pause = value
+                            Case "dead" If loc\Menu_Dead = "" Then loc\Menu_Dead = value
+                            Case "difficulty" If loc\Menu_Difficulty = "" Then loc\Menu_Difficulty = value
+                            Case "save" If loc\Menu_Save = "" Then loc\Menu_Save = value
+                            Case "seed" If loc\Menu_Seed = "" Then loc\Menu_Seed = value
+                            Case "seed.numeric" If loc\Menu_SeedNumeric = "" Then loc\Menu_SeedNumeric = value
+                            Case "map" If loc\Menu_Map = "" Then loc\Menu_Map = value
+                            Case "end.ending" If loc\Menu_EndEnding = "" Then loc\Menu_EndEnding = value
+                            Case "end.time" If loc\Menu_EndTime = "" Then loc\Menu_EndTime = value
+                            Case "end.scps" If loc\Menu_EndScps = "" Then loc\Menu_EndScps = value
+                            Case "end.achv" If loc\Menu_EndAchv = "" Then loc\Menu_EndAchv = value
+                            Case "end.rooms" If loc\Menu_EndRooms = "" Then loc\Menu_EndRooms = value
+                            Case "end.docs" If loc\Menu_EndDocs = "" Then loc\Menu_EndDocs = value
+                            Case "end.914" If loc\Menu_End914 = "" Then loc\Menu_End914 = value
+                            Case "end" If loc\Menu_End = "" Then loc\Menu_End = value
+                            Case "loading" If loc\Menu_Loading = "" Then loc\Menu_Loading = value
+                            Case "loading.cwm_1" If loc\Menu_LoadingCwm[1] = "" Then loc\Menu_LoadingCwm[1] = value
+                            Case "loading.cwm_2" If loc\Menu_LoadingCwm[2] = "" Then loc\Menu_LoadingCwm[2] = value
+                            Case "loading.cwm_3" If loc\Menu_LoadingCwm[3] = "" Then loc\Menu_LoadingCwm[3] = value
+                            Case "loading.cwm_4" If loc\Menu_LoadingCwm[4] = "" Then loc\Menu_LoadingCwm[4] = value
+                            Case "loading.cwm_5" If loc\Menu_LoadingCwm[5] = "" Then loc\Menu_LoadingCwm[5] = value
+                            Case "loading.cwm_6" If loc\Menu_LoadingCwm[6] = "" Then loc\Menu_LoadingCwm[6] = value
+                            Case "loading.cwm_7" If loc\Menu_LoadingCwm[7] = "" Then loc\Menu_LoadingCwm[7] = value
+                            Case "loading.cwm_8" If loc\Menu_LoadingCwm[8] = "" Then loc\Menu_LoadingCwm[8] = value
+                            Case "loading.cwm_9" If loc\Menu_LoadingCwm[9] = "" Then loc\Menu_LoadingCwm[9] = value
+                            Case "loading.cwm_10" If loc\Menu_LoadingCwm[10] = "" Then loc\Menu_LoadingCwm[10] = value
+                            Case "loading.cwm_11" If loc\Menu_LoadingCwm[11] = "" Then loc\Menu_LoadingCwm[11] = value
+                            Case "loading.cwm_12" If loc\Menu_LoadingCwm[12] = "" Then loc\Menu_LoadingCwm[12] = value
+                            Case "loading.cwm_13" If loc\Menu_LoadingCwm[13] = "" Then loc\Menu_LoadingCwm[13] = value
+                        End Select
+                    Case "Option"
+                        Select key
+                            Case "graphics" If loc\Option_Graphics = "" Then loc\Option_Graphics = value
+                            Case "audio" If loc\Option_Audio = "" Then loc\Option_Audio = value
+                            Case "controls" If loc\Option_Controls = "" Then loc\Option_Controls = value
+                            Case "advanced" If loc\Option_Advanced = "" Then loc\Option_Advanced = value
+                            Case "slider.low" If loc\Option_SliderLow = "" Then loc\Option_SliderLow = value
+                            Case "slider.high" If loc\Option_SliderHigh = "" Then loc\Option_SliderHigh = value
+                            Case "hint.default" If loc\Option_HintDefault = "" Then loc\Option_HintDefault = value
+                            Case "hint.menuonly" If loc\Option_HintMenuonly = "" Then loc\Option_HintMenuonly = value
+                            Case "hint.fullscreen" If loc\Option_HintFullscreen = "" Then loc\Option_HintFullscreen = value
+                            Case "hint.selfexplanatory" If loc\Option_HintSelfexplanatory = "" Then loc\Option_HintSelfexplanatory = value
+                        End Select
+                    Case "Option Name"
+                        Select key
+                            Case "vsync" If loc\OptionName_Vsync = "" Then loc\OptionName_Vsync = value
+                            Case "antialias" If loc\OptionName_Antialias = "" Then loc\OptionName_Antialias = value
+                            Case "gamma" If loc\OptionName_Gamma = "" Then loc\OptionName_Gamma = value
+                            Case "texlod" If loc\OptionName_Texlod = "" Then loc\OptionName_Texlod = value
+                            Case "vram" If loc\OptionName_Vram = "" Then loc\OptionName_Vram = value
+                            Case "hudoffset" If loc\OptionName_Hudoffset = "" Then loc\OptionName_Hudoffset = value
+                            Case "fov" If loc\OptionName_Fov = "" Then loc\OptionName_Fov = value
+                            Case "musicvol" If loc\OptionName_Musicvol = "" Then loc\OptionName_Musicvol = value
+                            Case "soundvol" If loc\OptionName_Soundvol = "" Then loc\OptionName_Soundvol = value
+                            Case "sfxautorelease" If loc\OptionName_Sfxautorelease = "" Then loc\OptionName_Sfxautorelease = value
+                            Case "usertrack" If loc\OptionName_Usertrack = "" Then loc\OptionName_Usertrack = value
+                            Case "usertrackmode" If loc\OptionName_Usertrackmode = "" Then loc\OptionName_Usertrackmode = value
+                            Case "usertrackmode.repeat" If loc\OptionName_UsertrackmodeRepeat = "" Then loc\OptionName_UsertrackmodeRepeat = value
+                            Case "usertrackmode.random" If loc\OptionName_UsertrackmodeRandom = "" Then loc\OptionName_UsertrackmodeRandom = value
+                            Case "usertrackscan" If loc\OptionName_Usertrackscan = "" Then loc\OptionName_Usertrackscan = value
+                            Case "usertrackscan.found" If loc\OptionName_UsertrackscanFound = "" Then loc\OptionName_UsertrackscanFound = value
+                            Case "mousesensitivity" If loc\OptionName_Mousesensitivity = "" Then loc\OptionName_Mousesensitivity = value
+                            Case "mouseinvert" If loc\OptionName_Mouseinvert = "" Then loc\OptionName_Mouseinvert = value
+                            Case "mousesmoothing" If loc\OptionName_Mousesmoothing = "" Then loc\OptionName_Mousesmoothing = value
+                            Case "binds" If loc\OptionName_Binds = "" Then loc\OptionName_Binds = value
+                            Case "bind.move.forward" If loc\OptionName_BindMoveForward = "" Then loc\OptionName_BindMoveForward = value
+                            Case "bind.move.left" If loc\OptionName_BindMoveLeft = "" Then loc\OptionName_BindMoveLeft = value
+                            Case "bind.move.back" If loc\OptionName_BindMoveBack = "" Then loc\OptionName_BindMoveBack = value
+                            Case "bind.move.right" If loc\OptionName_BindMoveRight = "" Then loc\OptionName_BindMoveRight = value
+                            Case "bind.save" If loc\OptionName_BindSave = "" Then loc\OptionName_BindSave = value
+                            Case "bind.blink" If loc\OptionName_BindBlink = "" Then loc\OptionName_BindBlink = value
+                            Case "bind.sprint" If loc\OptionName_BindSprint = "" Then loc\OptionName_BindSprint = value
+                            Case "bind.inv" If loc\OptionName_BindInv = "" Then loc\OptionName_BindInv = value
+                            Case "bind.crouch" If loc\OptionName_BindCrouch = "" Then loc\OptionName_BindCrouch = value
+                            Case "bind.console" If loc\OptionName_BindConsole = "" Then loc\OptionName_BindConsole = value
+                            Case "showhud" If loc\OptionName_Showhud = "" Then loc\OptionName_Showhud = value
+                            Case "console" If loc\OptionName_Console = "" Then loc\OptionName_Console = value
+                            Case "consoleerror" If loc\OptionName_Consoleerror = "" Then loc\OptionName_Consoleerror = value
+                            Case "speedrunmode" If loc\OptionName_Speedrunmode = "" Then loc\OptionName_Speedrunmode = value
+                            Case "numericseeds" If loc\OptionName_Numericseeds = "" Then loc\OptionName_Numericseeds = value
+                            Case "achpopup" If loc\OptionName_Achpopup = "" Then loc\OptionName_Achpopup = value
+                            Case "launcher" If loc\OptionName_Launcher = "" Then loc\OptionName_Launcher = value
+                            Case "showfps" If loc\OptionName_Showfps = "" Then loc\OptionName_Showfps = value
+                            Case "framelimit" If loc\OptionName_Framelimit = "" Then loc\OptionName_Framelimit = value
+                            Case "framelimit.fps" If loc\OptionName_FramelimitFps = "" Then loc\OptionName_FramelimitFps = value
+                        End Select
+                    Case "Option Tooltip"
+                        Select key
+                            Case "vsync" If loc\OptionTooltip_Vsync = "" Then loc\OptionTooltip_Vsync = value
+                            Case "antialias" If loc\OptionTooltip_Antialias = "" Then loc\OptionTooltip_Antialias = value
+                            Case "gamma" If loc\OptionTooltip_Gamma = "" Then loc\OptionTooltip_Gamma = value
+                            Case "texlod" If loc\OptionTooltip_Texlod = "" Then loc\OptionTooltip_Texlod = value
+                            Case "vram" If loc\OptionTooltip_Vram = "" Then loc\OptionTooltip_Vram = value
+                            Case "hudoffset" If loc\OptionTooltip_Hudoffset = "" Then loc\OptionTooltip_Hudoffset = value
+                            Case "fov" If loc\OptionTooltip_Fov = "" Then loc\OptionTooltip_Fov = value
+                            Case "musicvol" If loc\OptionTooltip_Musicvol = "" Then loc\OptionTooltip_Musicvol = value
+                            Case "soundvol" If loc\OptionTooltip_Soundvol = "" Then loc\OptionTooltip_Soundvol = value
+                            Case "sfxautorelease" If loc\OptionTooltip_Sfxautorelease = "" Then loc\OptionTooltip_Sfxautorelease = value
+                            Case "usertrack" If loc\OptionTooltip_Usertrack = "" Then loc\OptionTooltip_Usertrack = value
+                            Case "usertrackmode" If loc\OptionTooltip_Usertrackmode = "" Then loc\OptionTooltip_Usertrackmode = value
+                            Case "usertrackmode.note" If loc\OptionTooltip_UsertrackmodeNote = "" Then loc\OptionTooltip_UsertrackmodeNote = value
+                            Case "usertrackscan" If loc\OptionTooltip_Usertrackscan = "" Then loc\OptionTooltip_Usertrackscan = value
+                            Case "mousesensitivty" If loc\OptionTooltip_Mousesensitivty = "" Then loc\OptionTooltip_Mousesensitivty = value
+                            Case "mousesmoothing" If loc\OptionTooltip_Mousesmoothing = "" Then loc\OptionTooltip_Mousesmoothing = value
+                            Case "binds" If loc\OptionTooltip_Binds = "" Then loc\OptionTooltip_Binds = value
+                            Case "showhud" If loc\OptionTooltip_Showhud = "" Then loc\OptionTooltip_Showhud = value
+                            Case "console" If loc\OptionTooltip_Console = "" Then loc\OptionTooltip_Console = value
+                            Case "console.note" If loc\OptionTooltip_ConsoleNote = "" Then loc\OptionTooltip_ConsoleNote = value
+                            Case "speedrunmode" If loc\OptionTooltip_Speedrunmode = "" Then loc\OptionTooltip_Speedrunmode = value
+                            Case "numericseeds" If loc\OptionTooltip_Numericseeds = "" Then loc\OptionTooltip_Numericseeds = value
+                            Case "achpopup" If loc\OptionTooltip_Achpopup = "" Then loc\OptionTooltip_Achpopup = value
+                            Case "launcher" If loc\OptionTooltip_Launcher = "" Then loc\OptionTooltip_Launcher = value
+                            Case "showfps" If loc\OptionTooltip_Showfps = "" Then loc\OptionTooltip_Showfps = value
+                            Case "framelimit" If loc\OptionTooltip_Framelimit = "" Then loc\OptionTooltip_Framelimit = value
+                            Case "framelimit.note" If loc\OptionTooltip_FramelimitNote = "" Then loc\OptionTooltip_FramelimitNote = value
+                        End Select
+                    Case "Mods"
+                        Select key
+                            Case "upload" If loc\Mods_Upload = "" Then loc\Mods_Upload = value
+                            Case "update" If loc\Mods_Update = "" Then loc\Mods_Update = value
+                            Case "visit" If loc\Mods_Visit = "" Then loc\Mods_Visit = value
+                            Case "reloadmods" If loc\Mods_Reloadmods = "" Then loc\Mods_Reloadmods = value
+                            Case "reloadgame" If loc\Mods_Reloadgame = "" Then loc\Mods_Reloadgame = value
+                            Case "openlocal" If loc\Mods_Openlocal = "" Then loc\Mods_Openlocal = value
+                            Case "upload.confirm" If loc\Mods_UploadConfirm = "" Then loc\Mods_UploadConfirm = value
+                            Case "update.confirm" If loc\Mods_UpdateConfirm = "" Then loc\Mods_UpdateConfirm = value
+                            Case "update.failed" If loc\Mods_UpdateFailed = "" Then loc\Mods_UpdateFailed = value
+                            Case "viewterms" If loc\Mods_Viewterms = "" Then loc\Mods_Viewterms = value
+                            Case "keepdesc" If loc\Mods_Keepdesc = "" Then loc\Mods_Keepdesc = value
+                            Case "nomods" If loc\Mods_Nomods = "" Then loc\Mods_Nomods = value
+                        End Select
+                    Case "Load Game"
+                        Select key
+                            Case "load" If loc\LoadGame_Load = "" Then loc\LoadGame_Load = value
+                            Case "delete" If loc\LoadGame_Delete = "" Then loc\LoadGame_Delete = value
+                            Case "delete.confirm" If loc\LoadGame_DeleteConfirm = "" Then loc\LoadGame_DeleteConfirm = value
+                            Case "nosaved" If loc\LoadGame_Nosaved = "" Then loc\LoadGame_Nosaved = value
+                        End Select
+                    Case "New Game"
+                        Select key
+                            Case "name" If loc\NewGame_Name = "" Then loc\NewGame_Name = value
+                            Case "enableintro" If loc\NewGame_Enableintro = "" Then loc\NewGame_Enableintro = value
+                            Case "start" If loc\NewGame_Start = "" Then loc\NewGame_Start = value
+                            Case "loadmap" If loc\NewGame_Loadmap = "" Then loc\NewGame_Loadmap = value
+                            Case "loadmap.upper" If loc\NewGame_LoadmapUpper = "" Then loc\NewGame_LoadmapUpper = value
+                            Case "deselect" If loc\NewGame_Deselect = "" Then loc\NewGame_Deselect = value
+                            Case "untitled" If loc\NewGame_Untitled = "" Then loc\NewGame_Untitled = value
+                        End Select
+                    Case "Difficulty"
+                        Select key
+                            Case "safe" If loc\Difficulty_Safe = "" Then loc\Difficulty_Safe = value
+                            Case "safe.desc" If loc\Difficulty_SafeDesc = "" Then loc\Difficulty_SafeDesc = value
+                            Case "euclid" If loc\Difficulty_Euclid = "" Then loc\Difficulty_Euclid = value
+                            Case "euclid.desc" If loc\Difficulty_EuclidDesc = "" Then loc\Difficulty_EuclidDesc = value
+                            Case "keter" If loc\Difficulty_Keter = "" Then loc\Difficulty_Keter = value
+                            Case "keter.desc" If loc\Difficulty_KeterDesc = "" Then loc\Difficulty_KeterDesc = value
+                            Case "esoteric" If loc\Difficulty_Esoteric = "" Then loc\Difficulty_Esoteric = value
+                            Case "permadeath" If loc\Difficulty_Permadeath = "" Then loc\Difficulty_Permadeath = value
+                            Case "saveanywhere" If loc\Difficulty_Saveanywhere = "" Then loc\Difficulty_Saveanywhere = value
+                            Case "aggressivenpcs" If loc\Difficulty_Aggressivenpcs = "" Then loc\Difficulty_Aggressivenpcs = value
+                            Case "other" If loc\Difficulty_Other = "" Then loc\Difficulty_Other = value
+                            Case "other.easy" If loc\Difficulty_OtherEasy = "" Then loc\Difficulty_OtherEasy = value
+                            Case "other.normal" If loc\Difficulty_OtherNormal = "" Then loc\Difficulty_OtherNormal = value
+                            Case "other.hard" If loc\Difficulty_OtherHard = "" Then loc\Difficulty_OtherHard = value
+                        End Select
+                    Case "Load Map"
+                        Select key
+                            Case "madeby" If loc\LoadMap_Madeby = "" Then loc\LoadMap_Madeby = value
+                            Case "desc" If loc\LoadMap_Desc = "" Then loc\LoadMap_Desc = value
+                            Case "roomcount" If loc\LoadMap_Roomcount = "" Then loc\LoadMap_Roomcount = value
+                            Case "customforest" If loc\LoadMap_Customforest = "" Then loc\LoadMap_Customforest = value
+                            Case "custommaintenance" If loc\LoadMap_Custommaintenance = "" Then loc\LoadMap_Custommaintenance = value
+                            Case "unknown" If loc\LoadMap_Unknown = "" Then loc\LoadMap_Unknown = value
+                            Case "nodesc" If loc\LoadMap_Nodesc = "" Then loc\LoadMap_Nodesc = value
+                            Case "nomaps" If loc\LoadMap_Nomaps = "" Then loc\LoadMap_Nomaps = value
+                        End Select
+                    Case "HUD"
+                        Select key
+                            Case "fps" If loc\HUD_Fps = "" Then loc\HUD_Fps = value
+                            Case "achv.unlocked" If loc\HUD_AchvUnlocked = "" Then loc\HUD_AchvUnlocked = value
+                            Case "radio.channel" If loc\HUD_RadioChannel = "" Then loc\HUD_RadioChannel = value
+                            Case "radio.usertrack" If loc\HUD_RadioUsertrack = "" Then loc\HUD_RadioUsertrack = value
+                            Case "radio.usertrack.disabled" If loc\HUD_RadioUsertrackDisabled = "" Then loc\HUD_RadioUsertrackDisabled = value
+                            Case "radio.usertrack.notracks" If loc\HUD_RadioUsertrackNotracks = "" Then loc\HUD_RadioUsertrackNotracks = value
+                            Case "radio.cb" If loc\HUD_RadioCb = "" Then loc\HUD_RadioCb = value
+                            Case "radio.radio" If loc\HUD_RadioRadio = "" Then loc\HUD_RadioRadio = value
+                            Case "radio.emergency" If loc\HUD_RadioEmergency = "" Then loc\HUD_RadioEmergency = value
+                            Case "nav.error" If loc\HUD_NavError = "" Then loc\HUD_NavError = value
+                            Case "nav.error.location" If loc\HUD_NavErrorLocation = "" Then loc\HUD_NavErrorLocation = value
+                            Case "nav.database" If loc\HUD_NavDatabase = "" Then loc\HUD_NavDatabase = value
+                            Case "nvg.batlow" If loc\HUD_NvgBatlow = "" Then loc\HUD_NvgBatlow = value
+                            Case "nvg.refresh" If loc\HUD_NvgRefresh = "" Then loc\HUD_NvgRefresh = value
+                            Case "nvg.refresh.seconds" If loc\HUD_NvgRefreshSeconds = "" Then loc\HUD_NvgRefreshSeconds = value
+                            Case "nvg.meters" If loc\HUD_NvgMeters = "" Then loc\HUD_NvgMeters = value
+                            Case "294.range" If loc\HUD_294Range = "" Then loc\HUD_294Range = value
+                            Case "294.dispense" If loc\HUD_294Dispense = "" Then loc\HUD_294Dispense = value
+                            Case "keypad.code" If loc\HUD_KeypadCode = "" Then loc\HUD_KeypadCode = value
+                            Case "keypad.denied" If loc\HUD_KeypadDenied = "" Then loc\HUD_KeypadDenied = value
+                            Case "speedrun.saveloaded" If loc\HUD_SpeedrunSaveloaded = "" Then loc\HUD_SpeedrunSaveloaded = value
+                        End Select
+                    Case "NPC"
+                        Select key
+                            Case "049" If loc\NPC_049 = "" Then loc\NPC_049 = value
+                            Case "066" If loc\NPC_066 = "" Then loc\NPC_066 = value
+                            Case "096" If loc\NPC_096 = "" Then loc\NPC_096 = value
+                            Case "106" If loc\NPC_106 = "" Then loc\NPC_106 = value
+                            Case "173" If loc\NPC_173 = "" Then loc\NPC_173 = value
+                            Case "372" If loc\NPC_372 = "" Then loc\NPC_372 = value
+                            Case "5131" If loc\NPC_5131 = "" Then loc\NPC_5131 = value
+                            Case "895" If loc\NPC_895 = "" Then loc\NPC_895 = value
+                            Case "939" If loc\NPC_939 = "" Then loc\NPC_939 = value
+                            Case "966" If loc\NPC_966 = "" Then loc\NPC_966 = value
+                            Case "1048" If loc\NPC_1048 = "" Then loc\NPC_1048 = value
+                            Case "1048a" If loc\NPC_1048a = "" Then loc\NPC_1048a = value
+                            Case "human" If loc\NPC_Human = "" Then loc\NPC_Human = value
+                            Case "unidentified" If loc\NPC_Unidentified = "" Then loc\NPC_Unidentified = value
+                        End Select
+                    Case "Message"
+                        Select key
+                            Case "008.glassbreak" If loc\Message_008Glassbreak = "" Then loc\Message_008Glassbreak = value
+                            Case "008.1" If loc\Message_008_1 = "" Then loc\Message_008_1 = value
+                            Case "008.2" If loc\Message_008_2 = "" Then loc\Message_008_2 = value
+                            Case "008.3" If loc\Message_008_3 = "" Then loc\Message_008_3 = value
+                            Case "008.4" If loc\Message_008_4 = "" Then loc\Message_008_4 = value
+                            Case "012.1" If loc\Message_012_1 = "" Then loc\Message_012_1 = value
+                            Case "012.2" If loc\Message_012_2 = "" Then loc\Message_012_2 = value
+                            Case "012.3" If loc\Message_012_3 = "" Then loc\Message_012_3 = value
+                            Case "012.4" If loc\Message_012_4 = "" Then loc\Message_012_4 = value
+                            Case "294.two" If loc\Message_294Two = "" Then loc\Message_294Two = value
+                            Case "294.one" If loc\Message_294One = "" Then loc\Message_294One = value
+                            Case "427.1" If loc\Message_427_1 = "" Then loc\Message_427_1 = value
+                            Case "427.2" If loc\Message_427_2 = "" Then loc\Message_427_2 = value
+                            Case "427.3" If loc\Message_427_3 = "" Then loc\Message_427_3 = value
+                            Case "427.4" If loc\Message_427_4 = "" Then loc\Message_427_4 = value
+                            Case "860.doorbudge" If loc\Message_860Doorbudge = "" Then loc\Message_860Doorbudge = value
+                            Case "914.player.coarse" If loc\Message_914PlayerCoarse = "" Then loc\Message_914PlayerCoarse = value
+                            Case "966.presence_1" If loc\Message_966Presence[1] = "" Then loc\Message_966Presence[1] = value
+                            Case "966.presence_2" If loc\Message_966Presence[2] = "" Then loc\Message_966Presence[2] = value
+                            Case "966.presence_3" If loc\Message_966Presence[3] = "" Then loc\Message_966Presence[3] = value
+                            Case "966.presence_4" If loc\Message_966Presence[4] = "" Then loc\Message_966Presence[4] = value
+                            Case "966.presence_5" If loc\Message_966Presence[5] = "" Then loc\Message_966Presence[5] = value
+                            Case "966.presence_6" If loc\Message_966Presence[6] = "" Then loc\Message_966Presence[6] = value
+                            Case "966.sleep_1" If loc\Message_966Sleep[1] = "" Then loc\Message_966Sleep[1] = value
+                            Case "966.sleep_2" If loc\Message_966Sleep[2] = "" Then loc\Message_966Sleep[2] = value
+                            Case "966.sleep_3" If loc\Message_966Sleep[3] = "" Then loc\Message_966Sleep[3] = value
+                            Case "966.sleep_4" If loc\Message_966Sleep[4] = "" Then loc\Message_966Sleep[4] = value
+                            Case "1025.chickenpox.itchy" If loc\Message_1025ChickenpoxItchy = "" Then loc\Message_1025ChickenpoxItchy = value
+                            Case "1025.appendicitis.1" If loc\Message_1025Appendicitis1 = "" Then loc\Message_1025Appendicitis1 = value
+                            Case "1025.appendicitis.2" If loc\Message_1025Appendicitis2 = "" Then loc\Message_1025Appendicitis2 = value
+                            Case "1048a.1" If loc\Message_1048a1 = "" Then loc\Message_1048a1 = value
+                            Case "1048a.2_1" If loc\Message_1048a2[1] = "" Then loc\Message_1048a2[1] = value
+                            Case "1048a.2_2" If loc\Message_1048a2[2] = "" Then loc\Message_1048a2[2] = value
+                            Case "1048a.2_3" If loc\Message_1048a2[3] = "" Then loc\Message_1048a2[3] = value
+                            Case "1048a.3_1" If loc\Message_1048a3[1] = "" Then loc\Message_1048a3[1] = value
+                            Case "1048a.3_2" If loc\Message_1048a3[2] = "" Then loc\Message_1048a3[2] = value
+                            Case "1048a.3_3" If loc\Message_1048a3[3] = "" Then loc\Message_1048a3[3] = value
+                            Case "1048a.3_4" If loc\Message_1048a3[4] = "" Then loc\Message_1048a3[4] = value
+                            Case "1162.exchange.failure" If loc\Message_1162ExchangeFailure = "" Then loc\Message_1162ExchangeFailure = value
+                            Case "1162.exchange.success" If loc\Message_1162ExchangeSuccess = "" Then loc\Message_1162ExchangeSuccess = value
+                            Case "bloodloss.faint" If loc\Message_BloodlossFaint = "" Then loc\Message_BloodlossFaint = value
+                            Case "stophiding" If loc\Message_Stophiding = "" Then loc\Message_Stophiding = value
+                        End Select
+                    Case "Message Button"
+                        Select key
+                            Case "key.required" If loc\MessageButton_KeyRequired = "" Then loc\MessageButton_KeyRequired = value
+                            Case "key.required.level" If loc\MessageButton_KeyRequiredLevel = "" Then loc\MessageButton_KeyRequiredLevel = value
+                            Case "key.inserted" If loc\MessageButton_KeyInserted = "" Then loc\MessageButton_KeyInserted = value
+                            Case "key.nothing" If loc\MessageButton_KeyNothing = "" Then loc\MessageButton_KeyNothing = value
+                            Case "dna.success" If loc\MessageButton_DnaSuccess = "" Then loc\MessageButton_DnaSuccess = value
+                            Case "dna.self" If loc\MessageButton_DnaSelf = "" Then loc\MessageButton_DnaSelf = value
+                            Case "nothing" If loc\MessageButton_Nothing = "" Then loc\MessageButton_Nothing = value
+                            Case "door.locked" If loc\MessageButton_DoorLocked = "" Then loc\MessageButton_DoorLocked = value
+                            Case "elevator.call" If loc\MessageButton_ElevatorCall = "" Then loc\MessageButton_ElevatorCall = value
+                            Case "elevator.floor" If loc\MessageButton_ElevatorFloor = "" Then loc\MessageButton_ElevatorFloor = value
+                            Case "elevator.already" If loc\MessageButton_ElevatorAlready = "" Then loc\MessageButton_ElevatorAlready = value
+                            Case "elevator.stop" If loc\MessageButton_ElevatorStop = "" Then loc\MessageButton_ElevatorStop = value
+                            Case "elevator.faster" If loc\MessageButton_ElevatorFaster = "" Then loc\MessageButton_ElevatorFaster = value
+                            Case "elevator.mav" If loc\MessageButton_ElevatorMav = "" Then loc\MessageButton_ElevatorMav = value
+                            Case "elevator.broken" If loc\MessageButton_ElevatorBroken = "" Then loc\MessageButton_ElevatorBroken = value
+                        End Select
+                    Case "Message Item"
+                        Select key
+                            Case "full" If loc\MessageItem_Full = "" Then loc\MessageItem_Full = value
+                            Case "cantcombine" If loc\MessageItem_Cantcombine = "" Then loc\MessageItem_Cantcombine = value
+                            Case "wallet.full" If loc\MessageItem_WalletFull = "" Then loc\MessageItem_WalletFull = value
+                            Case "wallet.add" If loc\MessageItem_WalletAdd = "" Then loc\MessageItem_WalletAdd = value
+                            Case "clipboard.full" If loc\MessageItem_ClipboardFull = "" Then loc\MessageItem_ClipboardFull = value
+                            Case "clipboard.add" If loc\MessageItem_ClipboardAdd = "" Then loc\MessageItem_ClipboardAdd = value
+                            Case "clipboard.add.paper" If loc\MessageItem_ClipboardAddPaper = "" Then loc\MessageItem_ClipboardAddPaper = value
+                            Case "clipboard.add.badge" If loc\MessageItem_ClipboardAddBadge = "" Then loc\MessageItem_ClipboardAddBadge = value
+                            Case "hazmat.nouse" If loc\MessageItem_HazmatNouse = "" Then loc\MessageItem_HazmatNouse = value
+                            Case "hazmat.nouse.any" If loc\MessageItem_HazmatNouseAny = "" Then loc\MessageItem_HazmatNouseAny = value
+                            Case "hazmat.nodrop" If loc\MessageItem_HazmatNodrop = "" Then loc\MessageItem_HazmatNodrop = value
+                            Case "hazmat.nopickup" If loc\MessageItem_HazmatNopickup = "" Then loc\MessageItem_HazmatNopickup = value
+                            Case "hazmat.conflict.hazmat" If loc\MessageItem_HazmatConflictHazmat = "" Then loc\MessageItem_HazmatConflictHazmat = value
+                            Case "gasmask.nouse" If loc\MessageItem_GasmaskNouse = "" Then loc\MessageItem_GasmaskNouse = value
+                            Case "nvg.nouse" If loc\MessageItem_NvgNouse = "" Then loc\MessageItem_NvgNouse = value
+                            Case "nvg.conflict.hazmat" If loc\MessageItem_NvgConflictHazmat = "" Then loc\MessageItem_NvgConflictHazmat = value
+                            Case "nvg.conflict.scp1499" If loc\MessageItem_NvgConflictScp1499 = "" Then loc\MessageItem_NvgConflictScp1499 = value
+                            Case "gasmask.conflict.scp1499" If loc\MessageItem_GasmaskConflictScp1499 = "" Then loc\MessageItem_GasmaskConflictScp1499 = value
+                            Case "gasmask.conflict.hazmat" If loc\MessageItem_GasmaskConflictHazmat = "" Then loc\MessageItem_GasmaskConflictHazmat = value
+                            Case "scp1499.conflict.hazmat" If loc\MessageItem_Scp1499ConflictHazmat = "" Then loc\MessageItem_Scp1499ConflictHazmat = value
+                            Case "vest.conflict.hazmat" If loc\MessageItem_VestConflictHazmat = "" Then loc\MessageItem_VestConflictHazmat = value
+                            Case "vest.conflict.vest" If loc\MessageItem_VestConflictVest = "" Then loc\MessageItem_VestConflictVest = value
+                            Case "gasmask.on" If loc\MessageItem_GasmaskOn = "" Then loc\MessageItem_GasmaskOn = value
+                            Case "gasmask.on.easy" If loc\MessageItem_GasmaskOnEasy = "" Then loc\MessageItem_GasmaskOnEasy = value
+                            Case "gasmask.off" If loc\MessageItem_GasmaskOff = "" Then loc\MessageItem_GasmaskOff = value
+                            Case "vest.off" If loc\MessageItem_VestOff = "" Then loc\MessageItem_VestOff = value
+                            Case "vest.on" If loc\MessageItem_VestOn = "" Then loc\MessageItem_VestOn = value
+                            Case "vest.on.heavy" If loc\MessageItem_VestOnHeavy = "" Then loc\MessageItem_VestOnHeavy = value
+                            Case "vest.heavy" If loc\MessageItem_VestHeavy = "" Then loc\MessageItem_VestHeavy = value
+                            Case "hazmat.on" If loc\MessageItem_HazmatOn = "" Then loc\MessageItem_HazmatOn = value
+                            Case "hazmat.off" If loc\MessageItem_HazmatOff = "" Then loc\MessageItem_HazmatOff = value
+                            Case "scp714.on" If loc\MessageItem_Scp714On = "" Then loc\MessageItem_Scp714On = value
+                            Case "scp714.off" If loc\MessageItem_Scp714Off = "" Then loc\MessageItem_Scp714Off = value
+                            Case "nvg.on" If loc\MessageItem_NvgOn = "" Then loc\MessageItem_NvgOn = value
+                            Case "nvg.off" If loc\MessageItem_NvgOff = "" Then loc\MessageItem_NvgOff = value
+                            Case "nvg.bat.replace" If loc\MessageItem_NvgBatReplace = "" Then loc\MessageItem_NvgBatReplace = value
+                            Case "nvg.bat.noplace" If loc\MessageItem_NvgBatNoplace = "" Then loc\MessageItem_NvgBatNoplace = value
+                            Case "nvg.bat.dead" If loc\MessageItem_NvgBatDead = "" Then loc\MessageItem_NvgBatDead = value
+                            Case "radio.use" If loc\MessageItem_RadioUse = "" Then loc\MessageItem_RadioUse = value
+                            Case "radio.bat.replace" If loc\MessageItem_RadioBatReplace = "" Then loc\MessageItem_RadioBatReplace = value
+                            Case "radio.bat.noplace" If loc\MessageItem_RadioBatNoplace = "" Then loc\MessageItem_RadioBatNoplace = value
+                            Case "radio.bat.nofit" If loc\MessageItem_RadioBatNofit = "" Then loc\MessageItem_RadioBatNofit = value
+                            Case "nav.bat.replace" If loc\MessageItem_NavBatReplace = "" Then loc\MessageItem_NavBatReplace = value
+                            Case "nav.bat.noplace" If loc\MessageItem_NavBatNoplace = "" Then loc\MessageItem_NavBatNoplace = value
+                            Case "nav.bat.nofit" If loc\MessageItem_NavBatNofit = "" Then loc\MessageItem_NavBatNofit = value
+                            Case "firstaid.use.full" If loc\MessageItem_FirstaidUseFull = "" Then loc\MessageItem_FirstaidUseFull = value
+                            Case "firstaid.use.1" If loc\MessageItem_FirstaidUse1 = "" Then loc\MessageItem_FirstaidUse1 = value
+                            Case "firstaid.use.2" If loc\MessageItem_FirstaidUse2 = "" Then loc\MessageItem_FirstaidUse2 = value
+                            Case "firstaid.use.3" If loc\MessageItem_FirstaidUse3 = "" Then loc\MessageItem_FirstaidUse3 = value
+                            Case "firstaid.use.4" If loc\MessageItem_FirstaidUse4 = "" Then loc\MessageItem_FirstaidUse4 = value
+                            Case "firstaid.use.5" If loc\MessageItem_FirstaidUse5 = "" Then loc\MessageItem_FirstaidUse5 = value
+                            Case "finefirstaid.use.1" If loc\MessageItem_FinefirstaidUse1 = "" Then loc\MessageItem_FinefirstaidUse1 = value
+                            Case "finefirstaid.use.2" If loc\MessageItem_FinefirstaidUse2 = "" Then loc\MessageItem_FinefirstaidUse2 = value
+                            Case "finefirstaid.use.3" If loc\MessageItem_FinefirstaidUse3 = "" Then loc\MessageItem_FinefirstaidUse3 = value
+                            Case "bluefirstaid.use.superman" If loc\MessageItem_BluefirstaidUseSuperman = "" Then loc\MessageItem_BluefirstaidUseSuperman = value
+                            Case "bluefirstaid.use.invert" If loc\MessageItem_BluefirstaidUseInvert = "" Then loc\MessageItem_BluefirstaidUseInvert = value
+                            Case "bluefirstaid.use.nausea" If loc\MessageItem_BluefirstaidUseNausea = "" Then loc\MessageItem_BluefirstaidUseNausea = value
+                            Case "bluefirstaid.use.heal" If loc\MessageItem_BluefirstaidUseHeal = "" Then loc\MessageItem_BluefirstaidUseHeal = value
+                            Case "bluefirstaid.use.hurt" If loc\MessageItem_BluefirstaidUseHurt = "" Then loc\MessageItem_BluefirstaidUseHurt = value
+                            Case "veryfinefirstaid.use.fullheal" If loc\MessageItem_VeryfinefirstaidUseFullheal = "" Then loc\MessageItem_VeryfinefirstaidUseFullheal = value
+                            Case "veryfinefirstaid.use.hurt" If loc\MessageItem_VeryfinefirstaidUseHurt = "" Then loc\MessageItem_VeryfinefirstaidUseHurt = value
+                            Case "veryfinefirstaid.use.heal" If loc\MessageItem_VeryfinefirstaidUseHeal = "" Then loc\MessageItem_VeryfinefirstaidUseHeal = value
+                            Case "veryfinefirstaid.use.nausea" If loc\MessageItem_VeryfinefirstaidUseNausea = "" Then loc\MessageItem_VeryfinefirstaidUseNausea = value
+                            Case "veryfinefirstaid.use.pocketdimension" If loc\MessageItem_VeryfinefirstaidUsePocketdimension = "" Then loc\MessageItem_VeryfinefirstaidUsePocketdimension = value
+                            Case "eyedrops.tear" If loc\MessageItem_EyedropsTear = "" Then loc\MessageItem_EyedropsTear = value
+                            Case "syringe.use" If loc\MessageItem_SyringeUse = "" Then loc\MessageItem_SyringeUse = value
+                            Case "finesyringe.use" If loc\MessageItem_FinesyringeUse = "" Then loc\MessageItem_FinesyringeUse = value
+                            Case "veryfinesyringe.use.huge" If loc\MessageItem_VeryfinesyringeUseHuge = "" Then loc\MessageItem_VeryfinesyringeUseHuge = value
+                            Case "veryfinesyringe.use.veryhuge" If loc\MessageItem_VeryfinesyringeUseVeryhuge = "" Then loc\MessageItem_VeryfinesyringeUseVeryhuge = value
+                            Case "veryfinesyringe.use.stomacheache" If loc\MessageItem_VeryfinesyringeUseStomacheache = "" Then loc\MessageItem_VeryfinesyringeUseStomacheache = value
+                            Case "pill.use" If loc\MessageItem_PillUse = "" Then loc\MessageItem_PillUse = value
+                            Case "pill.use.healnausea" If loc\MessageItem_PillUseHealnausea = "" Then loc\MessageItem_PillUseHealnausea = value
+                            Case "cigarette.use.unable" If loc\MessageItem_CigaretteUseUnable = "" Then loc\MessageItem_CigaretteUseUnable = value
+                            Case "cigarette.use_1" If loc\MessageItem_CigaretteUse[1] = "" Then loc\MessageItem_CigaretteUse[1] = value
+                            Case "cigarette.use_2" If loc\MessageItem_CigaretteUse[2] = "" Then loc\MessageItem_CigaretteUse[2] = value
+                            Case "cigarette.use_3" If loc\MessageItem_CigaretteUse[3] = "" Then loc\MessageItem_CigaretteUse[3] = value
+                            Case "cigarette.use_4" If loc\MessageItem_CigaretteUse[4] = "" Then loc\MessageItem_CigaretteUse[4] = value
+                            Case "cigarette.use_5" If loc\MessageItem_CigaretteUse[5] = "" Then loc\MessageItem_CigaretteUse[5] = value
+                            Case "420j.use.714" If loc\MessageItem_420jUse714 = "" Then loc\MessageItem_420jUse714 = value
+                            Case "420j.use" If loc\MessageItem_420jUse = "" Then loc\MessageItem_420jUse = value
+                            Case "420j.use.nap" If loc\MessageItem_420jUseNap = "" Then loc\MessageItem_420jUseNap = value
+                            Case "427.on" If loc\MessageItem_427On = "" Then loc\MessageItem_427On = value
+                            Case "427.off" If loc\MessageItem_427Off = "" Then loc\MessageItem_427Off = value
+                            Case "1162.use.badge" If loc\MessageItem_1162UseBadge = "" Then loc\MessageItem_1162UseBadge = value
+                            Case "1162.use.key" If loc\MessageItem_1162UseKey = "" Then loc\MessageItem_1162UseKey = value
+                            Case "1162.use.hearing" If loc\MessageItem_1162UseHearing = "" Then loc\MessageItem_1162UseHearing = value
+                            Case "1162.use.ticket" If loc\MessageItem_1162UseTicket = "" Then loc\MessageItem_1162UseTicket = value
+                        End Select
+                    Case "Message Help"
+                        Select key
+                            Case "paper" If loc\MessageHelp_Paper = "" Then loc\MessageHelp_Paper = value
+                            Case "inventory" If loc\MessageHelp_Inventory = "" Then loc\MessageHelp_Inventory = value
+                            Case "view" If loc\MessageHelp_View = "" Then loc\MessageHelp_View = value
+                            Case "blink" If loc\MessageHelp_Blink = "" Then loc\MessageHelp_Blink = value
+                            Case "run" If loc\MessageHelp_Run = "" Then loc\MessageHelp_Run = value
+                            Case "remove" If loc\MessageHelp_Remove = "" Then loc\MessageHelp_Remove = value
+                        End Select
+                    Case "Message Save"
+                        Select key
+                            Case "anywhere" If loc\MessageSave_Anywhere = "" Then loc\MessageSave_Anywhere = value
+                            Case "screens" If loc\MessageSave_Screens = "" Then loc\MessageSave_Screens = value
+                            Case "disabled" If loc\MessageSave_Disabled = "" Then loc\MessageSave_Disabled = value
+                            Case "disabled.location" If loc\MessageSave_DisabledLocation = "" Then loc\MessageSave_DisabledLocation = value
+                            Case "disabled.moment" If loc\MessageSave_DisabledMoment = "" Then loc\MessageSave_DisabledMoment = value
+                            Case "disabled.loading" If loc\MessageSave_DisabledLoading = "" Then loc\MessageSave_DisabledLoading = value
+                            Case "saved" If loc\MessageSave_Saved = "" Then loc\MessageSave_Saved = value
+                        End Select
+                    Case "Message Shot"
+                        Select key
+                            Case "neck" If loc\MessageShot_Neck = "" Then loc\MessageShot_Neck = value
+                            Case "chest" If loc\MessageShot_Chest = "" Then loc\MessageShot_Chest = value
+                            Case "chest.vest" If loc\MessageShot_ChestVest = "" Then loc\MessageShot_ChestVest = value
+                            Case "chest.finevest.light" If loc\MessageShot_ChestFinevestLight = "" Then loc\MessageShot_ChestFinevestLight = value
+                            Case "chest.finevest.heavy" If loc\MessageShot_ChestFinevestHeavy = "" Then loc\MessageShot_ChestFinevestHeavy = value
+                            Case "leftleg" If loc\MessageShot_Leftleg = "" Then loc\MessageShot_Leftleg = value
+                            Case "rightleg" If loc\MessageShot_Rightleg = "" Then loc\MessageShot_Rightleg = value
+                            Case "rightshoulder" If loc\MessageShot_Rightshoulder = "" Then loc\MessageShot_Rightshoulder = value
+                            Case "leftshoulder" If loc\MessageShot_Leftshoulder = "" Then loc\MessageShot_Leftshoulder = value
+                        End Select
+                    Case "Death Message"
+                        Select key
+                            Case "008" If loc\DeathMessage_008 = "" Then loc\DeathMessage_008 = value
+                            Case "008.gate" If loc\DeathMessage_008Gate = "" Then loc\DeathMessage_008Gate = value
+                            Case "008.gate.a" If loc\DeathMessage_008GateA = "" Then loc\DeathMessage_008GateA = value
+                            Case "008.gate.b" If loc\DeathMessage_008GateB = "" Then loc\DeathMessage_008GateB = value
+                            Case "008zombie" If loc\DeathMessage_008zombie = "" Then loc\DeathMessage_008zombie = value
+                            Case "012" If loc\DeathMessage_012 = "" Then loc\DeathMessage_012 = value
+                            Case "035.chamber" If loc\DeathMessage_035Chamber = "" Then loc\DeathMessage_035Chamber = value
+                            Case "035.tentacle" If loc\DeathMessage_035Tentacle = "" Then loc\DeathMessage_035Tentacle = value
+                            Case "035.tentacle.office" If loc\DeathMessage_035TentacleOffice = "" Then loc\DeathMessage_035TentacleOffice = value
+                            Case "049" If loc\DeathMessage_049 = "" Then loc\DeathMessage_049 = value
+                            Case "049.chamber" If loc\DeathMessage_049Chamber = "" Then loc\DeathMessage_049Chamber = value
+                            Case "0492" If loc\DeathMessage_0492 = "" Then loc\DeathMessage_0492 = value
+                            Case "096" If loc\DeathMessage_096 = "" Then loc\DeathMessage_096 = value
+                            Case "106.pd" If loc\DeathMessage_106Pd = "" Then loc\DeathMessage_106Pd = value
+                            Case "106.pd.crushed" If loc\DeathMessage_106PdCrushed = "" Then loc\DeathMessage_106PdCrushed = value
+                            Case "106.pd.fall" If loc\DeathMessage_106PdFall = "" Then loc\DeathMessage_106PdFall = value
+                            Case "173" If loc\DeathMessage_173 = "" Then loc\DeathMessage_173 = value
+                            Case "173.camera" If loc\DeathMessage_173Camera = "" Then loc\DeathMessage_173Camera = value
+                            Case "173.intro" If loc\DeathMessage_173Intro = "" Then loc\DeathMessage_173Intro = value
+                            Case "173.doors" If loc\DeathMessage_173Doors = "" Then loc\DeathMessage_173Doors = value
+                            Case "205" If loc\DeathMessage_205 = "" Then loc\DeathMessage_205 = value
+                            Case "420js" If loc\DeathMessage_420js = "" Then loc\DeathMessage_420js = value
+                            Case "427" If loc\DeathMessage_427 = "" Then loc\DeathMessage_427 = value
+                            Case "895" If loc\DeathMessage_895 = "" Then loc\DeathMessage_895 = value
+                            Case "895.nvg" If loc\DeathMessage_895Nvg = "" Then loc\DeathMessage_895Nvg = value
+                            Case "895.finenvg" If loc\DeathMessage_895Finenvg = "" Then loc\DeathMessage_895Finenvg = value
+                            Case "914.rough" If loc\DeathMessage_914Rough = "" Then loc\DeathMessage_914Rough = value
+                            Case "914.superman" If loc\DeathMessage_914Superman = "" Then loc\DeathMessage_914Superman = value
+                            Case "939" If loc\DeathMessage_939 = "" Then loc\DeathMessage_939 = value
+                            Case "1025.cardiacarrest" If loc\DeathMessage_1025Cardiacarrest = "" Then loc\DeathMessage_1025Cardiacarrest = value
+                            Case "1123" If loc\DeathMessage_1123 = "" Then loc\DeathMessage_1123 = value
+                            Case "1048a" If loc\DeathMessage_1048a = "" Then loc\DeathMessage_1048a = value
+                            Case "1162" If loc\DeathMessage_1162 = "" Then loc\DeathMessage_1162 = value
+                            Case "1499" If loc\DeathMessage_1499 = "" Then loc\DeathMessage_1499 = value
+                            Case "14991" If loc\DeathMessage_14991 = "" Then loc\DeathMessage_14991 = value
+                            Case "14991.dimension" If loc\DeathMessage_14991Dimension = "" Then loc\DeathMessage_14991Dimension = value
+                            Case "guard.intro" If loc\DeathMessage_GuardIntro = "" Then loc\DeathMessage_GuardIntro = value
+                            Case "guard.gate.b" If loc\DeathMessage_GuardGateB = "" Then loc\DeathMessage_GuardGateB = value
+                            Case "apache" If loc\DeathMessage_Apache = "" Then loc\DeathMessage_Apache = value
+                            Case "apache.gate.a" If loc\DeathMessage_ApacheGateA = "" Then loc\DeathMessage_ApacheGateA = value
+                            Case "apache.gate.b" If loc\DeathMessage_ApacheGateB = "" Then loc\DeathMessage_ApacheGateB = value
+                            Case "ntf" If loc\DeathMessage_Ntf = "" Then loc\DeathMessage_Ntf = value
+                            Case "ntf.bloodloss" If loc\DeathMessage_NtfBloodloss = "" Then loc\DeathMessage_NtfBloodloss = value
+                            Case "tesla" If loc\DeathMessage_Tesla = "" Then loc\DeathMessage_Tesla = value
+                            Case "killbat" If loc\DeathMessage_Killbat = "" Then loc\DeathMessage_Killbat = value
+                            Case "suicide_1" If loc\DeathMessage_Suicide[1] = "" Then loc\DeathMessage_Suicide[1] = value
+                            Case "suicide_2" If loc\DeathMessage_Suicide[2] = "" Then loc\DeathMessage_Suicide[2] = value
+                            Case "suicide_3" If loc\DeathMessage_Suicide[3] = "" Then loc\DeathMessage_Suicide[3] = value
+                            Case "suicide_4" If loc\DeathMessage_Suicide[4] = "" Then loc\DeathMessage_Suicide[4] = value
+                            Case "gassed" If loc\DeathMessage_Gassed = "" Then loc\DeathMessage_Gassed = value
+                        End Select
+                    Case "Cup"
+                        Select key
+                            Case "of" If loc\Cup_Of = "" Then loc\Cup_Of = value
+                            Case "of.prefix_1" If loc\Cup_OfPrefix[1] = "" Then loc\Cup_OfPrefix[1] = value
+                            Case "of.prefix_2" If loc\Cup_OfPrefix[2] = "" Then loc\Cup_OfPrefix[2] = value
+                            Case "coffee" If loc\Cup_Coffee = "" Then loc\Cup_Coffee = value
+                            Case "oj" If loc\Cup_Oj = "" Then loc\Cup_Oj = value
+                        End Select
+                End Select
+            EndIf
+        EndIf
+    Wend
+    CloseFile(f)
+End Function
