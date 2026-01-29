@@ -9157,7 +9157,10 @@ Function NullGame(playbuttonsfx%=True)
 
 	;DeInitExt
 	
+	CatchErrors("Clear World")
 	ClearWorld
+	CatchErrors("Uncaught (Clear World)")
+	
 	Camera = 0
 	ark_blur_cam = 0
 	Collider = 0
