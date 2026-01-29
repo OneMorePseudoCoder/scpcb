@@ -408,6 +408,10 @@ Type LocalizationTable
     Field DeathMessage_Killbat$
     Field DeathMessage_Suicide$[4]
     Field DeathMessage_Gassed$
+    Field Cup_Of$
+    Field Cup_OfPrefix$[2]
+    Field Cup_Coffee$
+    Field Cup_Oj$
 End Type
 
 Global I_Loc.LocalizationTable = New LocalizationTable
@@ -863,3 +867,8 @@ I_Loc\DeathMessage_Suicide[2] = GetModdedINIString(StringsFile, "Death Message",
 I_Loc\DeathMessage_Suicide[3] = GetModdedINIString(StringsFile, "Death Message", "suicide_3")
 I_Loc\DeathMessage_Suicide[4] = GetModdedINIString(StringsFile, "Death Message", "suicide_4")
 I_Loc\DeathMessage_Gassed = GetModdedINIString(StringsFile, "Death Message", "gassed")
+I_Loc\Cup_Of = GetModdedINIString(StringsFile, "Cup", "of")
+I_Loc\Cup_OfPrefix[1] = GetModdedINIString(StringsFile, "Cup", "of.prefix_1")
+I_Loc\Cup_OfPrefix[2] = GetModdedINIString(StringsFile, "Cup", "of.prefix_2")
+I_Loc\Cup_Coffee = GetModdedINIString(StringsFile, "Cup", "coffee")
+I_Loc\Cup_Oj = GetModdedINIString(StringsFile, "Cup", "oj")

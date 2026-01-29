@@ -382,17 +382,19 @@ Function SaveGame(file$)
 	For it.items = Each Items
 		WriteString f, it\itemtemplate\name
 		
-		WriteString f, it\displayname
-		
 		WriteFloat f, EntityX(it\collider, True)
 		WriteFloat f, EntityY(it\collider, True)
 		WriteFloat f, EntityZ(it\collider, True)
+
+		If it\itemtemplate\name = "cup" Then
+			WriteString f, it\drinkName
 		
-		WriteByte f, it\r
-		WriteByte f, it\g
-		WriteByte f, it\b
-		WriteFloat f, it\a
-		
+			WriteByte f, it\r
+			WriteByte f, it\g
+			WriteByte f, it\b
+			WriteFloat f, it\a
+		EndIf
+
 		WriteFloat f, EntityPitch(it\collider)
 		WriteFloat f, EntityYaw(it\collider)
 		
@@ -1084,19 +1086,23 @@ Function LoadGame(file$)
 	temp = ReadInt(f)
 	For i = 1 To temp
 		Local ittName$ = ReadString(f)
-		Local Name$ = ReadString(f)
 		
 		x = ReadFloat(f)
 		y = ReadFloat(f)
 		z = ReadFloat(f)
 		
-		red = ReadByte(f)
-		green = ReadByte(f)
-		blue = ReadByte(f)		
-		a = ReadFloat(f)
-		
-		it.Items = CreateItem(ittName, x, y, z, red,green,blue,a)
-		it\displayname = Name
+		If ittName = "cup" Then
+			Local drinkName$ = ReadString(f)
+
+			red = ReadByte(f)
+			green = ReadByte(f)
+			blue = ReadByte(f)
+			a# = ReadFloat(f)
+
+			it = CreateCup(drinkName, x, y, z, red, green, blue, a)
+		Else
+			it = CreateItem(ittName, x, y, z)
+		EndIf
 		
 		EntityType it\collider, HIT_ITEM
 		
@@ -1792,19 +1798,23 @@ Function LoadGameQuick(file$)
 	temp = ReadInt(f)
 	For i = 1 To temp
 		Local ittName$ = ReadString(f)
-		Local Name$ = ReadString(f)
 		
 		x = ReadFloat(f)
 		y = ReadFloat(f)
 		z = ReadFloat(f)
 		
-		red = ReadByte(f)
-		green = ReadByte(f)
-		blue = ReadByte(f)		
-		a = ReadFloat(f)
-		
-		it.Items = CreateItem(ittName, x, y, z, red,green,blue,a)
-		it\displayname = Name
+		If ittName = "cup" Then
+			Local drinkName$ = ReadString(f)
+
+			red = ReadByte(f)
+			green = ReadByte(f)
+			blue = ReadByte(f)
+			a# = ReadFloat(f)
+
+			it = CreateCup(drinkName, x, y, z, red, green, blue, a)
+		Else
+			it = CreateItem(ittName, x, y, z)
+		EndIf
 		
 		EntityType it\collider, HIT_ITEM
 		

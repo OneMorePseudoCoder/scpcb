@@ -6040,12 +6040,7 @@ Function DrawGUI()
 				Case "cup"
 					;[Block]
 					If CanUseItem(False,False,True)
-						strtemp = Trim(Lower(SelectedItem\displayname)) ; TODOOOOO
-						If Left(strtemp, 6) = "cup of" Then
-							strtemp = Right(strtemp, Len(strtemp)-7)
-						ElseIf Left(strtemp, 8) = "a cup of"
-							strtemp = Right(strtemp, Len(strtemp)-9)
-						EndIf
+						strtemp = SelectedItem\drinkName
 
 						Local iniStr$ = "DATA\SCP-294.ini"
 						Local loc% = -1
@@ -10168,16 +10163,13 @@ Function Use914(item.Items, setting$, x#, y#, z#)
 					d.Decals = CreateDecal(0, x, 8 * RoomScale + 0.010, z, 90, Rand(360), 0)
 					d\Size = 0.2 : EntityAlpha(d\obj, 0.8) : ScaleSprite(d\obj, d\Size, d\Size)
 				Case "1:1"
-					it2 = CreateItem("cup", x,y,z, 255-item\r,255-item\g,255-item\b,item\a)
-					it2\displayname = item\displayname
+					it2 = CreateCup(item\drinkName, x,y,z, 255-item\r,255-item\g,255-item\b,item\a)
 					it2\state = item\state
 				Case "fine"
-					it2 = CreateItem("cup", x,y,z, Min(item\r*Rnd(0.9,1.1),255),Min(item\g*Rnd(0.9,1.1),255),Min(item\b*Rnd(0.9,1.1),255),item\a)
-					it2\displayname = item\displayname
+					it2 = CreateCup(item\drinkName, x,y,z, Min(item\r*Rnd(0.9,1.1),255),Min(item\g*Rnd(0.9,1.1),255),Min(item\b*Rnd(0.9,1.1),255),item\a)
 					it2\state = item\state+1.0
 				Case "very fine"
-					it2 = CreateItem("cup", x,y,z, Min(item\r*Rnd(0.5,1.5),255),Min(item\g*Rnd(0.5,1.5),255),Min(item\b*Rnd(0.5,1.5),255),item\a)
-					it2\displayname = item\displayname
+					it2 = CreateCup(item\drinkName, x,y,z, Min(item\r*Rnd(0.5,1.5),255),Min(item\g*Rnd(0.5,1.5),255),Min(item\b*Rnd(0.5,1.5),255),item\a)
 					it2\state = item\state*2
 					If Rand(5)=1 Then
 						ExplosionTimer = 135
@@ -10331,11 +10323,12 @@ Function Use294()
 			
 			If temp And Input294<>"" Then ;dispense
 				Input294 = Trim(Lower(Input294))
-				If Left(Input294, Min(7,Len(Input294))) = "cup of " Then
-					Input294 = Right(Input294, Len(Input294)-7)
-				ElseIf Left(Input294, Min(9,Len(Input294))) = "a cup of " 
-					Input294 = Right(Input294, Len(Input294)-9)
-				EndIf
+				For i = 1 To 2
+					Local prefix$ = I_Loc\Cup_OfPrefix[i] + " "
+					If Left(Input294, Min(Len(prefix),Len(Input294))) = prefix Then
+						Input294 = Right(Input294, Len(Input294)-Len(prefix))
+					EndIf
+				Next
 				
 				Local iniStr$ = "DATA\SCP-294.ini"
 				Local loc% = -1
@@ -10390,8 +10383,7 @@ Function Use294()
 					;If alpha = 0 Then alpha = 1.0
 					If glow Then alpha = -alpha
 					
-					it.items = CreateItem("cup", EntityX(PlayerRoom\Objects[1],True),EntityY(PlayerRoom\Objects[1],True),EntityZ(PlayerRoom\Objects[1],True), r,g,b,alpha)
-					it\displayname = "Cup of "+Input294
+					it.items = CreateCup(Input294, EntityX(PlayerRoom\Objects[1],True),EntityY(PlayerRoom\Objects[1],True),EntityZ(PlayerRoom\Objects[1],True), r,g,b,alpha)
 					EntityType (it\collider, HIT_ITEM)
 					
 				Else

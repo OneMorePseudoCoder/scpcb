@@ -2898,11 +2898,11 @@ Function FillRoom(r.Rooms)
 			r\Objects[1] = CreatePivot(r\obj)
 			PositionEntity(r\Objects[1], r\x+1780.0*RoomScale, -248.0*RoomScale, r\z-276*RoomScale, True)
 			
-			it = CreateItem("cup", r\x-508.0*RoomScale, -187*RoomScale, r\z+284.0*RoomScale, 240,175,70)
-			EntityParent(it\collider, r\obj) : it\displayname = "Cup of Orange Juice"
+			it = CreateCup(I_Loc\Cup_Oj, r\x-508.0*RoomScale, -187*RoomScale, r\z+284.0*RoomScale, 240,175,70)
+			EntityParent(it\collider, r\obj)
 			
-			it = CreateItem("cup", r\x+1412 * RoomScale, -187*RoomScale, r\z-716.0 * RoomScale, 87,62,45)
-			EntityParent(it\collider, r\obj) : it\displayname = "Cup of Coffee"
+			it = CreateCup(I_Loc\Cup_Coffee, r\x+1412 * RoomScale, -187*RoomScale, r\z-716.0 * RoomScale, 87,62,45)
+			EntityParent(it\collider, r\obj)
 			
 			it = CreateItem("emptycup", r\x-540*RoomScale, -187*RoomScale, r\z+124.0*RoomScale)
 			EntityParent(it\collider, r\obj)
