@@ -11,7 +11,7 @@ If GetGraphicsLevel() < 100
 EndIf
 
 Function InitPostProcess()
-	ScreenTexture = CreateTexture(GraphicsWidth(), GraphicsHeight(), 1 + 1024)
+	ScreenTexture = CreateTexture(GraphicWidth, GraphicHeight, 1 + 1024)
 	
 	GammaEffect = LoadEffect("GFX\shaders\Gamma.fx")
 	DebugLog GetEffectError()
@@ -30,7 +30,7 @@ Function InitPostProcess()
 End Function
 
 Function UpdatePostProcess()
-	CopyRect(0, 0, GraphicsWidth(), GraphicsHeight(), 0, 0, BackBuffer(), TextureBuffer(ScreenTexture))
+	CopyRect(0, 0, GraphicWidth, GraphicHeight, 0, 0, BackBuffer(), TextureBuffer(ScreenTexture))
 	ProcessGammaEffect(ScreenGamma)
 End Function
 
@@ -45,14 +45,14 @@ Function RenderEffectQuad(effect%, buffer%, technique$, blend% = 0)
 	EntityBlend(PostEffectQuad, blend)
 	SetBuffer(buffer)
 	EffectTechnique(effect, technique)
-	CameraViewport(QuadCamera, 0, 0, BufferWidth(buffer), BufferHeight(buffer))
+	CameraViewport(QuadCamera, 0, 0, GraphicWidth, GraphicHeight)
 	RenderEntity(QuadCamera, PostEffectQuad)
 	HideEntity(PostEffectQuad)
 End Function
 
 Function CreateFullscreenQuad%(Parent% = 0)
 	Quad = CreateSprite(Parent)
-	ScaleSprite(Quad, 1.0, (Float(GraphicsHeight()) / Float(GraphicsWidth())))
+	ScaleSprite(Quad, 1.0, (Float(GraphicHeight) / Float(GraphicWidth)))
 	
 	MoveEntity(Quad, -PixelWidth, PixelHeight, 1.0001)
 	Return(Quad)

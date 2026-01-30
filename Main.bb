@@ -3398,7 +3398,6 @@ While IsRunning
 	End If
 	
 	ApplyBorderlessResizing()
-	UpdatePostProcess()
 	
 	CatchErrors("Main loop / uncaught")
 
@@ -11392,6 +11391,8 @@ Function RenderWorld2()
 	
 	CurrTrisAmount = TrisRendered()
 
+	UpdatePostProcess()
+
 	If hasBattery=0 And WearingNightVision<>3
 		IsNVGBlinking% = True
 		ShowEntity NVBlink%
@@ -11410,8 +11411,8 @@ Function RenderWorld2()
 				IsNVGBlinking% = True
 				ShowEntity NVBlink%
 				If NVTimer<=-10
-				NVTimer = 600.0
-			EndIf
+					NVTimer = 600.0
+				EndIf
 			EndIf
 			
 			Color 255,255,255
@@ -11497,7 +11498,7 @@ Function RenderWorld2()
 	CameraProjMode Camera,0
 	RenderWorld()
 	CameraProjMode ark_blur_cam,0
-
+	
 	If BlinkTimer < - 16 Or BlinkTimer > - 6
 		If (WearingNightVision=1 Or WearingNightVision=2) And (hasBattery=1) And ((MilliSecs() Mod 800) < 400) Then
 			Color 255,0,0

@@ -1941,7 +1941,6 @@ Function DrawLoading(percent%, shortloading=False)
 		EndIf
 		
 		ApplyBorderlessResizing()
-		UpdatePostProcess()
 		
 		Flip False
 		
