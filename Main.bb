@@ -1633,9 +1633,9 @@ Global HUDenabled% = GetOptionInt("graphics", "HUD enabled")
 
 Global Camera%, CameraShake#, CurrCameraZoom#
 
-Global Brightness% = GetModdedINIFloat(MapOptions, "facility", "brightness")
-Global CameraFogNear# = GetModdedINIFloat(MapOptions, "facility", "camera fog near")
-Global CameraFogFar# = GetModdedINIFloat(MapOptions, "facility", "camera fog far")
+Global Brightness%
+Global CameraFogNear#
+Global CameraFogFar#
 
 Global StoredCameraFogFar# = CameraFogFar
 
