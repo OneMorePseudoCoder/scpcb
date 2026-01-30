@@ -5554,8 +5554,9 @@ Function UpdateRooms()
 	EndIf
 	
 	TempLightVolume=0
-	Local foundNewPlayerRoom% = False
-	If PlayerRoom<>Null Then
+	Local foundNewPlayerRoom% = PlayerRoom<>Null And IsInRoom(PlayerRoom, EntityX(Collider), EntityZ(Collider))
+	If PlayerRoom <> Null Then DebugLog(PlayerRoom\MinX + " " + PlayerRoom\MaxX + " " + PlayerRoom\MinZ + " " + PlayerRoom\MaxZ) + " : " + (EntityX(Collider) - EntityX(PlayerRoom\obj)) + "  " + (EntityZ(Collider) - EntityZ(PlayerRoom\obj))
+	If PlayerRoom<>Null And (Not foundNewPlayerRoom) Then
 		If Abs(EntityY(Collider) - EntityY(PlayerRoom\obj)) < 1.5 Then
 			x = Abs(PlayerRoom\x-EntityX(Collider,True))
 			If x < 4.0 Then
@@ -8694,7 +8695,22 @@ Function PreventRoomOverlap(r.Rooms)
 	Return False
 End Function
 
-
+Function IsInRoom%(r.Rooms, x#, z#)
+	Local MaxX#,MinX#,MaxZ#,MinZ#
+	If r\MaxX<>0 Lor r\MinX<>0 Lor r\MaxZ<>0 Lor r\MinZ<>0
+		MaxX# = r\MaxX
+		MinX# = r\MinX
+		MaxZ# = r\MaxZ
+		MinZ# = r\MinZ
+	Else
+		Local roomX# = EntityX(r\obj), roomZ# = EntityZ(r\obj)
+		MaxX# = roomX + 4.0
+		MinX# = roomX - 4.0
+		MaxZ# = roomZ + 4.0
+		MinZ# = zoomZ - 4.0
+	EndIf
+	Return x > MinX And x < MaxX And z > MinZ And z < MaxZ
+End Function
 
 
 
