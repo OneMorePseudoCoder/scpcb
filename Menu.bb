@@ -442,6 +442,7 @@ Function UpdateMainMenu()
 
 					LoadEntities()
 					LoadAllSounds()
+					InitRoomTemplates()
 					InitNewGame()
 					MainMenuOpen = False
 					FlushKeys()
@@ -540,6 +541,7 @@ Function UpdateMainMenu()
 									If DrawButton(x + 280 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\LoadGame_Load, False) Then
 										LoadEntities()
 										LoadAllSounds()
+										InitRoomTemplates()
 										LoadGame(SaveGames(i - 1))
 										CurrSave = SaveGames(i - 1)
 										InitLoadGame()

@@ -1678,8 +1678,6 @@ End Function
 
 Const ROOMS_DATA_PATH$ = "Data\rooms.ini"
 
-InitRoomTemplates()
-
 Function InitRoomTemplates()
 	Delete Each RoomTemplates
 
