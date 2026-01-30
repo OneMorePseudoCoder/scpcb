@@ -129,6 +129,10 @@ Global BorderlessWindowed% = GetOptionInt("graphics", "borderless windowed")
 Global RealGraphicWidth%,RealGraphicHeight%
 Global AspectRatioRatio#
 
+; For borderless windowed
+Global ScaledGraphicWidth%,ScaledGraphicHeight%
+Global ScaledOffsetX%,ScaledOffsetY%
+
 Global EnableRoomLights% = GetOptionInt("graphics", "room lights enabled")
 
 Global TextureDetails% = GetOptionInt("graphics", "texture details")
@@ -167,7 +171,6 @@ If LauncherEnabled And (Not IsRestart) Lor Fullscreen And (Not GfxMode3DExists(G
 	UpdateLauncher()
 EndIf
 
-SetGfxDriver(SelectedGFXDriver)
 Global GFXDriverName$ = GFXDriverName(1)
 
 ;New "fake fullscreen" - ENDSHN Psst, it's called borderless windowed mode --Love Mark,
@@ -179,7 +182,17 @@ If BorderlessWindowed
 	RealGraphicHeight = DesktopHeight()
 	
 	AspectRatioRatio = (Float(GraphicWidth)/Float(GraphicHeight))/(Float(RealGraphicWidth)/Float(RealGraphicHeight))
-	
+
+	Local scaleX# = Float(RealGraphicWidth) / GraphicWidth, scaleY# = Float(RealGraphicHeight) / GraphicHeight
+	Local scale# = Min(scaleX, scaleY)
+	ScaledGraphicWidth% = scale * GraphicWidth
+	ScaledGraphicHeight% = scale * GraphicHeight
+	If scaleX > scaleY Then
+		ScaledOffsetX = (RealGraphicWidth - ScaledGraphicWidth) / 2
+	Else
+		ScaledOffsetY = (RealGraphicHeight - ScaledGraphicHeight) / 2
+	EndIf
+
 	Fullscreen = False
 Else
 	AspectRatioRatio = 1.0
@@ -11321,9 +11334,11 @@ Function Graphics3DExt%(width%,height%,depth%=32,mode%=2)
 End Function
 
 Function ApplyBorderlessResizing()
-	If BorderlessWindowed And (RealGraphicWidth<>GraphicWidth) Or (RealGraphicHeight<>GraphicHeight) Then
-		CopyRectStretch(0, 0, GraphicWidth, GraphicHeight, 0, 0, RealGraphicWidth, RealGraphicHeight, BackBuffer(), TextureBuffer(ResizeTexture))
-		CopyRect(0, 0, RealGraphicWidth, RealGraphicHeight, 0, 0, TextureBuffer(ResizeTexture), BackBuffer())
+	If BorderlessWindowed And (RealGraphicWidth<>GraphicWidth Lor RealGraphicHeight<>GraphicHeight) Then
+		CopyRectStretch(0, 0, GraphicWidth, GraphicHeight, 0, 0, ScaledGraphicWidth, ScaledGraphicHeight, BackBuffer(), TextureBuffer(ResizeTexture))
+		; We need to move the picture into the center of the screen, need to clear the rest.
+		If ScaledOffsetX<>0 Lor ScaledOffsetY<>0 Then Cls
+		CopyRect(0, 0, ScaledGraphicWidth, ScaledGraphicHeight, ScaledOffsetX, ScaledOffsetY, TextureBuffer(ResizeTexture), BackBuffer())
 	EndIf
 End Function
 

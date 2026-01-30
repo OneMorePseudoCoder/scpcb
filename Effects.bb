@@ -6,8 +6,8 @@ Global ScreenTexture%
 
 Global PixelWidth# = 0, PixelHeight# = 0
 If GetGraphicsLevel() < 100
-	PixelWidth# = 0.5 / GraphicsWidth()
-	PixelHeight# = 0.5 / GraphicsHeight()
+	PixelWidth# = 0.5 / GraphicWidth
+	PixelHeight# = 0.5 / GraphicHeight
 EndIf
 
 Function InitPostProcess()
