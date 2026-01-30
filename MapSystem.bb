@@ -5555,7 +5555,6 @@ Function UpdateRooms()
 	
 	TempLightVolume=0
 	Local foundNewPlayerRoom% = PlayerRoom<>Null And IsInRoom(PlayerRoom, EntityX(Collider), EntityZ(Collider))
-	If PlayerRoom <> Null Then DebugLog(PlayerRoom\MinX + " " + PlayerRoom\MaxX + " " + PlayerRoom\MinZ + " " + PlayerRoom\MaxZ) + " : " + (EntityX(Collider) - EntityX(PlayerRoom\obj)) + "  " + (EntityZ(Collider) - EntityZ(PlayerRoom\obj))
 	If PlayerRoom<>Null And (Not foundNewPlayerRoom) Then
 		If Abs(EntityY(Collider) - EntityY(PlayerRoom\obj)) < 1.5 Then
 			x = Abs(PlayerRoom\x-EntityX(Collider,True))
@@ -8707,7 +8706,7 @@ Function IsInRoom%(r.Rooms, x#, z#)
 		MaxX# = roomX + 4.0
 		MinX# = roomX - 4.0
 		MaxZ# = roomZ + 4.0
-		MinZ# = zoomZ - 4.0
+		MinZ# = roomZ - 4.0
 	EndIf
 	Return x > MinX And x < MaxX And z > MinZ And z < MaxZ
 End Function
