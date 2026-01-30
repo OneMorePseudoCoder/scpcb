@@ -9011,6 +9011,8 @@ Function UpdateEndings()
 									
 									;e\SoundCHN = PlaySound_Strict (LoadTempSound("SFX\Ending\GateB\682Battle.ogg"))
 									PlayAnnouncement("SFX\Ending\GateB\682Battle.ogg")
+
+									If SpeedRunMode Then TimerStopped = 3
 								EndIf								
 							Else
 								ShouldPlay = 6
@@ -9708,6 +9710,8 @@ Function UpdateEndings()
 											LightFlash = 1.0
 											
 											e\EventState3 = 2.0
+
+											If SpeedRunMode Then TimerStopped = 3
 										EndIf
 									EndIf
 								Else
@@ -9815,7 +9819,8 @@ Function UpdateEndings()
 												
 												If e\EventState2=1 Then
 													e\SoundCHN = PlaySound_Strict (LoadTempSound("SFX\Ending\GateA\STOPRIGHTTHERE.ogg"))
-													e\EventState2=2			
+													e\EventState2=2
+													If SpeedRunMode Then TimerStopped = 3
 												EndIf
 											Else
 												e\room\NPC[i]\LastSeen = 70*300

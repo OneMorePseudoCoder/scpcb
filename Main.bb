@@ -395,7 +395,9 @@ Dim RadioCHN%(8)
 Dim OldAiPics%(5)
 
 Global SpeedRunMode% = GetOptionInt("general", "speed run mode")
-Global PlayTime%, TimerStopped% = True
+Global PlayTime%
+; 0 = Running; 1 = Stopped; 2 = Pre-made save loaded; 3 = Ending reached
+Global TimerStopped% = True
 Global ConsoleFlush%
 Global ConsoleFlushSnd% = 0, ConsoleMusFlush% = 0, ConsoleMusPlay% = 0
 
@@ -2916,7 +2918,7 @@ While IsRunning
 
 	Local ElapsedTime% = CurTime - PrevTime
 	PrevTime = CurTime
-	If (SpeedRunMode Lor (Not (MainMenuOpen Lor MenuOpen))) And SelectedEnding="" Then PlayTime = PlayTime + ElapsedTime
+	If (SpeedRunMode Lor (Not (MainMenuOpen Lor MenuOpen))) And SelectedEnding="" And TimerStopped=0 Then PlayTime = PlayTime + ElapsedTime
 	PrevFPSFactor = FPSfactor
 	FPSfactor = Min(ElapsedTime / 1000.0 * 70, 5.0)
 	FPSfactor2 = FPSfactor
@@ -7217,10 +7219,10 @@ End Function
 Function DrawTimer()
 	SetFont(Font2)
 	Local durText$
-	If Not TimerStopped Then
+	If TimerStopped = 0 Lor TimerStopped = 3 Then
 		durText$ = FormatDuration(PlayTime)
 	Else If TimerStopped = 1 Then
-		durText = "Timer stopped" ; TODO Remove, never occurs
+		durText = "The seventh seal has been broken"
 	Else
 		durText$ = I_Loc\HUD_SpeedrunSaveloaded
 	EndIf
@@ -7228,11 +7230,13 @@ Function DrawTimer()
 	Local y% = HUDStartY + 24 * HUDScale
 	Color 0, 0, 0
 	Text(x + 3 * HUDScale, y + 3 * HUDScale, durText)
-	If TimerStopped Then
+	If TimerStopped And TimerStopped<>3 Then
 		Color 255, 0, 0
 	Else
-		If UsedConsole
+		If UsedConsole Then
 			Color 150, 150, 150
+		Else If First ActiveMods <> Null Then
+			Color 200, 200, 200
 		Else
 			Color 255, 255, 255
 		EndIf
