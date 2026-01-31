@@ -11795,7 +11795,7 @@ Function PlayMovie(moviefile$)
 		DebugLog "Scaled: "+ScaledGraphicHeight
 	EndIf
 
-	Local SplashScreenVideo = OpenMovie(moviefile$+".avi")
+	Local SplashScreenVideo = OpenMovie(moviefile$+".webm")
 	If SplashScreenVideo = 0 Then Return
 
 	DebugLog(RealGraphicHeight)
