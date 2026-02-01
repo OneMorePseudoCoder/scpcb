@@ -62,14 +62,14 @@ Include "Blitz_File_FileName.bb"
 
 Include "DevilParticleSystem.bb"
 
-Global SteamActive% = GetOptionInt("general", "enable steam")
+Global SteamActive% = GetOptionInt("general", "enable steam") And (Not Instr(CommandLine(), "-nosteam"))
 If SteamActive Then
 	If Steam_RestartAppIfNecessary(2178380) Then Return
 	If Steam_Init() <> 0 Then RuntimeErrorExt("Steam failed to initialize")
 EndIf
 
 Global DiscordLastStatus%, DiscordCooldown%
-Global DiscordActive% = GetOptionInt("general", "enable discord rich presence")
+Global DiscordActive% = GetOptionInt("general", "enable discord rich presence") And (Not Instr(CommandLine(), "-nodiscord"))
 If DiscordActive Then
 	DiscordActive = (BlitzcordCreateCore("1465275739342377014") = 0)
 	If DiscordActive Then BlitzcordSetLargeImage("logo")
@@ -81,7 +81,8 @@ Global IsRunning% = True
 Global ShouldRestart% = False
 
 Include "ModManager.bb"
-ReloadMods()
+Global ModsEnabled% = GetOptionInt("general", "enable mods") And (Not Instr(CommandLine(), "-nomods"))
+If ModsEnabled Then ReloadMods()
 
 Global Font1%, Font2%, Font3%, Font4%, Font5%
 Global ConsoleFont%
@@ -162,7 +163,7 @@ Next
 LoadLocalization(I_Loc, StringsFile)
 
 ; Exclusive fullscreen ONLY supports the reported resolutions
-If LauncherEnabled And (Not IsRestart) Lor Fullscreen And (Not GfxMode3DExists(GraphicWidth, GraphicHeight, 32-16*Bit16Mode)) Then
+If LauncherEnabled And (Not IsRestart) And (Not Instr(CommandLine(), "-nolauncher")) Lor Fullscreen And (Not GfxMode3DExists(GraphicWidth, GraphicHeight, 32-16*Bit16Mode)) Then
 	UpdateLauncher()
 EndIf
 
@@ -11902,12 +11903,10 @@ Function PlayMovie(moviefile$)
 End Function
 
 Function PlayStartupVideos()
-
-	If GetOptionInt("general","play startup video") = 0 Lor IsRestart Then Return
+	If GetOptionInt("general","play startup video") = 0 Lor IsRestart Lor Instr(CommandLine(), "-novid") Then Return
 
 	PlayMovie("GFX\menu\startup_Undertow")
 	PlayMovie("GFX\menu\startup_TSS")
-
 End Function
 
 Function CanUseItem(canUseWithHazmat%, canUseWithGasMask%, canUseWithEyewear%)
