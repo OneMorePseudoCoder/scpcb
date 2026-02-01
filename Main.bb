@@ -4058,14 +4058,33 @@ Function InitCredits()
 	
 	Repeat
 		l = ReadLine(file)
-		cl = New CreditsLine
-		cl\txt = l
+		If l = "-" Then
+			Local m.ActiveMods = Last ActiveMods
+			While m <> Null
+				InitCreditsFromFile(m\Path + "Credits.txt")
+				m = Before m
+			Wend
+		Else
+			cl = New CreditsLine
+			cl\txt = l
+		EndIf
 	Until Eof(file)
 	CloseFile(file)
 	
 	Delete First CreditsLine
 	CreditsTimer = 0
-	
+End Function
+
+Function InitCreditsFromFile(creditsPath$)
+	If FileType(creditsPath) <> 1 Then Return
+
+	Local f% = OpenFile(creditsPath)
+	Repeat
+		Local l$ = ReadLine(f)
+		Local cl.CreditsLine = New CreditsLine
+		cl\txt = l
+	Until Eof(f)
+	CloseFile(f)
 End Function
 
 Function DrawCredits()
