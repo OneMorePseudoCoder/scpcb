@@ -176,6 +176,34 @@ Function LoadModdedTextureNonStrict%(file$, flags%)
     Return LoadTexture(file, flags)
 End Function
 
+Function LoadModdedMeshNonStrict%(File$, parent%=0)
+	Local ext$ = File_GetExtension(File)
+	Local fileNoExt$ = Left(File, Len(File) - Len(ext))
+	Local tmp%
+
+	For m.ActiveMods = Each ActiveMods
+		For i = 0 To ModelExtensionCount
+			Local usedExtension$
+			If i = ModelExtensionCount Then
+				usedExtension = ext
+			Else
+				usedExtension = ModelExtensions[i]
+			EndIf
+			Local modPath$ = m\Path + fileNoExt + usedExtension
+			If FileType(modPath) = 1 Then
+				tmp = LoadMesh(modPath, parent)
+				If tmp <> 0 Then
+					Return tmp
+				Else If DebugResourcePacks Then
+					RuntimeErrorExt("Failed to load 3D Mesh " + Chr(34) + modPath + Chr(34) + ".")
+				EndIf
+			EndIf
+		Next
+	Next
+
+    Return LoadMesh(File, parent)
+End Function
+
 Function DetermineModdedPath$(f$)
     For m.ActiveMods = Each ActiveMods
         modPath$ = m\Path + f

@@ -411,25 +411,25 @@ Function SaveGame(file$)
 		If it\itemtemplate\isAnim<>0 Then
 			WriteFloat f, AnimTime(it\model)
 		EndIf
-		WriteByte f,it\invSlots
+		If it\Inventory <> Null Then WriteByte f,it\Inventory\Size Else WriteByte f,0
 		WriteInt f,it\ID
 		If it\itemtemplate\invimg=it\invimg Then WriteByte f,0 Else WriteByte f,1
 	Next
 	
 	temp=0
 	For it.items = Each Items
-		If it\invSlots>0 Then temp=temp+1
+		If it\Inventory <> Null Then temp=temp+1
 	Next
 	
 	WriteInt f,temp
 	
 	For it.items = Each Items
 		;OtherInv
-		If it\invSlots>0 Then
+		If it\Inventory <> Null Then
 			WriteInt f,it\ID
-			For i=0 To it\invSlots-1
-				If it\SecondInv[i] <> Null Then
-					WriteInt f, it\SecondInv[i]\ID
+			For i=0 To it\Inventory\Size-1
+				If it\Inventory\Items[i] <> Null Then
+					WriteInt f, it\Inventory\Items[i]\ID
 				Else
 					WriteInt f, -1
 				EndIf
@@ -476,6 +476,8 @@ Function LoadGame(file$)
 	CatchErrors("Uncaught (LoadGame)")
 	DebugLog "---------------------------------------------------------------------------"
 	
+	DrawLoading(45)
+
 	DropSpeed=0.0
 	
 	DebugHUD = False
@@ -734,8 +736,11 @@ Function LoadGame(file$)
 		I_Zone\HasCustomMT = ReadByte(f)
 	EndIf
 	
+	DrawLoading(50)
+
 	temp = ReadInt(f)
 	For i = 1 To temp
+		DrawLoading(50 + Float(i) / temp * 19)
 		Local roomtemplateID% = ReadInt(f)
 		Local angle% = ReadInt(f)
 		x = ReadFloat(f)
@@ -845,6 +850,8 @@ Function LoadGame(file$)
 		
 	Next
 	
+	DrawLoading(70)
+
 	For r.Rooms = Each Rooms
 		If r\x = r1499_x# And r\z = r1499_z#
 			NTF_1499PrevRoom = r
@@ -984,7 +991,7 @@ Function LoadGame(file$)
 		Next		
 	Next
 	
-	InitWayPoints()
+	InitWayPoints(71, 9)
 	
 	If ReadInt(f) <> 1845 Then RuntimeErrorExt("Couldn't load the game, save file corrupted (error 3)")
 	
@@ -1125,7 +1132,8 @@ Function LoadGame(file$)
 		
 		If it\itemtemplate\isAnim<>0 Then SetAnimTime it\model,ReadFloat(f)
 		
-		it\invSlots = ReadByte(f)
+		Local invSize% = ReadByte(f)
+		If invSize <> 0 Then it\Inventory = New Inventories : it\Inventory\Size = invSize
 		it\ID = ReadInt(f)
 		
 		If it\ID>LastItemID Then LastItemID=it\ID
@@ -1147,13 +1155,13 @@ Function LoadGame(file$)
 		For ij.Items = Each Items
 			If ij\ID=o_i Then it.Items=ij : Exit
 		Next
-		For j%=0 To it\invSlots-1
+		For j%=0 To it\Inventory\Size-1
 			o_i=ReadInt(f)
 			DebugLog "secondinv "+o_i
 			If o_i<>-1 Then
 				For ij.Items=Each Items
 					If ij\ID=o_i Then
-						it\SecondInv[j]=ij
+						it\Inventory\Items[j]=ij
 						Exit
 					EndIf
 				Next
@@ -1838,7 +1846,8 @@ Function LoadGameQuick(file$)
 		
 		If it\itemtemplate\isAnim<>0 Then SetAnimTime it\model,ReadFloat(f)
 		
-		it\invSlots = ReadByte(f)
+		Local invSize% = ReadByte(f)
+		If invSize <> 0 Then it\Inventory = New Inventories : it\Inventory\Size = invSize
 		it\ID = ReadInt(f)
 		
 		If it\ID>LastItemID Then LastItemID=it\ID
@@ -1860,12 +1869,12 @@ Function LoadGameQuick(file$)
 		For ij.Items = Each Items
 			If ij\ID=o_i Then it.Items=ij : Exit
 		Next
-		For j%=0 To it\invSlots-1
+		For j%=0 To it\Inventory\Size-1
 			o_i=ReadInt(f)
 			If o_i<>-1 Then
 				For ij.Items=Each Items
 					If ij\ID=o_i Then
-						it\SecondInv[j]=ij
+						it\Inventory\Items[j]=ij
 						Exit
 					EndIf
 				Next
@@ -2116,7 +2125,7 @@ Function LoadSavedMaps()
 	CatchErrors("LoadSavedMaps")
 End Function
 
-Function LoadMap(file$)
+Function LoadMap(file$, loadingstart, loadingcount#)
 	CatchErrors("Uncaught (LoadMap)")
 	Local f%, x%, y%, name$, angle%, prob#
 	Local r.Rooms, rt.RoomTemplates, e.Events
@@ -2158,6 +2167,8 @@ Function LoadMap(file$)
 		
 		;Facility rooms
 		For i = 0 To roomamount-1
+			DrawLoading(loadingstart + Float(i) / (roomamount-1) * loadingcount)
+
 			x = ReadByte(f)
 			y = ReadByte(f)
 			name$ = Lower(ReadString(f))

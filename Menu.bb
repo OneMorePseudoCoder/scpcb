@@ -147,95 +147,89 @@ Function UpdateMainMenu()
 	EndIf
 	
 	If MainMenuTab = 0 Then
-		For i% = 0 To 4
-			temp = False
-			x = 159 * MenuScale
-			y = (286 + 80 * i) * MenuScale
-			
-			width = 400 * MenuScale
-			height = 70 * MenuScale
-			
-			temp = (MouseHit1 And MouseOn(x, y, width, height))
-			
-			Local txt$
-			Select i
-				Case 0
-					txt = I_Loc\Menu_NewUpper
-					If temp Then
-						HasNumericSeed = UseNumericSeeds
-						If HasNumericSeed Then
-							RandomSeedNumeric = MilliSecs()
+		x = 159 * MenuScale
+		y = 286 * MenuScale
+
+		width = 400 * MenuScale
+		height = 70 * MenuScale
+
+		Local spacing% = height + 10 * MenuScale
+
+		If DrawButton(x, y, width, height, I_Loc\Menu_NewUpper) Then
+			HasNumericSeed = UseNumericSeeds
+			If HasNumericSeed Then
+				RandomSeedNumeric = MilliSecs()
+			Else
+				RandomSeed = ""
+				If Rand(15)=1 Then 
+					Select Rand(13)
+						Case 1 
+							RandomSeed = "NIL"
+						Case 2
+							RandomSeed = "NO"
+						Case 3
+							RandomSeed = "d9341"
+						Case 4
+							RandomSeed = "5CP_I73"
+						Case 5
+							RandomSeed = "DONTBLINK"
+						Case 6
+							RandomSeed = "CRUNCH"
+						Case 7
+							RandomSeed = "die"
+						Case 8
+							RandomSeed = "HTAED"
+						Case 9
+							RandomSeed = "rustledjim"
+						Case 10
+							RandomSeed = "larry"
+						Case 11
+							RandomSeed = "JORGE"
+						Case 12
+							RandomSeed = "dirtymetal"
+						Case 13
+							RandomSeed = "whatpumpkin"
+					End Select
+				Else
+					n = Rand(4,8)
+					For i = 1 To n
+						If Rand(3)=1 Then
+							RandomSeed = RandomSeed + Rand(0,9)
 						Else
-							RandomSeed = ""
-							If Rand(15)=1 Then 
-								Select Rand(13)
-									Case 1 
-										RandomSeed = "NIL"
-									Case 2
-										RandomSeed = "NO"
-									Case 3
-										RandomSeed = "d9341"
-									Case 4
-										RandomSeed = "5CP_I73"
-									Case 5
-										RandomSeed = "DONTBLINK"
-									Case 6
-										RandomSeed = "CRUNCH"
-									Case 7
-										RandomSeed = "die"
-									Case 8
-										RandomSeed = "HTAED"
-									Case 9
-										RandomSeed = "rustledjim"
-									Case 10
-										RandomSeed = "larry"
-									Case 11
-										RandomSeed = "JORGE"
-									Case 12
-										RandomSeed = "dirtymetal"
-									Case 13
-										RandomSeed = "whatpumpkin"
-								End Select
-							Else
-								n = Rand(4,8)
-								For i = 1 To n
-									If Rand(3)=1 Then
-										RandomSeed = RandomSeed + Rand(0,9)
-									Else
-										RandomSeed = RandomSeed + Chr(Rand(97,122))
-									EndIf
-								Next							
-							EndIf
+							RandomSeed = RandomSeed + Chr(Rand(97,122))
 						EndIf
-						
-						MainMenuTab = 1
-					EndIf
-				Case 1
-					txt = I_Loc\Menu_LoadUpper
-					If temp Then
-						LoadSaveGames()
-						MainMenuTab = 2
-					EndIf
-				Case 2
-					txt = I_Loc\Menu_ModsUpper
-					If temp Then MainMenuTab = 8
-				Case 3
-					txt = I_Loc\Menu_OptionsUpper
-					If temp Then MainMenuTab = 3 : OnSliderID = 66
-				Case 4
-					txt = I_Loc\Menu_QuitUpper
-					If temp Then
-						StopChannel(CurrMusicStream)
-						End
-					EndIf
-			End Select
+					Next							
+				EndIf
+			EndIf
 			
-			DrawButton(x, y, width, height, txt)
-			
-			;rect(x + 4, y + 4, width - 8, height - 8)
-			;color 255, 255, 255	
-			;text(x + width / 2, y + height / 2, Str, True, True)
-		Next	
+			MainMenuTab = 1
+		EndIf
+
+		y = y + spacing
+
+		If DrawButton(x, y, width, height, I_Loc\Menu_LoadUpper) Then
+			LoadSaveGames()
+			MainMenuTab = 2
+		EndIf
+
+		y = y + spacing
+
+		If DrawButton(x, y, width, height, I_Loc\Menu_ModsUpper, True, False, Not ModsEnabled) Then
+			MainMenuTab = 8
+		EndIf
+
+		y = y + spacing
+
+		If DrawButton(x, y, width, height, I_Loc\Menu_OptionsUpper) Then
+			MainMenuTab = 3 : OnSliderID = 66
+		EndiF
+
+		y = y + spacing
+
+		If DrawButton(x, y, width, height, I_Loc\Menu_QuitUpper) Then
+			StopChannel(CurrMusicStream)
+			End
+		EndIf
 		
 	Else
 		
@@ -441,6 +435,7 @@ Function UpdateMainMenu()
 
 					LoadEntities()
 					LoadAllSounds()
+					InitRoomTemplates()
 					InitNewGame()
 					MainMenuOpen = False
 					FlushKeys()
@@ -539,6 +534,7 @@ Function UpdateMainMenu()
 									If DrawButton(x + 280 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\LoadGame_Load, False) Then
 										LoadEntities()
 										LoadAllSounds()
+										InitRoomTemplates()
 										LoadGame(SaveGames(i - 1))
 										CurrSave = SaveGames(i - 1)
 										InitLoadGame()
@@ -1705,12 +1701,16 @@ Type LoadingScreens
 	Field alignx%, aligny%
 	Field disablebackground%
 	Field txt$[5], txtamount%
+	; Inclusive prefix sum
+	Field txtDelay%[5], totalTxtDelay%
 End Type
 
 Const LOADING_SCREENS_DATA_PATH$ = "Loadingscreens\loadingscreens.ini"
+Global LoadingScreenTimePerCharacter%, LoadingScreenStartTime%
 
 Function InitLoadingScreens()
 	Delete Each LoadingScreens
+	LoadingScreenTimePerCharacter% = GetOptionInt("general", "loading screen cycle per char ms")
 	Local hasOverride%
 	For m.ActiveMods = Each ActiveMods
 		Local modPath$ = m\Path + LOADING_SCREENS_DATA_PATH
@@ -1743,8 +1743,11 @@ Function LoadLoadingScreens(file$)
 			ls\title = TemporaryString
 			ls\imgpath = GetINIString(file, TemporaryString, "image path")
 			
+			ls\totalTxtDelay = 0
 			For i = 0 To 4
 				ls\txt[i] = GetINIString(file, TemporaryString, "text"+(i+1))
+				ls\totalTxtDelay = ls\totalTxtDelay + Len(ls\txt[i]) * LoadingScreenTimePerCharacter
+				ls\txtDelay[i] = ls\totalTxtDelay
 				If ls\txt[i]<> "" Then ls\txtamount=ls\txtamount+1
 			Next
 			
@@ -1781,7 +1784,7 @@ Function DrawLoading(percent%, shortloading=False)
 	Local x%, y%
 	
 	If percent = 0 Then
-		LoadingScreenText=0
+		LoadingScreenStartTime = MilliSecs()
 		
 		temp = Rand(1,LoadingScreenAmount)
 		For ls.loadingscreens = Each LoadingScreens
@@ -1811,11 +1814,13 @@ Function DrawLoading(percent%, shortloading=False)
 		If percent > 20 Then
 			UpdateMusic()
 		EndIf
-		
-		If shortloading = False Then
-			If percent > (100.0 / SelectedLoadingScreen\txtamount)*(LoadingScreenText+1) Then
-				LoadingScreenText=LoadingScreenText+1
-			EndIf
+
+		Local LoadingScreenText = 0
+		If SelectedLoadingScreen\totalTxtDelay <> 0 Then
+			Local elapsedTime = (MilliSecs() - LoadingScreenStartTime) Mod SelectedLoadingScreen\totalTxtDelay
+			While elapsedTime >= SelectedLoadingScreen\txtDelay[LoadingScreenText]
+				LoadingScreenText = LoadingScreenText + 1
+			Wend
 		EndIf
 		
 		If (Not SelectedLoadingScreen\disablebackground) Then
@@ -1911,9 +1916,9 @@ Function DrawLoading(percent%, shortloading=False)
 			
 			Color 0,0,0
 			SetFont Font2
-			Text(GraphicWidth / 2 + 1 * MenuScale, GraphicHeight / 2 + (80+1)*MenuScale, SelectedLoadingScreen\title, True, True)
+			Text(GraphicWidth / 2 + Max(1, MenuScale), GraphicHeight / 2 + 80*MenuScale+Max(1, MenuScale), SelectedLoadingScreen\title, True, True)
 			SetFont Font1
-			RowText(SelectedLoadingScreen\txt[LoadingScreenText], GraphicWidth / 2-(200+1)*MenuScale, GraphicHeight / 2 +(120+1)*MenuScale,400*MenuScale,300*MenuScale,True)
+			RowText(SelectedLoadingScreen\txt[LoadingScreenText], GraphicWidth / 2-200*MenuScale+Max(1, MenuScale), GraphicHeight / 2 +120*MenuScale+Max(1, MenuScale),400*MenuScale,300*MenuScale,True)
 			
 			Color 255,255,255
 			SetFont Font2
@@ -1928,7 +1933,7 @@ Function DrawLoading(percent%, shortloading=False)
 		EndIf
 		
 		Color 0,0,0
-		Text(GraphicWidth / 2 + 1 * MenuScale, GraphicHeight / 2 - 100 * MenuScale + 1 * MenuScale, Format(I_Loc\Menu_Loading, percent), True, True)
+		Text(GraphicWidth / 2 + Max(1, enuScale), GraphicHeight / 2 - 100 * MenuScale + Max(1, MenuScale), Format(I_Loc\Menu_Loading, percent), True, True)
 		Color 255,255,255
 		Text(GraphicWidth / 2, GraphicHeight / 2 - 100 * MenuScale, Format(I_Loc\Menu_Loading, percent), True, True)
 		

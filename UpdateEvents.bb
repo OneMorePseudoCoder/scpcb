@@ -2543,17 +2543,19 @@ Function UpdateEvents()
 											EndIf
 										EndIf
 									EndIf
-									If e\EventState2 = 2 Then
-										Using294=temp
-										If Using294 Then MouseHit1=False
-									ElseIf e\EventState2 = 1 And (Not inserted) Then
-										Using294=False
-										Msg = I_Loc\Message_294One
-										MsgTimer = 70*5
-									ElseIf (Not inserted) Then
-										Using294=False
-										Msg = I_Loc\Message_294Two
-										MsgTimer = 70*5
+									If temp Then
+										If e\EventState2 = 2 Then
+											Using294=True
+											MouseHit1=False
+										Else If e\EventState2 = 1 And (Not inserted) Then
+											Using294=False
+											Msg = I_Loc\Message_294One
+											MsgTimer = 70*5
+										ElseIf (Not inserted) Then
+											Using294=False
+											Msg = I_Loc\Message_294Two
+											MsgTimer = 70*5
+										EndIf
 									EndIf
 								EndIf
 							EndIf
@@ -2653,7 +2655,7 @@ Function UpdateEvents()
 									it2\Picked = True
 									it2\Dropped = -1
 									it2\itemtemplate\found=True
-									it\SecondInv[i] = it2
+									it\Inventory\Items[i] = it2
 									HideEntity(it2\collider)
 									EntityType(it2\collider, HIT_ITEM)
 								Next
@@ -9006,6 +9008,8 @@ Function UpdateEndings()
 									
 									;e\SoundCHN = PlaySound_Strict (LoadTempSound("SFX\Ending\GateB\682Battle.ogg"))
 									PlayAnnouncement("SFX\Ending\GateB\682Battle.ogg")
+
+									If SpeedRunMode Then TimerStopped = 3
 								EndIf								
 							Else
 								ShouldPlay = 6
@@ -9703,6 +9707,8 @@ Function UpdateEndings()
 											LightFlash = 1.0
 											
 											e\EventState3 = 2.0
+
+											If SpeedRunMode Then TimerStopped = 3
 										EndIf
 									EndIf
 								Else
@@ -9810,7 +9816,8 @@ Function UpdateEndings()
 												
 												If e\EventState2=1 Then
 													e\SoundCHN = PlaySound_Strict (LoadTempSound("SFX\Ending\GateA\STOPRIGHTTHERE.ogg"))
-													e\EventState2=2			
+													e\EventState2=2
+													If SpeedRunMode Then TimerStopped = 3
 												EndIf
 											Else
 												e\room\NPC[i]\LastSeen = 70*300

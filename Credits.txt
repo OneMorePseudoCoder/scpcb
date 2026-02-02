@@ -2,11 +2,13 @@
 *Programmers
 
 		Joonas Rikkonen ("Regalis")
+		Alexey Petrov ("Sooslick")
 		CommanderMark
 		Jesse Ludtke ("MonocleBios")
 		Juan Pablo Arce ("Juanjpro")
 		Luggs123
 		Nikita Sidorov ("Jabka")
+		Quote
 		Ryan Stillings ("Risingstar64")
 		Sam Lynch ("InnocentSam")
 		Shaun Gaylard ("ENDSHN")
@@ -106,6 +108,7 @@
 		Onemario1234
 		RadReed
 		TheHappyJammer
+		V/firestarter117
 		Zadrakos
 
 
@@ -120,6 +123,7 @@
 		Turtle Sandwich/Catnipbuddy
 		/v/ and everyone in the SCP-CB forum
 
+-
 
 *The game is based on the works of the SCP Foundation community.
 

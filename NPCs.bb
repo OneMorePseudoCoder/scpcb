@@ -5051,34 +5051,21 @@ Function UpdateNPCs()
 							EndIf
 							If (Not UpdateGravity)
 								For r.Rooms = Each Rooms
-									If r\MaxX<>0 Or r\MinX<>0 Or r\MaxZ<>0 Or r\MinZ<>0
-										MaxX# = r\MaxX
-										MinX# = r\MinX
-										MaxZ# = r\MaxZ
-										MinZ# = r\MinZ
-									Else
-										MaxX# = 4.0
-										MinX# = 0.0
-										MaxZ# = 4.0
-										MinZ# = 0.0
-									EndIf
-									If Abs(EntityX(n\Collider)-EntityX(r\obj))<=Abs(MaxX-MinX)
-										If Abs(EntityZ(n\Collider)-EntityZ(r\obj))<=Abs(MaxZ-MinZ)
-											If r=PlayerRoom
-												UpdateGravity = True
-												Exit
-											EndIf
-											If IsRoomAdjacent(PlayerRoom,r)
-												UpdateGravity = True
-												Exit
-											EndIf
-											For i=0 To 3
-												If (IsRoomAdjacent(PlayerRoom\Adjacent[i],r))
-													UpdateGravity = True
-													Exit
-												EndIf
-											Next
+									If IsInRoom(r, EntityX(n\Collider), EntityZ(n\Collider))
+										If r=PlayerRoom
+											UpdateGravity = True
+											Exit
 										EndIf
+										If IsRoomAdjacent(PlayerRoom,r)
+											UpdateGravity = True
+											Exit
+										EndIf
+										For i=0 To 3
+											If (IsRoomAdjacent(PlayerRoom\Adjacent[i],r))
+												UpdateGravity = True
+												Exit
+											EndIf
+										Next
 									EndIf
 								Next
 							EndIf

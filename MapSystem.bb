@@ -1,5 +1,3 @@
-
-
 Type Materials
 	Field name$
 	Field Diff
@@ -193,14 +191,14 @@ Function LoadRMesh(file$,rt.RoomTemplates)
 		EndIf
 	Next
 	If f=0 Then RuntimeErrorExt "Error reading file "+Chr(34)+file+Chr(34)
+	Local version% = 0
 	Local isRMesh$ = ReadString(f)
-	If isRMesh$="RoomMesh"
-		;Continue
-	ElseIf isRMesh$="RoomMesh.HasTriggerBox"
-		hasTriggerBox% = True
-	Else
-		RuntimeErrorExt Chr(34)+file+Chr(34)+" is Not RMESH ("+isRMesh+")"
-	EndIf
+	Select isRMesh
+		Case "RoomMesh" ;Continue
+		Case "RoomMesh.HasTriggerBox" hasTriggerBox% = True
+		Case "RM" version = ReadByte(f) : hasTriggerBox = True
+		Default RuntimeErrorExt Chr(34)+file+Chr(34)+" is Not RMESH ("+isRMesh+")"
+	End Select
 	
 	file=StripFilename(file)
 	; Modded rooms must try loading textures starting from the vanilla root.
@@ -516,7 +514,7 @@ Function LoadRMesh(file$,rt.RoomTemplates)
 			Case "model"
 				file = ReadString(f)
 				If file<>""
-					Local model = CreatePropObj("GFX\Map\Props\"+file)
+					Local model = CreatePropObj(file)
 					
 					temp1=ReadFloat(f) : temp2=ReadFloat(f) : temp3=ReadFloat(f)
 					PositionEntity model,temp1,temp2,temp3
@@ -545,8 +543,10 @@ Function LoadRMesh(file$,rt.RoomTemplates)
 				it\Z = ReadFloat(f) * RoomScale
 
 				it\Name = ReadString(f)
-				If it\Name = "" Then
+				If version < 1 Then
+					Local tempName$ = ReadString(f)
 					itt.ItemTemplates = FindItemTemplate(it\Name)
+					If itt = Null Then itt = FindItemTemplate(tempName)
 					If itt = Null Then
 						RuntimeErrorExt("Item template for "+Chr(34)+it\Name+Chr(34)+" not found.")
 					Else
@@ -1660,29 +1660,8 @@ Function LoadRoomMesh(rt.RoomTemplates)
 	
 End Function
 
-Function LoadRoomMeshes()
-	Local temp% = 0
-	For rt.RoomTemplates = Each RoomTemplates
-		temp=temp+1
-	Next	
-	
-	Local i = 0
-	For rt.RoomTemplates = Each RoomTemplates
-		If Instr(rt\objpath,".rmesh")<>0 Then
-			rt\obj = LoadRMesh(rt\objPath, rt)
-		EndIf
-		If (Not rt\obj) Then RuntimeErrorExt "Failed to load map file "+Chr(34)+mapfile+Chr(34)+"."
-		
-		HideEntity(rt\obj)
-		DrawLoading(Int(30 + (15.0 / temp)*i))
-		i=i+1
-	Next
-End Function
-
 
 Const ROOMS_DATA_PATH$ = "Data\rooms.ini"
-
-InitRoomTemplates()
 
 Function InitRoomTemplates()
 	Delete Each RoomTemplates
@@ -3816,7 +3795,7 @@ Function FillRoom(r.Rooms)
 			it = CreateItem("doc1048a",r\x + 736.0 * RoomScale, r\y + 224.0 * RoomScale, r\z -720.0 * RoomScale)
 			it\Picked = True
 			it\Dropped = -1
-			clipboard\SecondInv[0] = it
+			clipboard\Inventory\Items[0] = it
 			SetAnimTime clipboard\model, 0.0
 			clipboard\invimg = clipboard\itemtemplate\invimg
 			HideEntity(it\collider)
@@ -5558,8 +5537,8 @@ Function UpdateRooms()
 	EndIf
 	
 	TempLightVolume=0
-	Local foundNewPlayerRoom% = False
-	If PlayerRoom<>Null Then
+	Local foundNewPlayerRoom% = PlayerRoom<>Null And IsInRoom(PlayerRoom, EntityX(Collider), EntityZ(Collider))
+	If PlayerRoom<>Null And (Not foundNewPlayerRoom) Then
 		If Abs(EntityY(Collider) - EntityY(PlayerRoom\obj)) < 1.5 Then
 			x = Abs(PlayerRoom\x-EntityX(Collider,True))
 			If x < 4.0 Then
@@ -5846,7 +5825,7 @@ Function CreateWaypoint.WayPoints(x#,y#,z#,door.Doors, room.Rooms)
 	Return w
 End Function
 
-Function InitWayPoints(loadingstart=45)
+Function InitWayPoints(loadingstart,loadingcount#)
 	
 	Local d.Doors, w.WayPoints, w2.WayPoints, r.Rooms, ClosestRoom.Rooms
 	
@@ -5901,7 +5880,7 @@ Function InitWayPoints(loadingstart=45)
 		number = number + 1
 		iter = iter + 1
 		If iter = 20 Then 
-			DrawLoading(loadingstart+Floor((35.0/amount)*number)) 
+			DrawLoading(loadingstart+Floor((loadingcount/amount)*number)) 
 			iter = 0
 		EndIf
 		
@@ -7001,13 +6980,17 @@ Function CreatePropObj(file$)
 	
 	p.Props = New Props
 	p\file = file
-	p\obj = LoadMesh_Strict(file)
+	p\obj = LoadModdedMeshNonStrict("GFX\Map\Props\"+file)
+	If p\obj = 0 Then p\obj = LoadModdedMeshNonStrict("GFX\Map\"+file)
+	If p\obj = 0 Then RuntimeErrorExt("Failed to load prop " + file + ".")
 	Return p\obj
 End Function
 
 ;-------------------------------------------------------------------------------------------------------
 
-Function CreateMap()
+Include "OverlapResolver.bb"
+
+Function CreateMap(loadingstart,loadingcount#)
 	DebugLog ("Generating a map using the seed "+GetRandomSeed())
 	
 	MapWidth% = GetModdedINIInt(MapOptions, "facility", "width")
@@ -7405,6 +7388,7 @@ Function CreateMap()
 	temp = 0
 	Local r.Rooms, spacing# = 8.0
 	For y = MapHeight - 1 To 1 Step - 1
+		DrawLoading(loadingstart + Float(MapHeight - 1 - y) / (MapHeight - 1) * loadingcount)
 		
 		;zone% = GetZone(y)
 		
@@ -7519,11 +7503,35 @@ Function CreateMap()
 	r = CreateRoom(0, ROOM1, 8, 800, 0, 0, "dimension1499")
 	MapRoomID(ROOM1)=MapRoomID(ROOM1)+1
 	
+	; calling PreventRoomOverlap for the first time
 	For r.Rooms = Each Rooms
 		PreventRoomOverlap(r)
 	Next
 	
+	; run another PreventRoomOverlap if total overlapping area more than 1/4 of a single room
+	Local totalOverlaps# = 0
+	For r.Rooms = Each Rooms
+		totalOverlaps = totalOverlaps + CalcAllRoomOverlaps(r)
+	Next
+	If totalOverlaps > 16 Then
+		For r.Rooms = Each Rooms
+			PreventRoomOverlap(r)
+		Next
+	EndIf
+	
+	; print all overlapping rooms to debuglog
+	;ReportOverlaps()
+	
 	If DebugMapGen Then
+		For x = 0 To MapWidth - 1
+			For y = 0 To MapHeight - 1
+				MapName(x,y) = ""
+			Next
+		Next
+		For r.Rooms = Each Rooms
+			If r\RoomTemplate\SetRoom => 0 Then MapName(r\x/8,r\z/8) = r\RoomTemplate\Name
+		Next
+		
 		Repeat
 			Cls
 
@@ -7533,12 +7541,13 @@ Function CreateMap()
 
 			For x = 0 To MapWidth - 1
 				For y = 0 To MapHeight - 1
+					Local mirroredX% = MapWidth - x
 					If MapTemp(x, y) = 0 Then
 						
 						zone=GetZone(y)
 						
 						Color 25+50*zone, 25+50*zone, 25+50*zone
-						Rect(xStart + x * tileSize, yStart + y * tileSize, tileSize - 2, tileSize - 2)
+						Rect(xStart + mirroredX * tileSize, yStart + y * tileSize, tileSize - 2, tileSize - 2)
 					Else
 						If MapTemp(x, y) = 255 Then
 							Color 0,200,0
@@ -7551,15 +7560,15 @@ Function CreateMap()
 						Else
 							Color 255, 255, 255
 						EndIf
-						Rect(xStart + x * tileSize, yStart + y * tileSize, tileSize - 2, tileSize - 2)
+						Rect(xStart + mirroredX * tileSize, yStart + y * tileSize, tileSize - 2, tileSize - 2)
 					End If
 				Next
 			Next	
 			
 			For x = 0 To MapWidth - 1
 				For y = 0 To MapHeight - 1
-					
-					If MouseX()>xStart + x*tileSize And MouseX()<xStart + x*tileSize+tileSize Then
+					mirroredX% = MapWidth - x
+					If MouseX()>xStart + mirroredX*tileSize And MouseX()<xStart + mirroredX*tileSize+tileSize Then
 						If MouseY()>yStart + y*tileSize And MouseY()<yStart + y*tileSize+tileSize Then
 							Color 255, 0, 0
 						Else
@@ -7570,7 +7579,7 @@ Function CreateMap()
 					EndIf
 					
 					If MapTemp(x, y) > 0 Then
-						Text xStart + x * tileSize +2, yStart + y * tileSize + 2,MapTemp(x, y) +" "+ MapName(x,y)
+						Text xStart + mirroredX * tileSize +2, yStart + y * tileSize + 2,MapName(x,y)
 					End If
 				Next
 			Next
@@ -8553,149 +8562,22 @@ Function CalculateRoomExtents(r.Rooms)
 	DebugLog("roomextents: "+r\MinX+", "+r\MinY	+", "+r\MinZ	+", "+r\MaxX	+", "+r\MaxY+", "+r\MaxZ)
 End Function
 
-Function CheckRoomOverlap(r1.Rooms, r2.Rooms)
-	If (r1\MaxX	<= r2\MinX Or r1\MaxY <= r2\MinY Or r1\MaxZ <= r2\MinZ) Then Return False
-	If (r1\MinX	>= r2\MaxX Or r1\MinY >= r2\MaxY Or r1\MinZ >= r2\MaxZ) Then Return False
-	
-	Return True
-End Function
-
-Function PreventRoomOverlap(r.Rooms)
-	If r\RoomTemplate\DisableOverlapCheck Then Return
-	
-	Local r2.Rooms,r3.Rooms
-	
-	Local isIntersecting% = False
-	
-	;Just skip it when it would try to check for the checkpoints
-	If r\RoomTemplate\Name = "checkpoint1" Or r\RoomTemplate\Name = "checkpoint2" Or r\RoomTemplate\Name = "start" Then Return True
-	
-	;First, check if the room is actually intersecting at all
-	For r2 = Each Rooms
-		If r2 <> r And (Not r2\RoomTemplate\DisableOverlapCheck) Then
-			If CheckRoomOverlap(r, r2) Then
-				isIntersecting = True
-				Exit
-			EndIf
-		EndIf
-	Next
-	
-	;If not, then simply return it as True
-	If (Not isIntersecting)
-		Return True
-	EndIf
-	
-	;Room is interseting: First, check if the given room is a ROOM2, so we could potentially just turn it by 180 degrees
-	isIntersecting = False
-	Local x% = r\x/8.0
-	Local y% = r\z/8.0
-	If r\RoomTemplate\Shape = ROOM2 Then
-		;Room is a ROOM2, let's check if turning it 180 degrees fixes the overlapping issue
-		r\angle = r\angle + 180
-		RotateEntity r\obj,0,r\angle,0
-		CalculateRoomExtents(r)
-		
-		For r2 = Each Rooms
-			If r2 <> r And (Not r2\RoomTemplate\DisableOverlapCheck) Then
-				If CheckRoomOverlap(r, r2) Then
-					;didn't work -> rotate the room back and move to the next step
-					isIntersecting = True
-					r\angle = r\angle - 180
-					RotateEntity r\obj,0,r\angle,0
-					CalculateRoomExtents(r)
-					Exit
-				EndIf
-			EndIf
-		Next
+Function IsInRoom%(r.Rooms, x#, z#)
+	Local MaxX#,MinX#,MaxZ#,MinZ#
+	If r\MaxX<>0 Lor r\MinX<>0 Lor r\MaxZ<>0 Lor r\MinZ<>0
+		MaxX# = r\MaxX
+		MinX# = r\MinX
+		MaxZ# = r\MaxZ
+		MinZ# = r\MinZ
 	Else
-		isIntersecting = True
+		Local roomX# = EntityX(r\obj), roomZ# = EntityZ(r\obj)
+		MaxX# = roomX + 4.0
+		MinX# = roomX - 4.0
+		MaxZ# = roomZ + 4.0
+		MinZ# = roomZ - 4.0
 	EndIf
-	
-	;room is ROOM2 and was able to be turned by 180 degrees
-	If (Not isIntersecting)
-		DebugLog "ROOM2 turning succesful! "+r\RoomTemplate\Name
-		Return True
-	EndIf
-	
-	;Room is either not a ROOM2 or the ROOM2 is still intersecting, now trying to swap the room with another of the same type
-	isIntersecting = True
-	Local temp2,x2%,y2%,rot%,rot2%
-	For r2 = Each Rooms
-		If r2 <> r And (Not r2\RoomTemplate\DisableOverlapCheck)  Then
-			If r\RoomTemplate\Shape = r2\RoomTemplate\Shape And r\zone = r2\zone And (r2\RoomTemplate\Name <> "checkpoint1" And r2\RoomTemplate\Name <> "checkpoint2" And r2\RoomTemplate\Name <> "start") Then
-				x = r\x/8.0
-				y = r\z/8.0
-				rot = r\angle
-				
-				x2 = r2\x/8.0
-				y2 = r2\z/8.0
-				rot2 = r2\angle
-				
-				isIntersecting = False
-				
-				r\x = x2*8.0
-				r\z = y2*8.0
-				r\angle = rot2
-				PositionEntity r\obj,r\x,r\y,r\z
-				RotateEntity r\obj,0,r\angle,0
-				CalculateRoomExtents(r)
-				
-				r2\x = x*8.0
-				r2\z = y*8.0
-				r2\angle = rot
-				PositionEntity r2\obj,r2\x,r2\y,r2\z
-				RotateEntity r2\obj,0,r2\angle,0
-				CalculateRoomExtents(r2)
-				
-				;make sure neither room overlaps with anything after the swap
-				For r3 = Each Rooms
-					If (Not r3\RoomTemplate\DisableOverlapCheck) Then
-						If r3 <> r Then
-							If CheckRoomOverlap(r, r3) Then
-								isIntersecting = True
-								Exit
-							EndIf
-						EndIf
-						If r3 <> r2 Then
-							If CheckRoomOverlap(r2, r3) Then
-								isIntersecting = True
-								Exit
-							EndIf
-						EndIf	
-					EndIf
-				Next
-				
-				;Either the original room or the "reposition" room is intersecting, reset the position of each room to their original one
-				If isIntersecting Then
-					r\x = x*8.0
-					r\z = y*8.0
-					r\angle = rot
-					PositionEntity r\obj,r\x,r\y,r\z
-					RotateEntity r\obj,0,r\angle,0
-					CalculateRoomExtents(r)
-					
-					r2\x = x2*8.0
-					r2\z = y2*8.0
-					r2\angle = rot2
-					PositionEntity r2\obj,r2\x,r2\y,r2\z
-					RotateEntity r2\obj,0,r2\angle,0
-					CalculateRoomExtents(r2)
-				EndIf
-			EndIf
-		EndIf
-	Next
-	
-	;room was able to the placed in a different spot
-	If (Not isIntersecting)
-		DebugLog "Room re-placing successful! "+r\RoomTemplate\Name
-		Return True
-	EndIf
-	
-	DebugLog "Couldn't fix overlap issue for room "+r\RoomTemplate\Name
-	Return False
+	Return x > MinX And x < MaxX And z > MinZ And z < MaxZ
 End Function
-
-
 
 
 

@@ -320,34 +320,12 @@ Function UpdateStreamSoundOrigin(streamHandle%,cam%,entity%,range#=10,volume#=1.
 End Function
 
 Function LoadMesh_Strict(File$,parent=0)
-	Local ext$ = File_GetExtension(File)
-	Local fileNoExt$ = Left(File, Len(File) - Len(ext))
-	Local tmp%
+	Local tmp% = LoadModdedMeshNonStrict(File, parent)
+	If tmp <> 0 Then Return tmp
 
-	For m.ActiveMods = Each ActiveMods
-		For i = 0 To ModelExtensionCount
-			Local usedExtension$
-			If i = ModelExtensionCount Then
-				usedExtension = ext
-			Else
-				usedExtension = ModelExtensions[i]
-			EndIf
-			Local modPath$ = m\Path + fileNoExt + usedExtension
-			If FileType(modPath) = 1 Then
-				tmp = LoadMesh(modPath, parent)
-				If tmp <> 0 Then
-					Return tmp
-				Else If DebugResourcePacks Then
-					RuntimeErrorExt("Failed to load 3D Mesh " + Chr(34) + modPath + Chr(34) + ".")
-				EndIf
-			EndIf
-		Next
-	Next
-
-	If FileType(File$) <> 1 Then RuntimeErrorExt "3D Mesh " + File$ + " not found."
-	tmp = LoadMesh(File$, parent)
-	If tmp = 0 Then RuntimeErrorExt "Failed to load 3D Mesh: " + File$ 
-	Return tmp  
+	Local err$
+	If FileType(File$) <> 1 Then err = "3D Mesh " + File$ + " not found." Else err = "Failed to load 3D Mesh: " + File$ + "."
+	RuntimeErrorExt(err)
 End Function
 
 Function LoadAnimMesh_Strict(File$,parent=0)
@@ -386,10 +364,9 @@ Function LoadTexture_Strict(File$,flags=1)
 	Local tmp% = LoadModdedTextureNonStrict(File, flags)
 	If tmp <> 0 Then Return tmp
 
-	If FileType(File$) <> 1 Then RuntimeErrorExt "Texture " + File$ + " not found."
-	tmp = LoadTexture(File$, flags)
-	If tmp = 0 Then RuntimeErrorExt "Failed to load Texture: " + File$
-	Return tmp
+	Local err$
+	If FileType(File$) <> 1 Then err = "Texture " + File$ + " not found." Else err = "Failed to load Texture: " + File$ + "."
+	RuntimeErrorExt(err)
 End Function
 
 Function LoadBrush_Strict(file$,flags,u#=1.0,v#=1.0)

@@ -1,18 +1,10 @@
-;SCP - Containment Breach
-
-;    The game is based on the works of the SCP Foundation community (http://www.scp-wiki.net/).
-
-;    The source code is licensed under Creative Commons Attribution-ShareAlike 3.0 License.
-;    http://creativecommons.org/licenses/by-sa/3.0/
-
-;    See Credits.txt for a list of contributors
-
-Const VersionNumber$ = "1.3.12-pre9"
-Const CompatibleNumber$ = "1.3.12" ;Only change this if the version given isn't working with the current build version - ENDSHN
+Const VersionNumber$ = "1.3.12-pre10"
+;Only change this if the version given isn't working with the current build version - ENDSHN
+Const CompatibleNumber$ = "1.3.12-pre10"
 
 InitErrorMsgs(10, True)
 SetErrorMsg(0, "An error occured in SCP - Containment Breach v" + VersionNumber)
-SetErrorMsg(1, "Please take a screenshot of this and send it to us!") 
+SetErrorMsg(1, "Please send us the generated minidump along with a screenshot of this window!")
 SetErrorMsg(2, "---------------------------------------------------")
 SetErrorMsg(3, "OS: " + SystemProperty("os") + " " + (32 + (GetEnv("ProgramFiles(X86)") <> 0) * 32) + " Bit (Build: " + SystemProperty("osbuild") + ")")
 SetErrorMsg(4, "CPU: " + Trim(SystemProperty("cpuname")) + " (Arch: " + SystemProperty("cpuarch") + ", " + GetEnv("NUMBER_OF_PROCESSORS") + " Threads)")
@@ -70,14 +62,14 @@ Include "Blitz_File_FileName.bb"
 
 Include "DevilParticleSystem.bb"
 
-Global SteamActive% = GetOptionInt("general", "enable steam")
+Global SteamActive% = GetOptionInt("general", "enable steam") And (Not Instr(CommandLine(), "-nosteam"))
 If SteamActive Then
 	If Steam_RestartAppIfNecessary(2178380) Then Return
 	If Steam_Init() <> 0 Then RuntimeErrorExt("Steam failed to initialize")
 EndIf
 
 Global DiscordLastStatus%, DiscordCooldown%
-Global DiscordActive% = GetOptionInt("general", "enable discord rich presence")
+Global DiscordActive% = GetOptionInt("general", "enable discord rich presence") And (Not Instr(CommandLine(), "-nodiscord"))
 If DiscordActive Then
 	DiscordActive = (BlitzcordCreateCore("1465275739342377014") = 0)
 	If DiscordActive Then BlitzcordSetLargeImage("logo")
@@ -89,7 +81,8 @@ Global IsRunning% = True
 Global ShouldRestart% = False
 
 Include "ModManager.bb"
-ReloadMods()
+Global ModsEnabled% = GetOptionInt("general", "enable mods") And (Not Instr(CommandLine(), "-nomods"))
+If ModsEnabled Then ReloadMods()
 
 Global Font1%, Font2%, Font3%, Font4%, Font5%, Font6%
 Global ConsoleFont%
@@ -167,7 +160,7 @@ Next
 LoadLocalization(I_Loc, StringsFile)
 
 ; Exclusive fullscreen ONLY supports the reported resolutions
-If LauncherEnabled And (Not IsRestart) Lor Fullscreen And (Not GfxMode3DExists(GraphicWidth, GraphicHeight, 32-16*Bit16Mode)) Then
+If LauncherEnabled And (Not IsRestart) And (Not Instr(CommandLine(), "-nolauncher")) Lor Fullscreen And (Not GfxMode3DExists(GraphicWidth, GraphicHeight, 32-16*Bit16Mode)) Then
 	UpdateLauncher()
 EndIf
 
@@ -397,7 +390,9 @@ Dim RadioCHN%(8)
 Dim OldAiPics%(5)
 
 Global SpeedRunMode% = GetOptionInt("general", "speed run mode")
-Global PlayTime%, TimerStopped% = True
+Global PlayTime%
+; 0 = Running; 1 = Stopped; 2 = Pre-made save loaded; 3 = Ending reached
+Global TimerStopped% = True
 Global ConsoleFlush%
 Global ConsoleFlushSnd% = 0, ConsoleMusFlush% = 0, ConsoleMusPlay% = 0
 
@@ -1633,9 +1628,9 @@ Global HUDenabled% = GetOptionInt("graphics", "HUD enabled")
 
 Global Camera%, CameraShake#, CurrCameraZoom#
 
-Global Brightness% = GetModdedINIFloat(MapOptions, "facility", "brightness")
-Global CameraFogNear# = GetModdedINIFloat(MapOptions, "facility", "camera fog near")
-Global CameraFogFar# = GetModdedINIFloat(MapOptions, "facility", "camera fog far")
+Global Brightness%
+Global CameraFogNear#
+Global CameraFogFar#
 
 Global StoredCameraFogFar# = CameraFogFar
 
@@ -2928,7 +2923,7 @@ While IsRunning
 
 	Local ElapsedTime% = CurTime - PrevTime
 	PrevTime = CurTime
-	If (SpeedRunMode Lor (Not (MainMenuOpen Lor MenuOpen))) And SelectedEnding="" Then PlayTime = PlayTime + ElapsedTime
+	If (SpeedRunMode Lor (Not (MainMenuOpen Lor MenuOpen))) And SelectedEnding="" And TimerStopped=0 Then PlayTime = PlayTime + ElapsedTime
 	PrevFPSFactor = FPSfactor
 	FPSfactor = Min(ElapsedTime / 1000.0 * 70, 5.0)
 	FPSfactor2 = FPSfactor
@@ -4002,7 +3997,7 @@ Function UpdateMenuState()
 End Function
 
 Function IsAnyMenuOpen()
-	Return MenuOpen Lor ConsoleOpen Lor InvOpen Lor OtherOpen<>Null Lor (SelectedItem <> Null And SelectedItem\invSlots>0) Lor Using294
+	Return MenuOpen Lor ConsoleOpen Lor InvOpen Lor OtherOpen<>Null Lor (SelectedItem <> Null And SelectedItem\Inventory <> Null) Lor Using294
 End Function
 
 Function IsPaused()
@@ -4032,14 +4027,33 @@ Function InitCredits()
 	
 	Repeat
 		l = ReadLine(file)
-		cl = New CreditsLine
-		cl\txt = l
+		If l = "-" Then
+			Local m.ActiveMods = Last ActiveMods
+			While m <> Null
+				InitCreditsFromFile(m\Path + "Credits.txt")
+				m = Before m
+			Wend
+		Else
+			cl = New CreditsLine
+			cl\txt = l
+		EndIf
 	Until Eof(file)
 	CloseFile(file)
 	
 	Delete First CreditsLine
 	CreditsTimer = 0
-	
+End Function
+
+Function InitCreditsFromFile(creditsPath$)
+	If FileType(creditsPath) <> 1 Then Return
+
+	Local f% = OpenFile(creditsPath)
+	Repeat
+		Local l$ = ReadLine(f)
+		Local cl.CreditsLine = New CreditsLine
+		cl\txt = l
+	Until Eof(f)
+	CloseFile(f)
 End Function
 
 Function DrawCredits()
@@ -4857,122 +4871,6 @@ Function DrawGUI()
 	
 	If Using294 Then Use294()
 	
-	If HUDenabled Then
-		If SpeedRunMode Then DrawTimer()
-
-		Local width% = 204 * HUDScale
-		x% = HUDStartX + 80 * HUDScale
-		y% = HUDEndY - 95 * HUDScale
-
-		DrawBar(BlinkMeterIMG, x, y, width, BlinkTimer / BLINKFREQ)
-		Color 0, 0, 0
-		Rect(x - 50 * HUDScale, y, 30 * HUDScale, 30 * HUDScale)
-		
-		If EyeIrritation > 0 Then
-			Color 200, 0, 0
-			Rect(x - 50 * HUDScale - 3, y - 3, 30 * HUDScale + 6, 30 * HUDScale + 6)
-		End If
-		
-		Color 255, 255, 255
-		Rect(x - 50 * HUDScale - 1, y - 1, 30 * HUDScale + 2, 30 * HUDScale + 2, False)
-		
-		DrawImage BlinkIcon, x - 50 * HUDScale, y
-		
-		y = HUDEndY - 55 * HUDScale
-		DrawBar(StaminaMeterIMG, x, y, width, Stamina / 100.0)
-		
-		Color 0, 0, 0
-		Rect(x - 50 * HUDScale, y, 30 * HUDScale, 30 * HUDScale)
-		
-		Color 255, 255, 255
-		Rect(x - 50 * HUDScale - 1, y - 1, 30 * HUDScale + 2, 30 * HUDScale + 2, False)
-		If Crouch Then
-			DrawImage CrouchIcon, x - 50 * HUDScale, y
-		Else
-			DrawImage SprintIcon, x - 50 * HUDScale, y
-		EndIf
-
-		If DebugHUD Then
-			Color 255, 255, 255
-			SetFont ConsoleFont
-			
-			;Text x + 250, 50, "Zone: " + (EntityZ(Collider)/8.0)
-			Text x - 50, 50, "Player Position: (" + f2s(EntityX(Collider), 3) + ", " + f2s(EntityY(Collider), 3) + ", " + f2s(EntityZ(Collider), 3) + ")"
-			Text x - 50, 70, "Camera Position: (" + f2s(EntityX(Camera), 3)+ ", " + f2s(EntityY(Camera), 3) +", " + f2s(EntityZ(Camera), 3) + ")"
-			Text x - 50, 100, "Player Rotation: (" + f2s(EntityPitch(Collider), 3) + ", " + f2s(EntityYaw(Collider), 3) + ", " + f2s(EntityRoll(Collider), 3) + ")"
-			Text x - 50, 120, "Camera Rotation: (" + f2s(EntityPitch(Camera), 3)+ ", " + f2s(EntityYaw(Camera), 3) +", " + f2s(EntityRoll(Camera), 3) + ")"
-			Text x - 50, 150, "Room: " + PlayerRoom\RoomTemplate\Name
-			For ev.Events = Each Events
-				If ev\room = PlayerRoom Then
-					Text x - 50, 170, "Room event: " + ev\EventName   
-					Text x - 50, 190, "state: " + ev\EventState
-					Text x - 50, 210, "state2: " + ev\EventState2   
-					Text x - 50, 230, "state3: " + ev\EventState3
-					Text x - 50, 250, "str: "+ ev\EventStr
-					Exit
-				EndIf
-			Next
-			Text x - 50, 280, "Room coordinates: (" + Floor(EntityX(PlayerRoom\obj) / 8.0 + 0.5) + ", " + Floor(EntityZ(PlayerRoom\obj) / 8.0 + 0.5) + ", angle: "+PlayerRoom\angle + ")"
-			Text x - 50, 300, "Stamina: " + f2s(Stamina, 3)
-			Text x - 50, 320, "Death timer: " + f2s(KillTimer, 3)               
-			Text x - 50, 340, "Blink timer: " + f2s(BlinkTimer, 3)
-			Text x - 50, 360, "Injuries: " + Injuries
-			Text x - 50, 380, "Bloodloss: " + Bloodloss
-			If Curr173 <> Null
-				Text x - 50, 410, "SCP - 173 Position (collider): (" + f2s(EntityX(Curr173\Collider), 3) + ", " + f2s(EntityY(Curr173\Collider), 3) + ", " + f2s(EntityZ(Curr173\Collider), 3) + ")"
-				Text x - 50, 430, "SCP - 173 Position (obj): (" + f2s(EntityX(Curr173\obj), 3) + ", " + f2s(EntityY(Curr173\obj), 3) + ", " + f2s(EntityZ(Curr173\obj), 3) + ")"
-				;Text x - 50, 410, "SCP - 173 Idle: " + Curr173\Idle
-				Text x - 50, 450, "SCP - 173 State: " + Curr173\State
-			EndIf
-			If Curr106 <> Null
-				Text x - 50, 470, "SCP - 106 Position: (" + f2s(EntityX(Curr106\obj), 3) + ", " + f2s(EntityY(Curr106\obj), 3) + ", " + f2s(EntityZ(Curr106\obj), 3) + ")"
-				Text x - 50, 490, "SCP - 106 Idle: " + Curr106\Idle
-				Text x - 50, 510, "SCP - 106 State: " + Curr106\State
-			EndIf
-			offset% = 0
-			For npc.NPCs = Each NPCs
-				If npc\NPCtype = NPCtype096 Then
-					Text x - 50, 530, "SCP - 096 Position: (" + f2s(EntityX(npc\obj), 3) + ", " + f2s(EntityY(npc\obj), 3) + ", " + f2s(EntityZ(npc\obj), 3) + ")"
-					Text x - 50, 550, "SCP - 096 Idle: " + npc\Idle
-					Text x - 50, 570, "SCP - 096 State: " + npc\State
-					Text x - 50, 590, "SCP - 096 Speed: " + f2s(npc\currspeed, 5)
-				EndIf
-				If npc\NPCtype = NPCtypeMTF Then
-					Text x - 50, 620 + 60 * offset, "MTF " + offset + " Position: (" + f2s(EntityX(npc\obj), 3) + ", " + f2s(EntityY(npc\obj), 3) + ", " + f2s(EntityZ(npc\obj), 3) + ")"
-					Text x - 50, 640 + 60 * offset, "MTF " + offset + " State: " + npc\State
-					Text x - 50, 660 + 60 * offset, "MTF " + offset + " LastSeen: " + npc\lastseen					
-					offset = offset + 1
-				EndIf
-			Next
-			x = x + 500 * MenuScale
-			If PlayerRoom\RoomTemplate\Name$ = "dimension1499"
-				Text x, 50, "Current Chunk X/Z: ("+(Int((EntityX(Collider)+20)/40))+", "+(Int((EntityZ(Collider)+20)/40))+")"
-				Local CH_Amount% = 0
-				For ch.Chunk = Each Chunk
-					CH_Amount = CH_Amount + 1
-				Next
-				Text x, 70, "Current Chunk Amount: "+CH_Amount
-			Else
-				Text x, 50, "Current Room Position: ("+PlayerRoom\x+", "+PlayerRoom\y+", "+PlayerRoom\z+")"
-			EndIf
-			Text x, 90, "Triangles rendered: "+CurrTrisAmount
-			Text x, 110, "Active textures: "+ActiveTextures()
-			Text x, 130, "SCP-427 state (secs): "+Int(I_427\Timer/70.0)
-			Text x, 150, "SCP-008 infection: "+Infect
-			For i = 0 To 5
-				Text x, 170+(20*i), "SCP-1025 State "+i+": "+SCP1025state[i]
-			Next
-			If SelectedMonitor <> Null Then
-				Text x, 310, "Current monitor: "+SelectedMonitor\ScrObj
-			Else
-				Text x, 310, "Current monitor: NULL"
-			EndIf
-			
-			SetFont Font1
-		EndIf
-		
-	EndIf
-	
 	If SelectedScreen <> Null Then
 		DrawImage SelectedScreen\img, GraphicWidth/2-ImageWidth(SelectedScreen\img)/2,GraphicHeight/2-ImageHeight(SelectedScreen\img)/2
 		
@@ -5137,10 +5035,10 @@ Function DrawGUI()
 	If OtherOpen<>Null Then
 		;[Block]
 		PrevOtherOpen = OtherOpen
-		OtherSize=OtherOpen\invSlots;Int(OtherOpen\state2)
+		OtherSize=OtherOpen\Inventory\Size;Int(OtherOpen\state2)
 		
 		For i%=0 To OtherSize-1
-			If OtherOpen\SecondInv[i] <> Null Then
+			If OtherOpen\Inventory\Items[i] <> Null Then
 				OtherAmount = OtherAmount+1
 			EndIf
 		Next
@@ -5180,24 +5078,24 @@ Function DrawGUI()
 			
 			If OtherOpen = Null Then Exit
 			
-			If OtherOpen\SecondInv[n] <> Null Then
-				If (SelectedItem <> OtherOpen\SecondInv[n] Or isMouseOn) Then DrawImage(OtherOpen\SecondInv[n]\invimg, x + width / 2 - 32 * HUDScale, y + height / 2 - 32 * HUDScale)
+			If OtherOpen\Inventory\Items[n] <> Null Then
+				If (SelectedItem <> OtherOpen\Inventory\Items[n] Or isMouseOn) Then DrawImage(OtherOpen\Inventory\Items[n]\invimg, x + width / 2 - 32 * HUDScale, y + height / 2 - 32 * HUDScale)
 			EndIf
-			If OtherOpen\SecondInv[n] <> Null And SelectedItem <> OtherOpen\SecondInv[n] Then
-			;drawimage(OtherOpen\SecondInv[n].InvIMG, x + width / 2 - 32 * HUDScale, y + height / 2 - 32 * HUDScale)
+			If OtherOpen\Inventory\Items[n] <> Null And SelectedItem <> OtherOpen\Inventory\Items[n] Then
+			;drawimage(OtherOpen\Inventory\Items[n].InvIMG, x + width / 2 - 32 * HUDScale, y + height / 2 - 32 * HUDScale)
 				If isMouseOn Then
 					SetFont Font1
 					Color 0,0,0
-					Text(x + width / 2 + 1, y + height + spacing - 15 + 1, OtherOpen\SecondInv[n]\itemtemplate\displayname, True)
+					Text(x + width / 2 + 1, y + height + spacing - 15 + 1, OtherOpen\Inventory\Items[n]\itemtemplate\displayname, True)
 					Color 255, 255, 255	
-					Text(x + width / 2, y + height + spacing - 15, OtherOpen\SecondInv[n]\itemtemplate\displayname, True)
+					Text(x + width / 2, y + height + spacing - 15, OtherOpen\Inventory\Items[n]\itemtemplate\displayname, True)
 					If SelectedItem = Null Then
 						If MouseHit1 Then
-							SelectedItem = OtherOpen\SecondInv[n]
+							SelectedItem = OtherOpen\Inventory\Items[n]
 							MouseHit1 = False
 							
 							If DoubleClick Then
-								If OtherOpen\SecondInv[n]\itemtemplate\sound <> 66 Then PlaySound_Strict(PickSFX(OtherOpen\SecondInv[n]\itemtemplate\sound))
+								If OtherOpen\Inventory\Items[n]\itemtemplate\sound <> 66 Then PlaySound_Strict(PickSFX(OtherOpen\Inventory\Items[n]\itemtemplate\sound))
 								OtherOpen = Null
 								closedInv=True
 								InvOpen = False
@@ -5214,12 +5112,12 @@ Function DrawGUI()
 			Else
 				If isMouseOn And MouseHit1 Then
 					For z% = 0 To OtherSize - 1
-						If OtherOpen\SecondInv[z] = SelectedItem Then
-							OtherOpen\SecondInv[z] = Null
+						If OtherOpen\Inventory\Items[z] = SelectedItem Then
+							OtherOpen\Inventory\Items[z] = Null
 							Exit
 						EndIf
 					Next
-					OtherOpen\SecondInv[n] = SelectedItem
+					OtherOpen\Inventory\Items[n] = SelectedItem
 				EndIf
 				
 			EndIf					
@@ -5237,7 +5135,7 @@ Function DrawGUI()
 			If MouseDown1 Then
 				If MouseSlot = 66 Then
 					DrawImage(SelectedItem\invimg, ScaledMouseX() - ImageWidth(SelectedItem\itemtemplate\invimg) / 2, ScaledMouseY() - ImageHeight(SelectedItem\itemtemplate\invimg) / 2)
-				ElseIf SelectedItem <> PrevOtherOpen\SecondInv[MouseSlot]
+				ElseIf SelectedItem <> PrevOtherOpen\Inventory\Items[MouseSlot]
 					DrawImage(SelectedItem\invimg, ScaledMouseX() - ImageWidth(SelectedItem\itemtemplate\invimg) / 2, ScaledMouseY() - ImageHeight(SelectedItem\itemtemplate\invimg) / 2)
 				EndIf
 			Else
@@ -5271,8 +5169,8 @@ Function DrawGUI()
 					
 					SelectedItem\Picked = False
 					For z% = 0 To OtherSize - 1
-						If OtherOpen\SecondInv[z] = SelectedItem Then
-							OtherOpen\SecondInv[z] = Null
+						If OtherOpen\Inventory\Items[z] = SelectedItem Then
+							OtherOpen\Inventory\Items[z] = Null
 							Exit
 						EndIf
 					Next
@@ -5281,8 +5179,8 @@ Function DrawGUI()
 					If OtherOpen\itemtemplate\name = "wallet" Then
 						If (Not isEmpty) Then
 							For z% = 0 To OtherSize - 1
-								If OtherOpen\SecondInv[z]<>Null
-									Local name$=OtherOpen\SecondInv[z]\itemtemplate\name
+								If OtherOpen\Inventory\Items[z]<>Null
+									Local name$=OtherOpen\Inventory\Items[z]\itemtemplate\name
 									If name$<>"25ct" And name$<>"coin" And name$<>"key" And name$<>"scp860" And name$<>"scp714" Then
 										isEmpty=False
 										Exit
@@ -5292,7 +5190,7 @@ Function DrawGUI()
 						EndIf
 					Else
 						For z% = 0 To OtherSize - 1
-							If OtherOpen\SecondInv[z]<>Null
+							If OtherOpen\Inventory\Items[z]<>Null
 								isEmpty = False
 								Exit
 							EndIf
@@ -5316,16 +5214,16 @@ Function DrawGUI()
 					MoveMouse viewport_center_x, viewport_center_y
 				Else
 					
-					If PrevOtherOpen\SecondInv[MouseSlot] = Null Then
+					If PrevOtherOpen\Inventory\Items[MouseSlot] = Null Then
 						For z% = 0 To OtherSize - 1
-							If PrevOtherOpen\SecondInv[z] = SelectedItem Then
-								PrevOtherOpen\SecondInv[z] = Null
+							If PrevOtherOpen\Inventory\Items[z] = SelectedItem Then
+								PrevOtherOpen\Inventory\Items[z] = Null
 								Exit
 							EndIf
 						Next
-						PrevOtherOpen\SecondInv[MouseSlot] = SelectedItem
+						PrevOtherOpen\Inventory\Items[MouseSlot] = SelectedItem
 						SelectedItem = Null
-					ElseIf PrevOtherOpen\SecondInv[MouseSlot] <> SelectedItem
+					ElseIf PrevOtherOpen\Inventory\Items[MouseSlot] <> SelectedItem
 						Msg = I_Loc\MessageItem_Cantcombine
 						MsgTimer = 70 * 5
 					EndIf
@@ -5522,10 +5420,10 @@ Function DrawGUI()
 									Local b$ = SelectedItem\itemtemplate\group
 									Local b2$ = SelectedItem\itemtemplate\name
 									If (b<>"misc" And b2<>"25ct" And b2<>"coin" And b2<>"key" And b2<>"scp860" And b2<>"scp714") Or (b2="playingcard" Or b2="mastercard") Then
-										For c% = 0 To Inventory(MouseSlot)\invSlots-1
-											If (Inventory(MouseSlot)\SecondInv[c] = Null)
+										For c% = 0 To Inventory(MouseSlot)\Inventory\Size-1
+											If (Inventory(MouseSlot)\Inventory\Items[c] = Null)
 												If SelectedItem <> Null Then
-													Inventory(MouseSlot)\SecondInv[c] = SelectedItem
+													Inventory(MouseSlot)\Inventory\Items[c] = SelectedItem
 													Inventory(MouseSlot)\state = 1.0
 													SetAnimTime Inventory(MouseSlot)\model,0.0
 													Inventory(MouseSlot)\invimg = Inventory(MouseSlot)\itemtemplate\invimg
@@ -5565,10 +5463,10 @@ Function DrawGUI()
 									b$ = SelectedItem\itemtemplate\group
 									b2$ = SelectedItem\itemtemplate\name
 									If (b<>"misc" And b<>"paper" And b2<>"oldpaper") Or (b2="playingcard" Or b2="mastercard") Then
-										For c% = 0 To Inventory(MouseSlot)\invSlots-1
-											If (Inventory(MouseSlot)\SecondInv[c] = Null)
+										For c% = 0 To Inventory(MouseSlot)\Inventory\Size-1
+											If (Inventory(MouseSlot)\Inventory\Items[c] = Null)
 												If SelectedItem <> Null Then
-													Inventory(MouseSlot)\SecondInv[c] = SelectedItem
+													Inventory(MouseSlot)\Inventory\Items[c] = SelectedItem
 													Inventory(MouseSlot)\state = 1.0
 													If b2<>"25ct" And b2<>"coin" And b2<>"key" And b2<>"scp860"
 														SetAnimTime Inventory(MouseSlot)\model,3.0
@@ -7078,7 +6976,7 @@ Function DrawGUI()
 						MouseHit1 = 0
 						MouseDown1 = 0
 						LastMouseHit1 = 0
-						If SelectedItem\invSlots>0 Then OtherOpen = SelectedItem
+						If SelectedItem\Inventory <> Null Then OtherOpen = SelectedItem
 						SelectedItem = Null
 						;[End Block]
 					EndIf
@@ -7156,6 +7054,8 @@ Function DrawGUI()
 	Next
 	
 	If PrevInvOpen And (Not InvOpen) Then MoveMouse viewport_center_x, viewport_center_y
+
+	DrawHUD()
 	
 	CatchErrors("DrawGUI")
 End Function
@@ -7173,13 +7073,130 @@ Function ResetDiseases()
 	EndIf
 End Function
 
+Function DrawHUD()
+	If Not HUDenabled Then Return
+
+	If SpeedRunMode Then DrawTimer()
+
+	Local width% = 204 * HUDScale
+	x% = HUDStartX + 80 * HUDScale
+	y% = HUDEndY - 95 * HUDScale
+
+	DrawBar(BlinkMeterIMG, x, y, width, BlinkTimer / BLINKFREQ)
+	Color 0, 0, 0
+	Rect(x - 50 * HUDScale, y, 30 * HUDScale, 30 * HUDScale)
+	
+	If EyeIrritation > 0 Then
+		Color 200, 0, 0
+		Rect(x - 50 * HUDScale - 3, y - 3, 30 * HUDScale + 6, 30 * HUDScale + 6)
+	End If
+	
+	Color 255, 255, 255
+	Rect(x - 50 * HUDScale - 1, y - 1, 30 * HUDScale + 2, 30 * HUDScale + 2, False)
+	
+	DrawImage BlinkIcon, x - 50 * HUDScale, y
+	
+	y = HUDEndY - 55 * HUDScale
+	DrawBar(StaminaMeterIMG, x, y, width, Stamina / 100.0)
+	
+	Color 0, 0, 0
+	Rect(x - 50 * HUDScale, y, 30 * HUDScale, 30 * HUDScale)
+	
+	Color 255, 255, 255
+	Rect(x - 50 * HUDScale - 1, y - 1, 30 * HUDScale + 2, 30 * HUDScale + 2, False)
+	If Crouch Then
+		DrawImage CrouchIcon, x - 50 * HUDScale, y
+	Else
+		DrawImage SprintIcon, x - 50 * HUDScale, y
+	EndIf
+
+	If DebugHUD Then
+		Color 255, 255, 255
+		SetFont ConsoleFont
+		
+		;Text x + 250, 50, "Zone: " + (EntityZ(Collider)/8.0)
+		Text x - 50, 50, "Player Position: (" + f2s(EntityX(Collider), 3) + ", " + f2s(EntityY(Collider), 3) + ", " + f2s(EntityZ(Collider), 3) + ")"
+		Text x - 50, 70, "Camera Position: (" + f2s(EntityX(Camera), 3)+ ", " + f2s(EntityY(Camera), 3) +", " + f2s(EntityZ(Camera), 3) + ")"
+		Text x - 50, 100, "Player Rotation: (" + f2s(EntityPitch(Collider), 3) + ", " + f2s(EntityYaw(Collider), 3) + ", " + f2s(EntityRoll(Collider), 3) + ")"
+		Text x - 50, 120, "Camera Rotation: (" + f2s(EntityPitch(Camera), 3)+ ", " + f2s(EntityYaw(Camera), 3) +", " + f2s(EntityRoll(Camera), 3) + ")"
+		Text x - 50, 150, "Room: " + PlayerRoom\RoomTemplate\Name
+		For ev.Events = Each Events
+			If ev\room = PlayerRoom Then
+				Text x - 50, 170, "Room event: " + ev\EventName   
+				Text x - 50, 190, "state: " + ev\EventState
+				Text x - 50, 210, "state2: " + ev\EventState2   
+				Text x - 50, 230, "state3: " + ev\EventState3
+				Text x - 50, 250, "str: "+ ev\EventStr
+				Exit
+			EndIf
+		Next
+		Text x - 50, 280, "Room coordinates: (" + Floor(EntityX(PlayerRoom\obj) / 8.0 + 0.5) + ", " + Floor(EntityZ(PlayerRoom\obj) / 8.0 + 0.5) + ", angle: "+PlayerRoom\angle + ")"
+		Text x - 50, 300, "Stamina: " + f2s(Stamina, 3)
+		Text x - 50, 320, "Death timer: " + f2s(KillTimer, 3)               
+		Text x - 50, 340, "Blink timer: " + f2s(BlinkTimer, 3)
+		Text x - 50, 360, "Injuries: " + Injuries
+		Text x - 50, 380, "Bloodloss: " + Bloodloss
+		If Curr173 <> Null
+			Text x - 50, 410, "SCP - 173 Position (collider): (" + f2s(EntityX(Curr173\Collider), 3) + ", " + f2s(EntityY(Curr173\Collider), 3) + ", " + f2s(EntityZ(Curr173\Collider), 3) + ")"
+			Text x - 50, 430, "SCP - 173 Position (obj): (" + f2s(EntityX(Curr173\obj), 3) + ", " + f2s(EntityY(Curr173\obj), 3) + ", " + f2s(EntityZ(Curr173\obj), 3) + ")"
+			;Text x - 50, 410, "SCP - 173 Idle: " + Curr173\Idle
+			Text x - 50, 450, "SCP - 173 State: " + Curr173\State
+		EndIf
+		If Curr106 <> Null
+			Text x - 50, 470, "SCP - 106 Position: (" + f2s(EntityX(Curr106\obj), 3) + ", " + f2s(EntityY(Curr106\obj), 3) + ", " + f2s(EntityZ(Curr106\obj), 3) + ")"
+			Text x - 50, 490, "SCP - 106 Idle: " + Curr106\Idle
+			Text x - 50, 510, "SCP - 106 State: " + Curr106\State
+		EndIf
+		offset% = 0
+		For npc.NPCs = Each NPCs
+			If npc\NPCtype = NPCtype096 Then
+				Text x - 50, 530, "SCP - 096 Position: (" + f2s(EntityX(npc\obj), 3) + ", " + f2s(EntityY(npc\obj), 3) + ", " + f2s(EntityZ(npc\obj), 3) + ")"
+				Text x - 50, 550, "SCP - 096 Idle: " + npc\Idle
+				Text x - 50, 570, "SCP - 096 State: " + npc\State
+				Text x - 50, 590, "SCP - 096 Speed: " + f2s(npc\currspeed, 5)
+			EndIf
+			If npc\NPCtype = NPCtypeMTF Then
+				Text x - 50, 620 + 60 * offset, "MTF " + offset + " Position: (" + f2s(EntityX(npc\obj), 3) + ", " + f2s(EntityY(npc\obj), 3) + ", " + f2s(EntityZ(npc\obj), 3) + ")"
+				Text x - 50, 640 + 60 * offset, "MTF " + offset + " State: " + npc\State
+				Text x - 50, 660 + 60 * offset, "MTF " + offset + " LastSeen: " + npc\lastseen					
+				offset = offset + 1
+			EndIf
+		Next
+		x = x + 500 * MenuScale
+		If PlayerRoom\RoomTemplate\Name$ = "dimension1499"
+			Text x, 50, "Current Chunk X/Z: ("+(Int((EntityX(Collider)+20)/40))+", "+(Int((EntityZ(Collider)+20)/40))+")"
+			Local CH_Amount% = 0
+			For ch.Chunk = Each Chunk
+				CH_Amount = CH_Amount + 1
+			Next
+			Text x, 70, "Current Chunk Amount: "+CH_Amount
+		Else
+			Text x, 50, "Current Room Position: ("+PlayerRoom\x+", "+PlayerRoom\y+", "+PlayerRoom\z+")"
+		EndIf
+		Text x, 90, "Triangles rendered: "+CurrTrisAmount
+		Text x, 110, "Active textures: "+ActiveTextures()
+		Text x, 130, "SCP-427 state (secs): "+Int(I_427\Timer/70.0)
+		Text x, 150, "SCP-008 infection: "+Infect
+		For i = 0 To 5
+			Text x, 170+(20*i), "SCP-1025 State "+i+": "+SCP1025state[i]
+		Next
+		If SelectedMonitor <> Null Then
+			Text x, 310, "Current monitor: "+SelectedMonitor\ScrObj
+		Else
+			Text x, 310, "Current monitor: NULL"
+		EndIf
+		
+		SetFont Font1
+	EndIf
+End Function
+
 Function DrawTimer()
 	SetFont(Font2)
 	Local durText$
-	If Not TimerStopped Then
+	If TimerStopped = 0 Lor TimerStopped = 3 Then
 		durText$ = FormatDuration(PlayTime)
 	Else If TimerStopped = 1 Then
-		durText = "Timer stopped" ; TODO Remove, never occurs
+		durText = "The seventh seal has been broken"
 	Else
 		durText$ = I_Loc\HUD_SpeedrunSaveloaded
 	EndIf
@@ -7187,11 +7204,13 @@ Function DrawTimer()
 	Local y% = HUDStartY + 24 * HUDScale
 	Color 0, 0, 0
 	Text(x + 3 * HUDScale, y + 3 * HUDScale, durText)
-	If TimerStopped Then
+	If TimerStopped And TimerStopped<>3 Then
 		Color 255, 0, 0
 	Else
-		If UsedConsole
+		If UsedConsole Then
 			Color 150, 150, 150
+		Else If First ActiveMods <> Null Then
+			Color 200, 200, 200
 		Else
 			Color 255, 255, 255
 		EndIf
@@ -8255,7 +8274,7 @@ Function LoadEntities()
 	DecalTextures(19) = LoadTexture_Strict("GFX\decal19.png", 1 + 2)
 	DecalTextures(20) = LoadTexture_Strict("GFX\decal427.png", 1 + 2)
 	
-	DrawLoading(25)
+	DrawLoading(24)
 	
 	Monitor = LoadMesh_Strict("GFX\map\monitor.b3d")
 	HideEntity Monitor
@@ -8265,7 +8284,7 @@ Function LoadEntities()
 	HideEntity(CamBaseOBJ)
 	CamOBJ = LoadMesh_Strict("GFX\map\CamHead.b3d")
 	HideEntity(CamOBJ)
-	
+
 	Monitor2 = LoadMesh_Strict("GFX\map\monitor_checkpoint.b3d")
 	HideEntity Monitor2
 	Monitor3 = LoadMesh_Strict("GFX\map\monitor_checkpoint.b3d")
@@ -8338,8 +8357,12 @@ Function LoadEntities()
 	EndIf
 	If EnableUserTracks Then DebugLog "User Tracks found: "+UserTrackMusicAmount
 	
+	DrawLoading(25)
+
 	InitItemTemplates()
 	
+	DrawLoading(35)
+
 	ParticleTextures(0) = LoadTexture_Strict("GFX\smoke.png", 1 + 2)
 	ParticleTextures(1) = LoadTexture_Strict("GFX\flash.jpg", 1 + 2)
 	ParticleTextures(2) = LoadTexture_Strict("GFX\dust.png", 1 + 2)
@@ -8412,6 +8435,8 @@ Function LoadEntities()
 	OBJTunnel(6)=LoadRMesh("GFX\map\mt_generator.rmesh",Null)
 	HideEntity OBJTunnel(6)
 	
+	DrawLoading(37)
+
 	;TextureLodBias TextureBias
 	TextureLodBias TextureFloat#
 	;Devil Particle System
@@ -8420,7 +8445,7 @@ Function LoadEntities()
 	;	1 - smoke effect
 	
 	Local t0
-	
+
 	InitParticles(Camera)
 	
 	;Spark Effect (short)
@@ -8503,9 +8528,7 @@ Function LoadEntities()
 	CameraZoom(Room2slCam, 0.8)
 	HideEntity(Room2slCam)
 	
-	DrawLoading(30)
-	
-	;LoadRoomMeshes()
+	DrawLoading(40)
 	
 	CatchErrors("LoadEntities")
 End Function
@@ -8530,11 +8553,12 @@ Function InitNewGame()
 	If AccessCode = HARPCODE Then AccessCode = AccessCode + 1
 	
 	If SelectedMap = "" Then
-		CreateMap()
+		CreateMap(50, 19)
 	Else
-		LoadMap("Map Creator\Maps\"+SelectedMap)
+		LoadMap("Map Creator\Maps\"+SelectedMap, 50, 19)
 	EndIf
-	InitWayPoints()
+	DrawLoading(70)
+	InitWayPoints(71, 9)
 	
 	DrawLoading(79)
 	
@@ -8560,7 +8584,7 @@ Function InitNewGame()
 		EntityParent(it\collider, 0)
 	Next
 	
-	DrawLoading(80)
+	DrawLoading(81)
 	For sc.SecurityCams= Each SecurityCams
 		sc\angle = EntityYaw(sc\obj) + sc\angle
 		EntityParent(sc\obj, 0)
@@ -8926,47 +8950,25 @@ Function NullGame(playbuttonsfx%=True)
 	
 	ClosestButton = 0
 	
-	For d.Doors = Each Doors
-		Delete d
-	Next
+	room2gw_brokendoor = False
+	room2gw_x = 0.0
+	room2gw_z = 0.0
+
+	Delete Each Doors
 	
 	;ClearWorld
 	
-	For lt.LightTemplates = Each LightTemplates
-		Delete lt
-	Next 
-	
-	For m.Materials = Each Materials
-		Delete m
-	Next
-	
-	For wp.WayPoints = Each WayPoints
-		Delete wp
-	Next
-	
-	For r.Rooms = Each Rooms
-		Delete r
-	Next
-	
-	For itt.ItemTemplates = Each ItemTemplates
-		Delete itt
-	Next 
-	
-	For it.Items = Each Items
-		Delete it
-	Next
-	
-	For pr.Props = Each Props
-		Delete pr
-	Next
-	
-	For de.decals = Each Decals
-		Delete de
-	Next
-	
-	For n.NPCS = Each NPCs
-		Delete n
-	Next
+	Delete Each LightTemplates
+	Delete Each Materials
+	Delete Each WayPoints
+	Delete Each Rooms	
+	Delete Each Inventories
+	Delete Each Items
+	Delete Each ItemTemplates
+	Delete Each Props
+	Delete Each Decals
+	Delete Each NPCs
+
 	Curr173 = Null
 	Curr106 = Null
 	Curr096 = Null
@@ -9643,19 +9645,19 @@ Function Use914(item.Items, setting$, x#, y#, z#)
 					d.Decals = CreateDecal(7, x, 8 * RoomScale + 0.005, z, 90, Rand(360), 0)
 					d\Size = 0.12 : ScaleSprite(d\obj, d\Size, d\Size)
 					For i% = 0 To 19
-						If item\SecondInv[i]<>Null Then RemoveItem(item\SecondInv[i])
-						item\SecondInv[i]=Null
+						If item\Inventory\Items[i]<>Null Then RemoveItem(item\Inventory\Items[i])
+						item\Inventory\Items[i]=Null
 					Next
 					RemoveItem(item)
 				Case "1:1"
 					PositionEntity(item\collider, x, y, z)
 					ResetEntity(item\collider)
 				Case "fine"
-					item\invSlots = Max(item\state2,15)
+					item\Inventory\Size = Max(item\state2,15)
 					PositionEntity(item\collider, x, y, z)
 					ResetEntity(item\collider)
 				Case "very fine"
-					item\invSlots = Max(item\state2,20)
+					item\Inventory\Size = Max(item\state2,20)
 					PositionEntity(item\collider, x, y, z)
 					ResetEntity(item\collider)
 			End Select
@@ -11815,12 +11817,10 @@ Function PlayMovie(moviefile$)
 End Function
 
 Function PlayStartupVideos()
-
-	If GetOptionInt("general","play startup video") = 0 Lor IsRestart Then Return
+	If GetOptionInt("general","play startup video") = 0 Lor IsRestart Lor Instr(CommandLine(), "-novid") Then Return
 
 	PlayMovie("GFX\menu\startup_Undertow")
 	PlayMovie("GFX\menu\startup_TSS")
-
 End Function
 
 Function CanUseItem(canUseWithHazmat%, canUseWithGasMask%, canUseWithEyewear%)
