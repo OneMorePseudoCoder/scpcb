@@ -2217,12 +2217,14 @@ Function LoadMap(file$, loadingstart, loadingcount#)
 		Next
 		
 		Local ForestRoom.Rooms
-		For r.Rooms = Each Rooms
-			If r\RoomTemplate\Name = "room860" Then
-				ForestRoom = r
-				Exit
-			EndIf
-		Next
+		If I_Zone\HasCustomForest Then
+			For r.Rooms = Each Rooms
+				If r\RoomTemplate\Name = "room860" Then
+					ForestRoom = r
+					Exit
+				EndIf
+			Next
+		EndIf
 		
 		If ForestRoom<>Null Then
 			Local fr.Forest = New Forest
@@ -2280,12 +2282,14 @@ Function LoadMap(file$, loadingstart, loadingcount#)
 		EndIf
 		
 		Local MTRoom.Rooms
-		For r.Rooms = Each Rooms
-			If r\RoomTemplate\Name = "room2tunnel" Then
-				MTRoom = r
-				Exit
-			EndIf
-		Next
+		If I_Zone\HasCustomMT Then
+			For r.Rooms = Each Rooms
+				If r\RoomTemplate\Name = "room2tunnel" Then
+					MTRoom = r
+					Exit
+				EndIf
+			Next
+		EndIf
 		
 		If MTRoom<>Null Then
 			MTRoom\grid = New Grids
