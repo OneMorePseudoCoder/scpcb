@@ -12,7 +12,7 @@ ResizeImage(Menu173, ImageWidth(Menu173) * MenuScale, ImageHeight(Menu173) * Men
 For i = 0 To 3
 	ArrowIMG(i) = LoadImage_Strict("GFX\menu\arrow.png")
 	ScaleImage(ArrowIMG(i), HUDScale, HUDScale)
-	RotateImage(ArrowIMG(i), -90 * i)
+	RotateImage(ArrowIMG(i), 90 * i)
 	HandleImage(ArrowIMG(i), 0, 0)
 Next
 
