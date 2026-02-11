@@ -369,6 +369,34 @@ Function LoadTexture_Strict(File$,flags=1)
 	RuntimeErrorExt(err)
 End Function
 
+Function LoadAnimTexture_Strict(File$,flags%,columns%,rows%,start%,count%)
+	Local ext$ = File_GetExtension(File)
+	Local fileNoExt$ = Left(File, Len(File) - Len(ext))
+	Local tmp%
+
+	For m.ActiveMods = Each ActiveMods
+		For i = 0 To ImageExtensionCount
+			Local usedExtension$
+			If i = ImageExtensionCount Then
+				usedExtension = ext
+			Else
+				usedExtension = ImageExtensions[i]
+			EndIf
+			Local modPath$ = m\Path + fileNoExt + usedExtension
+			If FileType(modPath) = 1 Then
+				tmp = LoadAnimTextureGrid(modPath, flags, columns, rows, start, count)
+				If tmp <> 0 Then
+					Return tmp
+				Else If DebugResourcePacks Then
+					RuntimeErrorExt("Failed to load animated texture " + Chr(34) + modPath + Chr(34) + ".")
+				EndIf
+			EndIf
+		Next
+	Next
+
+	Return LoadAnimTextureGrid(file, flags, columns, rows, start, count)
+End Function
+
 Function LoadBrush_Strict(file$,flags,u#=1.0,v#=1.0)
 	File = DetermineModdedPath(File)
 	If FileType(file$)<>1 Then RuntimeErrorExt "Brush Texture " + file$ + "not found."
