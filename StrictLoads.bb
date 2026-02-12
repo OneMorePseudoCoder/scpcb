@@ -12,10 +12,13 @@ Global ImageExtensions$[ImageExtensionCount]
 ImageExtensions[0] = "png"
 ImageExtensions[1] = "jpg"
 
-Const ModelExtensionCount = 2
+Const ModelExtensionCount = 5
 Global ModelExtensions$[ModelExtensionCount]
 ModelExtensions[0] = "b3d"
 ModelExtensions[1] = "x"
+ModelExtensions[2] = "fbx"
+ModelExtensions[3] = "glb"
+ModelExtensions[4] = "obj"
 
 ;basic wrapper functions that check to make sure that the file exists before attempting to load it, raises an RTE if it doesn't
 ;more informative alternative to MAVs outside of debug mode, makes it immiediately obvious whether or not someone is loading resources
