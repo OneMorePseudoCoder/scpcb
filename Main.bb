@@ -11126,7 +11126,7 @@ Function PutINIValue%(file$, INI_sSection$, INI_sKey$, INI_sValue$)
 	
 	; Returns: True (Success) Or False (Failed)
 	
-	INI_sSection = "[" + Trim$(INI_sSection) + "]"
+	If INI_sSection <> "" Then INI_sSection = "[" + Trim$(INI_sSection) + "]"
 	Local INI_sUpperSection$ = Upper$(INI_sSection)
 	INI_sKey = Trim$(INI_sKey)
 	INI_sValue = Trim$(INI_sValue)
@@ -11139,7 +11139,7 @@ Function PutINIValue%(file$, INI_sSection$, INI_sKey$, INI_sValue$)
 		; (Re)Create the INI file updating/adding the SECTION, KEY And VALUE
 	
 	Local INI_bWrittenKey% = False
-	Local INI_bSectionFound% = False
+	Local INI_bSectionFound% = INI_sSection = ""
 	Local INI_sCurrentSection$ = ""
 	
 	Local INI_lFileHandle% = WriteFile(INI_sFilename)
@@ -11165,20 +11165,18 @@ Function PutINIValue%(file$, INI_sSection$, INI_sKey$, INI_sValue$)
 				If (INI_sCurrentSection = INI_sUpperSection) Then INI_bSectionFound = True
 				
 			Else
-				If Left(INI_sTemp, 1) = ":" Then
-					WriteLine INI_lFileHandle, INI_sTemp
-				Else
-						; KEY=VALUE				
-					Local lEqualsPos% = Instr(INI_sTemp, "=")
-					If (lEqualsPos <> 0) Then
-						If (INI_sCurrentSection = INI_sUpperSection) And (Upper$(Trim$(Left$(INI_sTemp, (lEqualsPos - 1)))) = Upper$(INI_sKey)) Then
-							If (INI_sValue <> "") Then INI_CreateKey INI_lFileHandle, INI_sKey, INI_sValue
-							INI_bWrittenKey = True
-						Else
-							WriteLine INI_lFileHandle, INI_sTemp
-						End If
+				Local lEqualsPos% = Instr(INI_sTemp, "=")
+				If (lEqualsPos <> 0) Then
+					; KEY=VALUE
+					If (INI_sCurrentSection = INI_sUpperSection) And (Upper$(Trim$(Left$(INI_sTemp, (lEqualsPos - 1)))) = Upper$(INI_sKey)) Then
+						If (INI_sValue <> "") Then INI_CreateKey INI_lFileHandle, INI_sKey, INI_sValue
+						INI_bWrittenKey = True
+					Else
+						WriteLine INI_lFileHandle, INI_sTemp
 					End If
-				EndIf
+				Else 
+					WriteLine INI_lFileHandle, INI_sTemp
+				End If
 				
 			End If
 			

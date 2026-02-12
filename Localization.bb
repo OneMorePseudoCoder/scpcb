@@ -145,6 +145,8 @@ Type LocalizationTable
     Field Mods_UpdateFailed$
     Field Mods_Viewterms$
     Field Mods_Keepdesc$
+    Field Mods_Tags$
+    Field Mods_Tag$[8]
     Field Mods_Nomods$
     Field LoadGame_Load$
     Field LoadGame_Delete$
@@ -200,6 +202,7 @@ Type LocalizationTable
     Field HUD_KeypadCode$
     Field HUD_KeypadDenied$
     Field HUD_SpeedrunSaveloaded$
+    Field HUD_SpeedrunStoptimer$
     Field NPC_049$
     Field NPC_066$
     Field NPC_096$
@@ -615,6 +618,15 @@ Function LoadLocalization(loc.LocalizationTable, file$)
                             Case "update.failed" If loc\Mods_UpdateFailed = "" Then loc\Mods_UpdateFailed = value
                             Case "viewterms" If loc\Mods_Viewterms = "" Then loc\Mods_Viewterms = value
                             Case "keepdesc" If loc\Mods_Keepdesc = "" Then loc\Mods_Keepdesc = value
+                            Case "tags" If loc\Mods_Tags = "" Then loc\Mods_Tags = value
+                            Case "tag_1" If loc\Mods_Tag[1] = "" Then loc\Mods_Tag[1] = value
+                            Case "tag_2" If loc\Mods_Tag[2] = "" Then loc\Mods_Tag[2] = value
+                            Case "tag_3" If loc\Mods_Tag[3] = "" Then loc\Mods_Tag[3] = value
+                            Case "tag_4" If loc\Mods_Tag[4] = "" Then loc\Mods_Tag[4] = value
+                            Case "tag_5" If loc\Mods_Tag[5] = "" Then loc\Mods_Tag[5] = value
+                            Case "tag_6" If loc\Mods_Tag[6] = "" Then loc\Mods_Tag[6] = value
+                            Case "tag_7" If loc\Mods_Tag[7] = "" Then loc\Mods_Tag[7] = value
+                            Case "tag_8" If loc\Mods_Tag[8] = "" Then loc\Mods_Tag[8] = value
                             Case "nomods" If loc\Mods_Nomods = "" Then loc\Mods_Nomods = value
                         End Select
                     Case "Load Game"
@@ -685,6 +697,7 @@ Function LoadLocalization(loc.LocalizationTable, file$)
                             Case "keypad.code" If loc\HUD_KeypadCode = "" Then loc\HUD_KeypadCode = value
                             Case "keypad.denied" If loc\HUD_KeypadDenied = "" Then loc\HUD_KeypadDenied = value
                             Case "speedrun.saveloaded" If loc\HUD_SpeedrunSaveloaded = "" Then loc\HUD_SpeedrunSaveloaded = value
+                            Case "speedrun.stoptimer" If loc\HUD_SpeedrunStoptimer = "" Then loc\HUD_SpeedrunStoptimer = value
                         End Select
                     Case "NPC"
                         Select key

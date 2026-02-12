@@ -1279,12 +1279,14 @@ Function UpdateMainMenu()
 										If DrawButton(x + 370 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Mods_Upload, False, False, buttonsInactive) Then
 											ModUIState = 1
 											SelectedMod = m
+											ReadTagsFromMod(m)
 										EndIf
 									Else
 										If m\IsUserOwner Then
 											If DrawButton(x + 370 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Mods_Update, False, False, buttonsInactive) Then
 												ModUIState = 2
 												SelectedMod = m
+												ReadTagsFromMod(m)
 											EndIf
 										Else
 											If DrawButton(x + 370 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Mods_Visit, False, False, buttonsInactive) Then
@@ -1324,37 +1326,45 @@ Function UpdateMainMenu()
 							UpdateModErrorCode = 0
 						EndIf
 					Else If ModUIState = 1 Then
-						DrawFrame(x, y, 420 * MenuScale, 200 * MenuScale)
+						DrawFrame(x, y, 420 * MenuScale, 285 * MenuScale)
 						RowText(I_Loc\Mods_UploadConfirm, x + 20 * MenuScale, y + 15 * MenuScale, 400 * MenuScale, 200 * MenuScale)
-						If DrawButton(x + 25 * MenuScale, y + 150 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Menu_Yes, False) Then
+						If DrawButton(x + 25 * MenuScale, y + 100 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Menu_Yes, False) Then
+							WriteTagsToMod(SelectedMod)
+							SetSteamTags()
 							UploadMod(SelectedMod)
 							ModUIState = 0
 							SelectedMod = Null
 						EndIf
-						If DrawButton(x + 150 * MenuScale, y + 150 * MenuScale, 125 * MenuScale, 30 * MenuScale, I_Loc\Mods_Viewterms, False) Then
+						If DrawButton(x + 150 * MenuScale, y + 100 * MenuScale, 125 * MenuScale, 30 * MenuScale, I_Loc\Mods_Viewterms, False) Then
 							ExecFile("https://steamcommunity.com/sharedfiles/workshoplegalagreement")
 						EndIf
-						If DrawButton(x + 300 * MenuScale, y + 150 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Menu_No, False) Then
+						If DrawButton(x + 300 * MenuScale, y + 100 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Menu_No, False) Then
+							WriteTagsToMod(SelectedMod)
 							ModUIState = 0
 							SelectedMod = Null
 						EndIf
+						DrawTagSelection(x + 10 * MenuScale, y + 160 * MenuScale, 400 * MenuScale)
 					Else If ModUIState = 2 Then
-						DrawFrame(x, y, 420 * MenuScale, 200 * MenuScale)
+						DrawFrame(x, y, 420 * MenuScale, 335 * MenuScale)
 						RowText(I_Loc\Mods_UpdateConfirm, x + 20 * MenuScale, y + 15 * MenuScale, 400 * MenuScale, 200 * MenuScale)
 						ModChangelog = InputBox(x + 20 * MenuScale, y + 80 * MenuScale, 380 * MenuScale, 30 * MenuScale, ModChangelog, 99)
 						Text(x + 20 * MenuScale, y + 125 * MenuScale, I_Loc\Mods_Keepdesc)
 						ShouldKeepModDescription = DrawTick(x + 325 * MenuScale, y + 121 * MenuScale, ShouldKeepModDescription)
 						If DrawButton(x + 50 * MenuScale, y + 155 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Menu_Yes, False) Then
+							WriteTagsToMod(SelectedMod)
+							SetSteamTags()
 							UpdateMod(SelectedMod, ModChangelog)
 							ModChangelog = ""
 							ModUIState = 0
 							SelectedMod = Null
 						EndIf
 						If DrawButton(x + 250 * MenuScale, y + 155 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Menu_No, False) Then
+							WriteTagsToMod(SelectedMod)
 							ModChangelog = ""
 							ModUIState = 0
 							SelectedMod = Null
 						EndIf
+						DrawTagSelection(x + 10 * MenuScale, y + 210 * MenuScale, 400 * MenuScale)
 					Else
 						If DrawButton(x + 10 * MenuScale, y, 150 * MenuScale, 30 * MenuScale, I_Loc\Mods_Reloadmods, False, False, UpdatingMod<>Null) Then
 							SerializeMods()
@@ -1396,6 +1406,71 @@ Function UpdateMainMenu()
 	If Fullscreen Then DrawImage CursorIMG, ScaledMouseX(),ScaledMouseY()
 	
 	SetFont Font1
+End Function
+
+Const TAG_COUNT = 8
+Global TagActive%[TAG_COUNT]
+Global TagSteamName$[TAG_COUNT]
+TagSteamName[0] = "Textures"
+TagSteamName[1] = "Sounds"
+TagSteamName[2] = "Models"
+TagSteamName[3] = "Rooms"
+TagSteamName[4] = "Items"
+TagSteamName[5] = "SCP-294 Drinks"
+TagSteamName[6] = "Loading Screens"
+TagSteamName[7] = "Custom Maps"
+
+Function ReadTagsFromMod(m.Mods)
+	For i = 0 To TAG_COUNT-1
+		TagActive[i] = False
+	Next
+	Local tags$ = GetINIString2(m\Path + "info.ini", 1, "tags")
+	Local tag$, tagIdx%
+	DebugLog(tags)
+	Repeat
+		tag = Trim(Piece(tags, tagIdx, ","))
+		DebugLog(tag)
+		tagIdx = tagIdx + 1
+		For i = 0 To TAG_COUNT-1
+			If tag = TagSteamName[i] Then TagActive[i] = True : Exit
+		Next
+	Until tag = ""
+End Function
+
+Function WriteTagsToMod(m.Mods)
+	Local txt$, comma%
+	For i = 0 To TAG_COUNT-1
+		If TagActive[i] Then
+			If comma Then txt = txt + ", "
+			txt = txt + TagSteamName[i]
+			comma = True
+		EndIf
+	Next
+	PutINIValue(m\Path + "info.ini", "", "tags", txt)
+End Function
+
+Function SetSteamTags()
+	Steam_ClearItemTags()
+	For i = 0 To TAG_COUNT-1
+		If TagActive[i] Then Steam_AddItemTag(TagSteamName[i])
+	Next
+End Function
+
+Function DrawTagSelection(x%, y%, width%)
+	Text x + 10 * MenuScale, y, "Tags:"
+	y = y + 25 * MenuScale
+
+	Local xStep% = (width - 20 * MenuScale) / 3
+	Local xBegin% = x + width - 40 * MenuScale - xStep * 2
+	For i = 0 To TAG_COUNT-1
+		Local myX% = xBegin + (i Mod 3) * xStep
+		Local row% = i / 3
+		Local myY% = y + row * 30 * MenuScale
+		If i = 6 Then myX = x + StringWidth(TagSteamName[i]) + 20 * MenuScale
+		If i = 7 Then myX = myX + xStep
+		Text(myX - StringWidth(I_Loc\Mods_Tag[i+1]) - 5, myY, I_Loc\Mods_Tag[i+1])
+		TagActive[i] = DrawTick(myX, myY, TagActive[i])
+	Next
 End Function
 
 Function CreateGrayScaleImage%(img%)
