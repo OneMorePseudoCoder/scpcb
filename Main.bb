@@ -3443,7 +3443,7 @@ While IsRunning
 				EndIf
 			Else
 				If DiscordLastStatus = -1 Then
-					BlitzcordSetLargeText(GetSeedString())
+					BlitzcordSetLargeText(GetSeedString(False))
 					BlitzcordSetSmallImage(Lower(SelectedDifficulty\name))
 					BlitzcordSetSmallText("Difficulty: " + SelectedDifficulty\name)
 					BlitzcordSetTimestampStart(BlitzcordGetCurrentTimestamp())
@@ -7983,11 +7983,19 @@ Function DrawMenu()
 	CatchErrors("DrawMenu")
 End Function
 
-Function GetSeedString$()
-	If HasNumericSeed Then
-		Return I_Loc\Menu_SeedNumeric+" "+Str(RandomSeedNumeric)
+Function GetSeedString$(loc%=True)
+	If loc Then
+		If HasNumericSeed Then
+			Return I_Loc\Menu_SeedNumeric+" "+Str(RandomSeedNumeric)
+		Else
+			Return I_Loc\Menu_Seed+" "+RandomSeed
+		EndIf
 	Else
-		Return I_Loc\Menu_Seed+" "+RandomSeed
+		If HasNumericSeed Then
+			Return "Map seed: "+Str(RandomSeedNumeric)
+		Else
+			Return "Map seed (numeric): "+RandomSeed
+		EndIf
 	EndIf
 End Function
 
