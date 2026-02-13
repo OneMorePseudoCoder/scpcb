@@ -1030,7 +1030,7 @@ End Function
 
 Function LoadRoomMesh(rt.RoomTemplates)
 	
-	If Instr(rt\objPath,".rmesh")<>0 Then ;file is roommesh
+	If Instr(rt\objPath,".rm")<>0 Then ;file is roommesh
 		rt\obj = LoadRMesh(rt\objPath, rt)
 	Else ;file is b3d
 		;If rt\objPath <> "" Then rt\obj = LoadWorld(rt\objPath, rt) Else rt\obj = CreatePivot()

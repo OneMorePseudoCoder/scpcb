@@ -191,7 +191,7 @@ Function LoadRMesh(file$,rt.RoomTemplates)
 		EndIf
 	Next
 	If f=0 Then RuntimeErrorExt "Error reading file "+Chr(34)+file+Chr(34)
-	Local version% = 0
+	Local version% = -1
 	Local isRMesh$ = ReadString(f)
 	Select isRMesh
 		Case "RoomMesh" ;Continue
@@ -206,11 +206,10 @@ Function LoadRMesh(file$,rt.RoomTemplates)
 	
 	Local count%,count2%
 	
+	Local obj%=CreatePivot()
+
 	;drawn meshes
-	Local Opaque%,Alpha%
-	
-	Opaque=CreateMesh()
-	Alpha=CreateMesh()
+	Local Opaque%=CreateMesh(),Alpha%=CreateMesh()
 	
 	count = ReadInt(f)
 	Local childMesh%
@@ -221,131 +220,16 @@ Function LoadRMesh(file$,rt.RoomTemplates)
 	Local u#,v#
 	
 	For i=1 To count ;drawn mesh
-		childMesh=CreateMesh()
-		
-		surf=CreateSurface(childMesh)
-		
-		brush=CreateBrush()
-		
-		tex[0]=0 : tex[1]=0
-		
-		isAlpha=0
-		For j=0 To 1
-			temp1i=ReadByte(f)
-			If temp1i<>0 Then
-				temp1s=ReadString(f)
-				tex[j]=GetTextureFromCache(temp1s)
-				If tex[j]=0 Then ;texture is not in cache
-					Select True
-						Case temp1i<3
-							tex[j]=LoadModdedTextureNonStrict(file+temp1s,1)
-						Default
-							tex[j]=LoadModdedTextureNonStrict(file+temp1s,3)
-					End Select
-					
-					If tex[j]<>0 Then
-						If temp1i=1 Then TextureBlend tex[j],5
-						If Instr(Lower(temp1s),"_lm")<>0 Then
-							TextureBlend tex[j],3
-						EndIf
-						AddTextureToCache(tex[j])
-					EndIf
-					
-				EndIf
-				If tex[j]<>0 Then
-					isAlpha=2
-					If temp1i=3 Then isAlpha=1
-					
-					TextureCoords tex[j],1-j
-				EndIf
-			EndIf
-		Next
-		
-		If isAlpha=1 Then
-			If tex[1]<>0 Then
-				TextureBlend tex[1],2
-				BrushTexture brush,tex[1],0,0
-			Else
-				BrushTexture brush,blankTexture,0,0
-			EndIf
-		Else
-			If tex[0]<>0 And tex[1]<>0 Then
-				bumptex% = GetBumpFromCache(StripPath(TextureName(tex[1])))
-				;If bumptex<>0 Then
-				;	DebugLog StripPath(TextureName(bumptex))
-				;	Stop
-				;EndIf
-				For j=0 To 1
-					BrushTexture brush,tex[j],0,j+1+(bumptex<>0)
-				Next
-				
-				BrushTexture brush,AmbientLightRoomTex,0
-				If (bumptex<>0) Then
-					BrushTexture brush,bumptex,0,1
-				EndIf
-			Else
-				For j=0 To 1
-					If tex[j]<>0 Then
-						BrushTexture brush,tex[j],0,j
-					Else
-						BrushTexture brush,blankTexture,0,j
-					EndIf
-				Next
-			EndIf
-		EndIf
-		
-		surf=CreateSurface(childMesh)
-		
-		If isAlpha>0 Then PaintSurface surf,brush
-		
-		FreeBrush brush : brush = 0
-		
-		count2=ReadInt(f) ;vertices
-		
-		For j%=1 To count2
-			;world coords
-			x=ReadFloat(f) : y=ReadFloat(f) : z=ReadFloat(f)
-			vertex=AddVertex(surf,x,y,z)
-			
-			;texture coords
-			For k%=0 To 1
-				u=ReadFloat(f) : v=ReadFloat(f)
-				VertexTexCoords surf,vertex,u,v,0.0,k
-			Next
-			
-			;colors
-			temp1i=ReadByte(f)
-			temp2i=ReadByte(f)
-			temp3i=ReadByte(f)
-			VertexColor surf,vertex,temp1i,temp2i,temp3i,1.0
-		Next
-		
-		count2=ReadInt(f) ;polys
-		For j%=1 To count2
-			temp1i = ReadInt(f) : temp2i = ReadInt(f) : temp3i = ReadInt(f)
-			AddTriangle(surf,temp1i,temp2i,temp3i)
-		Next
-		
-		If isAlpha=1 Then
-			AddMesh childMesh,Alpha
-			EntityAlpha childMesh,0.0
-		Else
-			AddMesh childMesh,Opaque
-			EntityParent childMesh,collisionMeshes
-			EntityAlpha childMesh,0.0
-			EntityType childMesh,HIT_MAP
-			EntityPickMode childMesh,2
-			
-			;make collision double-sided
-			Local flipChild% = CopyMesh(childMesh)
-			FlipMesh(flipChild)
-			AddMesh flipChild,childMesh
-			FreeEntity flipChild			
-		EndIf
-		
-		
+		EntityParent ReadMesh(file, f, blankTexture, Alpha, Opaque), collisionMeshes
 	Next
 	
+	If version >= 0 Then
+		Local noCollCount% = ReadInt(f)
+		For i=1 To noCollCount
+			ReadMesh(file, f, blankTexture, Alpha, Opaque, False)
+		Next
+	EndIf
+
 	Local hiddenMesh%
 	hiddenMesh=CreateMesh()
 	
@@ -372,7 +256,8 @@ Function LoadRMesh(file$,rt.RoomTemplates)
 		DebugLog "TriggerBoxEnable"
 		rt\TempTriggerboxAmount = ReadInt(f)
 		For tb = 0 To rt\TempTriggerboxAmount-1
-			rt\TempTriggerbox[tb] = CreateMesh(rt\obj)
+			rt\TempTriggerbox[tb] = CreateMesh(obj)
+			HideEntity(rt\TempTriggerbox[tb])
 			count = ReadInt(f)
 			For i%=1 To count
 				surf=CreateSurface(rt\TempTriggerbox[tb])
@@ -543,7 +428,7 @@ Function LoadRMesh(file$,rt.RoomTemplates)
 				it\Z = ReadFloat(f) * RoomScale
 
 				it\Name = ReadString(f)
-				If version < 1 Then
+				If version < 0 Then
 					Local tempName$ = ReadString(f)
 					itt.ItemTemplates = FindItemTemplate(it\Name)
 					If itt = Null Then itt = FindItemTemplate(tempName)
@@ -595,9 +480,7 @@ Function LoadRMesh(file$,rt.RoomTemplates)
 				EndIf
 		End Select
 	Next
-	
-	Local obj%
-	
+		
 	temp1i=CopyMesh(Alpha)
 	FlipMesh temp1i
 	AddMesh temp1i,Alpha
@@ -632,6 +515,134 @@ Function LoadRMesh(file$,rt.RoomTemplates)
 	CatchErrors("LoadRMesh")
 	Return obj%
 	
+End Function
+
+Function ReadMesh%(file$, f%, blankTexture%, Alpha%, Opaque%, coll% = True)
+	Local childMesh=CreateMesh()
+	
+	Local surf=CreateSurface(childMesh)
+	
+	Local brush=CreateBrush()
+	
+	Local tex%[2]
+	tex[0]=0 : tex[1]=0
+	
+	Local isAlpha=0
+	For j=0 To 1
+		Local temp1i=ReadByte(f)
+		If temp1i<>0 Then
+			Local temp1s$=ReadString(f)
+			tex[j]=GetTextureFromCache(temp1s)
+			If tex[j]=0 Then ;texture is not in cache
+				Select True
+					Case temp1i<3
+						tex[j]=LoadModdedTextureNonStrict(file+temp1s,1)
+					Default
+						tex[j]=LoadModdedTextureNonStrict(file+temp1s,3)
+				End Select
+				
+				If tex[j]<>0 Then
+					If temp1i=1 Then TextureBlend tex[j],5
+					If Instr(Lower(temp1s),"_lm")<>0 Then
+						TextureBlend tex[j],3
+					EndIf
+					AddTextureToCache(tex[j])
+				EndIf
+				
+			EndIf
+			If tex[j]<>0 Then
+				isAlpha=2
+				If temp1i=3 Then isAlpha=1
+				
+				TextureCoords tex[j],1-j
+			EndIf
+		EndIf
+	Next
+	
+	If isAlpha=1 Then
+		If tex[1]<>0 Then
+			TextureBlend tex[1],2
+			BrushTexture brush,tex[1],0,0
+		Else
+			BrushTexture brush,blankTexture,0,0
+		EndIf
+	Else
+		If tex[0]<>0 And tex[1]<>0 Then
+			bumptex% = GetBumpFromCache(StripPath(TextureName(tex[1])))
+			;If bumptex<>0 Then
+			;	DebugLog StripPath(TextureName(bumptex))
+			;	Stop
+			;EndIf
+			For j=0 To 1
+				BrushTexture brush,tex[j],0,j+1+(bumptex<>0)
+			Next
+			
+			BrushTexture brush,AmbientLightRoomTex,0
+			If (bumptex<>0) Then
+				BrushTexture brush,bumptex,0,1
+			EndIf
+		Else
+			For j=0 To 1
+				If tex[j]<>0 Then
+					BrushTexture brush,tex[j],0,j
+				Else
+					BrushTexture brush,blankTexture,0,j
+				EndIf
+			Next
+		EndIf
+	EndIf
+	
+	surf=CreateSurface(childMesh)
+	
+	If isAlpha>0 Then PaintSurface surf,brush
+	
+	FreeBrush brush : brush = 0
+	
+	Local count2=ReadInt(f) ;vertices
+	
+	For j%=1 To count2
+		;world coords
+		x#=ReadFloat(f) : y#=ReadFloat(f) : z#=ReadFloat(f)
+		vertex=AddVertex(surf,x,y,z)
+		
+		;texture coords
+		For k%=0 To 1
+			u#=ReadFloat(f) : v#=ReadFloat(f)
+			VertexTexCoords surf,vertex,u,v,0.0,k
+		Next
+		
+		;colors
+		temp1i=ReadByte(f)
+		temp2i=ReadByte(f)
+		temp3i=ReadByte(f)
+		VertexColor surf,vertex,temp1i,temp2i,temp3i,1.0
+	Next
+	
+	count2=ReadInt(f) ;polys
+	For j%=1 To count2
+		temp1i = ReadInt(f) : temp2i = ReadInt(f) : temp3i = ReadInt(f)
+		AddTriangle(surf,temp1i,temp2i,temp3i)
+	Next
+	
+	If isAlpha=1 Then
+		AddMesh childMesh,Alpha
+		EntityAlpha childMesh,0.0
+	Else
+		AddMesh childMesh,Opaque
+		EntityAlpha childMesh,0.0
+		If coll Then
+			EntityType childMesh,HIT_MAP
+			EntityPickMode childMesh,2
+			
+			;make collision double-sided
+			Local flipChild% = CopyMesh(childMesh)
+			FlipMesh(flipChild)
+			AddMesh flipChild,childMesh
+			FreeEntity flipChild
+		EndIf
+	EndIf
+
+	Return childMesh
 End Function
 
 Function ResetAllRMeshes()
@@ -1644,11 +1655,11 @@ End Function
 
 Function LoadRoomMesh(rt.RoomTemplates)
 	
-	If Instr(rt\objPath,".rmesh")<>0 Then
+	If Instr(rt\objPath,".rm")<>0 Then
 		rt\obj = LoadRMesh(rt\objPath, rt)
 	EndIf
 	
-	If (Not rt\obj) Then RuntimeErrorExt "Failed to load map file "+Chr(34)+mapfile+Chr(34)+"."
+	If (Not rt\obj) Then RuntimeErrorExt "Failed to load map file "+Chr(34)+rt\objPath+Chr(34)+"."
 	
 	CalculateRoomTemplateExtents(rt)
 	
