@@ -193,8 +193,15 @@ Else
 	End If
 EndIf
 
-Global MenuScale# = (Min(GraphicWidth, GraphicHeight) / 1024.0)
+Global MenuScale# = CalculateMenuScale()
 Global HUDScale# = Max(MenuScale * HUDScaleFactor, 1)
+
+Function CalculateMenuScale#()
+	Local short% = Min(GraphicWidth, GraphicHeight)
+	If short > 1024 Then Return short / 1024.0
+	If short > 840 Then Return 1
+	Return short / 840.0
+End Function
 
 SetBuffer(BackBuffer())
 
@@ -7409,7 +7416,7 @@ Function DrawMenu()
 			
 			Local tx# = (GraphicWidth/2)+(width/2)
 			Local ty# = y
-			Local tw# = 400*MenuScale
+			Local tw# = Min(400*MenuScale, GraphicWidth - tx)
 			Local th# = 150*MenuScale
 			
 			Color 255,255,255
