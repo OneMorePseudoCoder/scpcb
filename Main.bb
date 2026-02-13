@@ -83,7 +83,7 @@ Function GetCLIString$(name$, def$="")
 	Local begin% = Instr(cmd, " " + name)
 	If begin = 0 Then
 		begin = Instr(cmd, name)
-		If begin <> 1 Return 0
+		If begin <> 1 Return def
 	Else
 		begin = begin + 1
 	EndIf
