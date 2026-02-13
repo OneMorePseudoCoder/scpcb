@@ -38,7 +38,7 @@ End Function
 
 Function InitOptionsFile$()
 	Local file$ = DataDir + "\options.ini"
-	If FileType(file) <> 1 Then
+	If FileType(file) <> 1 Lor HasCLIFlag("defaults") Lor HasCLIFlag("default") Then
 		Local f% = WriteFile(file)
 		CloseFile(f)
 	EndIf
@@ -59,18 +59,52 @@ Function GetOptionFloat#(section$, key$)
 	Return Float(GetOptionString(section, key))
 End Function
 
+Function HasCLIFlag%(name$)
+	name = "-" + name
+	Local cmd$ = CommandLine()
+	Local pos% = Instr(cmd, " " + name + " ")
+	If pos <> 0 Then Return True
+	pos = Instr(cmd, name + " ")
+	If pos = 1 Then Return True
+	pos = Instr(cmd, " " + name)
+	If pos = Len(cmd) - Len(name) Then Return True
+	Return cmd = name
+End Function
+
+Function GetCLIInt%(name$, def%=0)
+	Local txt$ = GetCLIString(name)
+	If txt <> "" Then Return Int(txt)
+	return def
+End Function
+
+Function GetCLIString$(name$, def$="")
+	name = "-" + name + " "
+	Local cmd$ = CommandLine()
+	Local begin% = Instr(cmd, " " + name)
+	If begin = 0 Then
+		begin = Instr(cmd, name)
+		If begin <> 1 Return 0
+	Else
+		begin = begin + 1
+	EndIf
+	begin = begin + Len(name)
+	Local end% = Instr(cmd, " ", begin)
+	If end = 0 Then end = Len(cmd) + 1
+	Return Trim(Mid(cmd, begin, end - begin))
+End Function
+
 Include "Blitz_File_FileName.bb"
 
 Include "DevilParticleSystem.bb"
 
-Global SteamActive% = GetOptionInt("general", "enable steam") And (Not Instr(CommandLine(), "-nosteam"))
+Global SteamActive% = GetOptionInt("general", "enable steam") And (Not HasCLIFlag("nosteam"))
 If SteamActive Then
 	If Steam_RestartAppIfNecessary(2178380) Then Return
 	If Steam_Init() <> 0 Then RuntimeErrorExt("Steam failed to initialize")
 EndIf
 
 Global DiscordLastStatus%, DiscordCooldown%
-Global DiscordActive% = GetOptionInt("general", "enable discord rich presence") And (Not Instr(CommandLine(), "-nodiscord"))
+Global DiscordActive% = GetOptionInt("general", "enable discord rich presence") And (Not HasCLIFlag("nodiscord"))
 If DiscordActive Then
 	DiscordActive = (BlitzcordCreateCore("1465275739342377014") = 0)
 	If DiscordActive Then BlitzcordSetLargeImage("logo")
@@ -82,7 +116,7 @@ Global IsRunning% = True
 Global ShouldRestart% = False
 
 Include "ModManager.bb"
-Global ModsEnabled% = GetOptionInt("general", "enable mods") And (Not Instr(CommandLine(), "-nomods"))
+Global ModsEnabled% = GetOptionInt("general", "enable mods") And (Not HasCLIFlag("nomods"))
 If ModsEnabled Then ReloadMods()
 
 Global Font1%, Font2%, Font3%, Font4%, Font5%
@@ -108,11 +142,13 @@ Global LauncherWidth%= Min(GetOptionInt("launcher", "launcher width"), 1024)
 Global LauncherHeight% = Min(GetOptionInt("launcher", "launcher height"), 768)
 Global LauncherEnabled% = GetOptionInt("launcher", "launcher enabled")
 
-Global GraphicWidth% = GetOptionInt("graphics", "width"), GraphicHeight% = GetOptionInt("graphics", "height")
+Global GraphicWidth% = GetCLIInt("width", GetCLIInt("w", GetOptionInt("graphics", "width")))
+Global GraphicHeight% = GetCLIInt("height", GetCLIInt("h", GetOptionInt("graphics", "height")))
 If GraphicWidth <= 0 Then GraphicWidth = DesktopWidth()
 If GraphicHeight <= 0 Then GraphicHeight = DesktopHeight()
 
-Global Depth% = 0, Fullscreen% = GetOptionInt("graphics", "fullscreen")
+Global Depth% = 0
+Global Fullscreen% = GetOptionInt("graphics", "fullscreen")
 
 Global SelectedGFXDriver% = Min(Max(GetOptionInt("graphics", "gfx driver"), 1), CountGfxDrivers())
 
@@ -127,6 +163,14 @@ Global HalloweenTex
 Global BorderlessWindowed% = GetOptionInt("graphics", "borderless windowed")
 Global RealGraphicWidth%,RealGraphicHeight%
 Global AspectRatioRatio#
+
+ApplyWindowModeCLIOverrides()
+
+Function ApplyWindowModeCLIOverrides()
+	If HasCLIFlag("noborder") Lor HasCLIFlag("borderless") Then BorderlessWindowed = True : Return
+	If HasCLIFlag("fullscreen") Lor HasCLIFlag("full") Then BorderlessWindowed = False : Fullscreen = True : Return
+	If HasCLIFlag("window") Lor HasCLIFlag("windowed") Lor HasCLIFlag("sw") Lor HasCLIFlag("startwindowed") Then BorderlessWindowed = False : Fullscreen = False
+End Function
 
 Global EnableRoomLights% = GetOptionInt("graphics", "room lights enabled")
 
@@ -164,7 +208,7 @@ Next
 LoadLocalization(I_Loc, StringsFile)
 
 ; Exclusive fullscreen ONLY supports the reported resolutions
-If LauncherEnabled And (Not IsRestart) And (Not Instr(CommandLine(), "-nolauncher")) Lor Fullscreen And (Not GfxMode3DExists(GraphicWidth, GraphicHeight, 32-16*Bit16Mode)) Then
+If LauncherEnabled And (Not IsRestart) And (Not HasCLIFlag("nolauncher")) Lor Fullscreen And (Not GfxMode3DExists(GraphicWidth, GraphicHeight, 32-16*Bit16Mode)) Then
 	UpdateLauncher()
 EndIf
 
@@ -11919,7 +11963,7 @@ Function PlayMovie(moviefile$)
 End Function
 
 Function PlayStartupVideos()
-	If GetOptionInt("general","play startup video") = 0 Lor IsRestart Lor Instr(CommandLine(), "-novid") Then Return
+	If GetOptionInt("general","play startup video") = 0 Lor IsRestart Lor HasCLIFlag("novid") Then Return
 
 	PlayMovie("GFX\menu\startup_Undertow")
 	PlayMovie("GFX\menu\startup_TSS")
