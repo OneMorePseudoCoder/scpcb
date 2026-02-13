@@ -2219,12 +2219,6 @@ Function FillRoom(r.Rooms)
 			em\SizeChange = 0.007
 			em\Achange = -0.006
 			em\Gravity = -0.24
-			
-			;This needs more work
-			;dem.DevilEmitters = CreateDevilEmitter(r\x-175.0*RoomScale,r\y+370.0*RoomScale,r\z+656.0*RoomScale,r,2)
-			;dem\isDeconGas = True
-			;dem.DevilEmitters = CreateDevilEmitter(r\x-655.0*RoomScale,r\y+370.0*RoomScale,r\z+240.0*RoomScale,r,2)
-			;dem\isDeconGas = True
 			;[End Block]
 		Case "lockroom2"
 			;[Block]
@@ -5528,9 +5522,9 @@ Function UpdateRooms()
 	;	When the map gets spawned by a seed, it starts from LCZ to HCZ to EZ (bottom to top)
 	;	A map loaded by the map creator starts from EZ to HCZ to LCZ (top to bottom) and that's why this little code thing with the (SelectedMap="") needs to be there
 	;	- ENDSHN
-	If (EntityZ(Collider)/8.0)<I_Zone\Transition[1]-(SelectedMap="") Then
+	If (EntityZ(Collider)/8.0)<I_Zone\Transition[1]-(SelectedMap=-1) Then
 		PlayerZone=2
-	ElseIf (EntityZ(Collider)/8.0)>=I_Zone\Transition[1]-(SelectedMap="") And (EntityZ(Collider)/8.0)<I_Zone\Transition[0]-(SelectedMap="") Then
+	ElseIf (EntityZ(Collider)/8.0)>=I_Zone\Transition[1]-(SelectedMap=-1) And (EntityZ(Collider)/8.0)<I_Zone\Transition[0]-(SelectedMap=-1) Then
 		PlayerZone=1
 	Else
 		PlayerZone=0

@@ -29,9 +29,9 @@ Function SaveGame(file$)
 	
 	WriteString f, Str(AccessCode)
 	
-	WriteFloat f, EntityPitch(Collider)
+	WriteFloat f, user_camera_pitch
 	WriteFloat f, EntityYaw(Collider)
-	
+
 	;WriteString f, VersionNumber
 	WriteString f, CompatibleNumber
 	
@@ -514,8 +514,11 @@ Function LoadGame(file$)
 	AccessCode = Int(ReadString(f))
 	
 	user_camera_pitch = ReadFloat(f)
-	user_camera_yaw = ReadFloat(f)
-	RotateEntity(Collider, user_camera_pitch, user_camera_yaw, 0, 0)
+	y = ReadFloat(f)
+	RotateEntity(Collider, 0, y, 0)
+	RotateEntity(Camera, user_camera_pitch, y, 0)
+	mouse_y_speed_1 = 0.0
+	mouse_x_speed_1 = 0.0
 	
 	strtemp = ReadString(f)
 	version = strtemp
@@ -865,9 +868,9 @@ Function LoadGame(file$)
 	Local zone%,shouldSpawnDoor%
 	For y = MapHeight To 0 Step -1
 		
-		If y<I_Zone\Transition[1]-(SelectedMap="") Then
+		If y<I_Zone\Transition[1]-(SelectedMap=-1) Then
 			zone=3
-		ElseIf y>=I_Zone\Transition[1]-(SelectedMap="") And y<I_Zone\Transition[0]-(SelectedMap="") Then
+		ElseIf y>=I_Zone\Transition[1]-(SelectedMap=-1) And y<I_Zone\Transition[0]-(SelectedMap=-1) Then
 			zone=2
 		Else
 			zone=1
@@ -1354,9 +1357,12 @@ Function LoadGameQuick(file$)
 	AccessCode = Int(ReadString(f))
 	
 	user_camera_pitch = ReadFloat(f)
-	user_camera_yaw = ReadFloat(f)
-	RotateEntity(Collider, user_camera_pitch, user_camera_yaw, 0, 0)
-	
+	y = ReadFloat(f)
+	RotateEntity(Collider, 0, y, 0)
+	RotateEntity(Camera, user_camera_pitch, y, 0)
+	mouse_y_speed_1 = 0.0
+	mouse_x_speed_1 = 0.0
+
 	strtemp = ReadString(f)
 	version = strtemp
 	
@@ -2065,63 +2071,75 @@ Function LoadSaveGames()
 End Function
 
 
+Function CountSavedMapsFrom%(folder$)
+	Local count% = 0
+	Local dir%=ReadDir(folder)
+	Local file$ = NextFile(dir)
+	While file <> ""
+		DebugLog (folder+file$)
+		If file <> "." And file <> ".." And FileType(folder+file$) = 1 And (Right(file,6)="cbmap2" Lor Right(file,5)="cbmap") Then 
+			count = count + 1
+		EndIf
+
+		file$=NextFile$(dir)
+	Wend
+	CloseDir dir
+	Return count
+End Function
+
+Function LoadSavedMapsFrom%(folder$, i%)
+	Local dir%=ReadDir(folder) 
+	Repeat
+		file$=NextFile$(dir)
+		
+		DebugLog file
+		
+		If file$="" Then Exit
+		If file <> "." And file <> ".." And FileType(folder+file$) = 1 And (Right(file,6)="cbmap2" Lor Right(file,5)="cbmap") Then
+			Local off%
+			If Right(file,6)="cbmap2" Then off = 7  Else off = 6
+			SavedMaps(i) = Left(file$, Len(file)-off)
+			SavedMapsPath(i) = folder+file$
+			If Right(file,6)="cbmap2" Then
+				Local f = ReadFile(folder+file$)
+				SavedMapsAuthor$(i) = ReadLine(f)
+				CloseFile f
+			Else
+				SavedMapsAuthor$(i) = "[Unknown]"
+			EndIf
+			i=i+1
+		EndIf
+	Forever
+	CloseDir dir
+	Return i
+End Function
+
 Function LoadSavedMaps()
 	CatchErrors("Uncaught (LoadSavedMaps)")
-	Local i%, Dir, file$
+	Local i%, mapDir$
 	
 	For i = 0 To SavedMapsAmount
 		SavedMaps(i)=""
+		SavedMapsPath(i)=""
 		SavedMapsAuthor(i)=""
 	Next
-	SavedMapsAmount = 0
-	
-	Dir=ReadDir("Map Creator\Maps")
-	Repeat
-		file$=NextFile$(Dir)
-		
-		DebugLog file
-		
-		If file$="" Then Exit
-		DebugLog (CurrentDir()+"Map Creator\Maps\"+file$)
-		If FileType(CurrentDir()+"Map Creator\Maps\"+file$) = 1 Then 
-			If file <> "." And file <> ".." Then
-				If Right(file,6)="cbmap2" Or Right(file,5)="cbmap" Then
-					SavedMapsAmount = SavedMapsAmount + 1
-				EndIf
-			EndIf
-		EndIf 
-	Forever 
-	CloseDir Dir
+
+	SavedMapsAmount = CountSavedMapsFrom("Map Creator\Maps\")
+	For m.ActiveMods = Each ActiveMods
+		mapDir = m\Path + "Maps\"
+		If FileType(mapDir) = 2 Then SavedMapsAmount = SavedMapsAmount + CountSavedMapsFrom(mapDir)
+	Next
 	
 	Dim SavedMaps(SavedMapsAmount+1)
+	Dim SavedMapsPath(SavedMapsAmount+1)
 	Dim SavedMapsAuthor$(SavedMapsAmount+1)
 	
-	i = 0
-	Dir=ReadDir("Map Creator\Maps") 
-	Repeat
-		file$=NextFile$(Dir)
-		
-		DebugLog file
-		
-		If file$="" Then Exit
-		DebugLog (CurrentDir()+"Map Creator\Maps\"+file$)
-		If FileType(CurrentDir()+"Map Creator\Maps\"+file$) = 1 Then 
-			If file <> "." And file <> ".." Then
-				If Right(file,6)="cbmap2" Or Right(file,5)="cbmap" Then
-					SavedMaps(i) = file
-					If Right(file,6)="cbmap2" Then
-						Local f = ReadFile("Map Creator\Maps\"+file)
-						SavedMapsAuthor$(i) = ReadLine(f)
-						CloseFile f
-					Else
-						SavedMapsAuthor$(i) = "[Unknown]"
-					EndIf
-					i=i+1
-				EndIf
-			EndIf
-		EndIf 
-	Forever 
-	CloseDir Dir 
+	i = LoadSavedMapsFrom("Map Creator\Maps\", 0)
+	For m.ActiveMods = Each ActiveMods
+		mapDir = m\Path + "Maps\"
+		If FileType(mapDir) = 2 Then i = LoadSavedMapsFrom(mapDir, i)
+	Next
+
 	CatchErrors("LoadSavedMaps")
 End Function
 
@@ -2133,10 +2151,65 @@ Function LoadMap(file$, loadingstart, loadingcount#)
 	
 	f% = ReadFile(file)
 	DebugLog file
+
+	Local facilityWidth% = 0, facilityHeight% = 0
+	Local forestWidth% = 0, forestHeight% = 0
+	Local mtWidth% = 0, mtHeight% = 0
+
+	If Right(file,6)="cbmap2" Then
+		ReadLine(f)
+		ReadLine(f)
+		ReadByte(f)
+		ReadByte(f)
+		roomamount = ReadInt(f)
+		forestpieceamount = ReadInt(f)
+		mtpieceamount = ReadInt(f)
+		
+		;Facility rooms
+		For i = 0 To roomamount-1
+			facilityWidth = Max(facilityWidth, ReadByte(f))
+			facilityHeight = Max(facilityHeight, ReadByte(f))
+			ReadString(f)
+			ReadByte(f)
+			ReadString(f)
+			ReadFloat(f)
+		Next
+
+		;Forest rooms
+		For i = 0 To forestpieceamount-1
+			forestWidth = Max(forestWidth, ReadByte(f))
+			forestHeight = Max(forestHeight, ReadByte(f))
+			ReadString(f)
+			ReadByte(f)
+		Next
+		
+		;Maintenance tunnels rooms
+		For i = 0 To mtpieceamount-1
+			mtWidth = Max(mtWidth, ReadByte(f))
+			mtHeight = Max(mtHeight, ReadByte(f))
+			ReadString(f)			
+			ReadByte(f)
+		Next
+		
+		;If MTRoom<>Null Then
+		;	PlaceGrid_MapCreator(MTRoom)
+		;EndIf
+	Else
+		While Not Eof(f)
+			facilityWidth = Max(facilityWidth, ReadByte(f))
+			facilityHeight = Max(facilityHeight, ReadByte(f))
+			ReadString(f)
+			ReadByte(f)
+			ReadString(f)
+			ReadFloat(f)
+		Wend
+	EndIf
+	CloseFile(f)
 	
-	; TODO: Size should be included in the map itself, why this is not done is a mystery to me.
-	MapWidth% = GetModdedINIInt(MapOptions, "facility", "width")
-	MapHeight% = GetModdedINIInt(MapOptions, "facility", "height")
+	f = ReadFile(file)
+
+	MapWidth% = facilityWidth
+	MapHeight% = facilityHeight
 
 	Dim MapTemp%(MapWidth+1, MapHeight+1)
 	Dim MapFound%(MapWidth+1, MapHeight+1)
@@ -2211,12 +2284,14 @@ Function LoadMap(file$, loadingstart, loadingcount#)
 		Next
 		
 		Local ForestRoom.Rooms
-		For r.Rooms = Each Rooms
-			If r\RoomTemplate\Name = "room860" Then
-				ForestRoom = r
-				Exit
-			EndIf
-		Next
+		If I_Zone\HasCustomForest Then
+			For r.Rooms = Each Rooms
+				If r\RoomTemplate\Name = "room860" Then
+					ForestRoom = r
+					Exit
+				EndIf
+			Next
+		EndIf
 		
 		If ForestRoom<>Null Then
 			Local fr.Forest = New Forest
@@ -2274,12 +2349,14 @@ Function LoadMap(file$, loadingstart, loadingcount#)
 		EndIf
 		
 		Local MTRoom.Rooms
-		For r.Rooms = Each Rooms
-			If r\RoomTemplate\Name = "room2tunnel" Then
-				MTRoom = r
-				Exit
-			EndIf
-		Next
+		If I_Zone\HasCustomMT Then
+			For r.Rooms = Each Rooms
+				If r\RoomTemplate\Name = "room2tunnel" Then
+					MTRoom = r
+					Exit
+				EndIf
+			Next
+		EndIf
 		
 		If MTRoom<>Null Then
 			MTRoom\grid = New Grids

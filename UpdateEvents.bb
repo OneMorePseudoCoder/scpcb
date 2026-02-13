@@ -2871,12 +2871,10 @@ Function UpdateEvents()
 							
 							Local temp2 = True
 							For e2.Events = Each Events
-								If e2\EventName = e\EventName And e2 <> e
-									If e2\EventStr <> ""
-										temp2 = False
-										e\EventStr = "done"
-										Exit
-									EndIf
+								If e2\EventName = e\EventName And e2 <> e And e2\room\NPC[0] <> Null Then
+									temp2 = False
+									e\EventStr = "done"
+									Exit
 								EndIf
 							Next
 							

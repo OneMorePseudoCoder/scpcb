@@ -375,16 +375,17 @@ Function RemoveItem(i.Items)
 	Local n
 	FreeEntity(i\model) : FreeEntity(i\collider) : i\collider = 0
 	
-	For n% = 0 To MaxItemAmount - 1
-		If Inventory(n) = i
-			DebugLog "Removed "+i\itemtemplate\name+" from slot "+n
-			Inventory(n) = Null
-			ItemAmount = ItemAmount-1
-			Exit
-		EndIf
-	Next
-	If SelectedItem = i Then
-		Select SelectedItem\itemtemplate\name 
+	If i\Picked Then
+		For n% = 0 To MaxItemAmount - 1
+			If Inventory(n) = i
+				DebugLog "Removed "+i\itemtemplate\name+" from slot "+n
+				Inventory(n) = Null
+				ItemAmount = ItemAmount-1
+				Exit
+			EndIf
+		Next
+		
+		Select i\itemtemplate\name 
 			Case "nvgoggles", "finenvgoggles", "supernv"
 				WearingNightVision = False
 			Case "gasmask", "supergasmask", "gasmask2", "gasmask3"
@@ -400,8 +401,6 @@ Function RemoveItem(i.Items)
 			Case "scp427"
 				I_427\Using = False
 		End Select
-		
-		SelectedItem = Null
 	EndIf
 	If i\itemtemplate\img <> 0
 		FreeImage i\itemtemplate\img

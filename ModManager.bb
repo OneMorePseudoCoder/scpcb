@@ -234,7 +234,7 @@ Function UpdateMod(m.Mods, changelog$)
     If Not ShouldKeepModDescription Then
         desc = m\Description
     EndIf
-    Steam_UpdateItem(m\SteamworkshopId, m\Name, desc, m\Path, DetermineIcon(m), changelog)
+    Steam_UpdateItem(m\SteamworkshopId, m\Name, desc, m\Path, DetermineIcon(m), changelog, True)
 End Function
 
 Function UpdateUpdatingMod()

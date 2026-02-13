@@ -1804,10 +1804,11 @@ Function UpdateNPCs()
 											;closes doors behind him
 											If n\PathLocation>0 Then
 												If n\Path[n\PathLocation-1] <> Null Then
-													If n\Path[n\PathLocation-1]\door <> Null Then
-														If (Not n\Path[n\PathLocation-1]\door\IsElevatorDoor) Then
+													d = n\Path[n\PathLocation-1]\door
+													If d <> Null Then
+														If (Not d\IsElevatorDoor) Then
 															If EntityDistance(n\Path[n\PathLocation-1]\obj,n\Collider)>0.3 Then
-																If (n\Path[n\PathLocation-1]\door\MTFClose) And (n\Path[n\PathLocation-1]\door\open) And (n\Path[n\PathLocation-1]\door\buttons[0]<>0 Or n\Path[n\PathLocation-1]\door\buttons[1]<>0) Then
+																If (d\MTFClose) And (d\open) And (d\buttons[0]<>0 Or d\buttons[1]<>0) And (d\openstate <= 0 Lor d\openstate >= 180) Then
 																	UseDoor(n\Path[n\PathLocation-1]\door, False)
 																EndIf
 															EndIf
@@ -2072,10 +2073,11 @@ Function UpdateNPCs()
 										;closes doors behind him
 										If n\PathLocation>0 Then
 											If n\Path[n\PathLocation-1] <> Null
-												If n\Path[n\PathLocation-1]\door <> Null Then
-													If n\Path[n\PathLocation-1]\door\KeyCard=0
+												d = n\Path[n\PathLocation-1]\door
+												If d <> Null Then
+													If d\KeyCard=0
 														If EntityDistance(n\Path[n\PathLocation-1]\obj,n\Collider)>0.3
-															If n\Path[n\PathLocation-1]\door\open Then UseDoor(n\Path[n\PathLocation-1]\door, False)
+															If d\open And (d\openstate <= 0 Lor d\openstate >= 180) Then UseDoor(d, False)
 														EndIf
 													EndIf
 												EndIf

@@ -198,8 +198,15 @@ Else
 	End If
 EndIf
 
-Global MenuScale# = (Min(GraphicWidth, GraphicHeight) / 1024.0)
+Global MenuScale# = CalculateMenuScale()
 Global HUDScale# = Max(MenuScale * HUDScaleFactor, 1)
+
+Function CalculateMenuScale#()
+	Local short% = Min(GraphicWidth, GraphicHeight)
+	If short > 1024 Then Return short / 1024.0
+	If short > 840 Then Return 1
+	Return short / 840.0
+End Function
 
 SetBuffer(BackBuffer())
 
@@ -1477,7 +1484,7 @@ Function UpdateConsole()
 						StrTemp$ = ""
 					EndIf
 					
-					If Int(StrTemp) > -1 And Int(StrTemp) <= 1 ;<--- This is the maximum ID of particles by Devil Particle system, will be increased after time - ENDSHN
+					If Int(StrTemp) >= 0 And Int(StrTemp) <= 2 ;<--- This is the maximum ID of particles by Devil Particle system, will be increased after time - ENDSHN
 						SetEmitter(Collider,ParticleEffect[Int(StrTemp)])
 						CreateConsoleMsg("Spawned particle emitter with ID "+Int(StrTemp)+" at player's position.")
 					Else
@@ -1880,7 +1887,7 @@ Global NavBG%
 
 Global LightConeModel
 
-Global ParticleEffect[10]
+Global ParticleEffect[3]
 
 Const MaxDTextures=9
 Global DTextures[MaxDTextures]
@@ -2263,7 +2270,7 @@ Function UpdateDoors()
 							MoveEntity(d\obj, Sin(d\openstate) * -FPSfactor / 180.0, 0, 0)
 							If d\obj2 <> 0 Then MoveEntity(d\obj2, Sin(d\openstate) * FPSfactor / 180.0, 0, 0)
 							If ParticleAmount=2 And d\openstate < 15 And d\openstate+FPSfactor => 15
-								Local particles% = SetEmitter(d\frameobj, ParticleEffect[3])
+								Local particles% = SetEmitter(d\frameobj, ParticleEffect[2])
 								EntityOrder(particles, -1)
 							EndIf
 						Case 2
@@ -3411,7 +3418,7 @@ While IsRunning
 				EndIf
 			Else
 				If DiscordLastStatus = -1 Then
-					BlitzcordSetLargeText(GetSeedString())
+					BlitzcordSetLargeText(GetSeedString(False))
 					BlitzcordSetSmallImage(Lower(SelectedDifficulty\name))
 					BlitzcordSetSmallText("Difficulty: " + SelectedDifficulty\name)
 					BlitzcordSetTimestampStart(BlitzcordGetCurrentTimestamp())
@@ -3937,7 +3944,7 @@ Function DrawEnding()
 					x = x+width/2
 					y = y+height-100*MenuScale
 					
-					If DrawButton(x-145*MenuScale,y-200*MenuScale,390*MenuScale,60*MenuScale,"ACHIEVEMENTS", True) Then
+					If DrawButton(x-145*MenuScale,y-200*MenuScale,390*MenuScale,60*MenuScale,I_Loc\Menu_AchievementsUpper, True) Then
 						AchievementsMenu = 1
 					EndIf
 					
@@ -3953,7 +3960,7 @@ Function DrawEnding()
 ;						FlushKeys()
 ;					EndIf
 					
-					If DrawButton(x-145*MenuScale,y-100*MenuScale,390*MenuScale,60*MenuScale,"MAIN MENU", True)
+					If DrawButton(x-145*MenuScale,y-100*MenuScale,390*MenuScale,60*MenuScale,I_Loc\Menu_MainMenuUpper, True)
 						ShouldPlay = 24
 						NowPlaying = ShouldPlay
 						For i=0 To 9
@@ -7368,7 +7375,7 @@ Function DrawMenu()
 			
 			Local tx# = (GraphicWidth/2)+(width/2)
 			Local ty# = y
-			Local tw# = 400*MenuScale
+			Local tw# = Min(400*MenuScale, GraphicWidth - tx)
 			Local th# = 150*MenuScale
 			
 			Color 255,255,255
@@ -7444,6 +7451,7 @@ Function DrawMenu()
 					Text(x, y, I_Loc\OptionName_fov)
 					Color 255,255,0
 					Text(x + 5 * MenuScale, y + 25 * MenuScale, FOV+"°")
+					Color 255,255,255
 					If (MouseOn(x+270*MenuScale,y+6*MenuScale,100*MenuScale+14,20) And OnSliderID=0) Lor OnSliderID=4
 						DrawOptionsTooltip(tx,ty,tw,th,"fov")
 					EndIf
@@ -7545,26 +7553,26 @@ Function DrawMenu()
 					y = y + 10*MenuScale
 					
 					Text(x, y + 20 * MenuScale, I_Loc\OptionName_BindMoveForward)
-					InputBox(x + 200 * MenuScale, y + 20 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_UP,210)),5)		
+					InputBox(x + 200 * MenuScale, y + 20 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_UP,210)),5,-1)		
 					Text(x, y + 40 * MenuScale, I_Loc\OptionName_BindMoveLeft)
-					InputBox(x + 200 * MenuScale, y + 40 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_LEFT,210)),3)	
+					InputBox(x + 200 * MenuScale, y + 40 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_LEFT,210)),3,-1)	
 					Text(x, y + 60 * MenuScale, I_Loc\OptionName_BindMoveBack)
-					InputBox(x + 200 * MenuScale, y + 60 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_DOWN,210)),6)				
+					InputBox(x + 200 * MenuScale, y + 60 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_DOWN,210)),6,-1)				
 					Text(x, y + 80 * MenuScale, I_Loc\OptionName_BindMoveRight)
-					InputBox(x + 200 * MenuScale, y + 80 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_RIGHT,210)),4)
+					InputBox(x + 200 * MenuScale, y + 80 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_RIGHT,210)),4,-1)
 					
 					Text(x, y + 100 * MenuScale, I_Loc\OptionName_BindBlink)
-					InputBox(x + 200 * MenuScale, y + 100 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_BLINK,210)),7)				
+					InputBox(x + 200 * MenuScale, y + 100 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_BLINK,210)),7,-1)				
 					Text(x, y + 120 * MenuScale, I_Loc\OptionName_BindSprint)
-					InputBox(x + 200 * MenuScale, y + 120 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_SPRINT,210)),8)
+					InputBox(x + 200 * MenuScale, y + 120 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_SPRINT,210)),8,-1)
 					Text(x, y + 140 * MenuScale, I_Loc\OptionName_BindInv)
-					InputBox(x + 200 * MenuScale, y + 140 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_INV,210)),9)
+					InputBox(x + 200 * MenuScale, y + 140 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_INV,210)),9,-1)
 					Text(x, y + 160 * MenuScale, I_Loc\OptionName_BindCrouch)
-					InputBox(x + 200 * MenuScale, y + 160 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_CROUCH,210)),10)
+					InputBox(x + 200 * MenuScale, y + 160 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_CROUCH,210)),10,-1)
 					Text(x, y + 180 * MenuScale, I_Loc\OptionName_BindSave)
-					InputBox(x + 200 * MenuScale, y + 180 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_SAVE,210)),11)	
+					InputBox(x + 200 * MenuScale, y + 180 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_SAVE,210)),11,-1)	
 					Text(x, y + 200 * MenuScale, I_Loc\OptionName_BindConsole)
-					InputBox(x + 200 * MenuScale, y + 200 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_CONSOLE,210)),12)
+					InputBox(x + 200 * MenuScale, y + 200 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_CONSOLE,210)),12,-1)
 
 					If MouseOn(x,y,300*MenuScale,220*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"controls")
@@ -7933,11 +7941,19 @@ Function DrawMenu()
 	CatchErrors("DrawMenu")
 End Function
 
-Function GetSeedString$()
-	If HasNumericSeed Then
-		Return I_Loc\Menu_SeedNumeric+" "+Str(RandomSeedNumeric)
+Function GetSeedString$(loc%=True)
+	If loc Then
+		If HasNumericSeed Then
+			Return I_Loc\Menu_SeedNumeric+" "+Str(RandomSeedNumeric)
+		Else
+			Return I_Loc\Menu_Seed+" "+RandomSeed
+		EndIf
 	Else
-		Return I_Loc\Menu_Seed+" "+RandomSeed
+		If HasNumericSeed Then
+			Return "Map seed: "+Str(RandomSeedNumeric)
+		Else
+			Return "Map seed (numeric): "+RandomSeed
+		EndIf
 	EndIf
 End Function
 
@@ -8481,46 +8497,19 @@ Function LoadEntities()
 	;SetTemplateSize(ParticleEffect[1], 3, 3, .5, 1.5)
 	SetTemplateSize(ParticleEffect[1], 0.4, 0.4, 0.5, 1.5)
 	SetTemplateSizeVel(ParticleEffect[1], .01, 1.01)
-	
-	;Smoke effect (for decontamination gas)
-	ParticleEffect[2] = CreateTemplate()
-	SetTemplateEmitterBlend(ParticleEffect[2], 1)
-	SetTemplateInterval(ParticleEffect[2], 1)
-	SetTemplateEmitterLifeTime(ParticleEffect[2], 3)
-	SetTemplateParticleLifeTime(ParticleEffect[2], 30, 45)
-	SetTemplateTexture(ParticleEffect[2], "GFX\smoke.png", 2, 1)
-	SetTemplateOffset(ParticleEffect[2], -0.1, 0.1, -0.1, 0.1, -0.1, 0.1)
-	SetTemplateVelocity(ParticleEffect[2], -0.005, 0.005, 0.0, -0.03, -0.005, 0.005)
-	SetTemplateAlphaVel(ParticleEffect[2], True)
-	SetTemplateSize(ParticleEffect[2], 0.4, 0.4, 0.5, 1.5)
-	SetTemplateSizeVel(ParticleEffect[2], .01, 1.01)
-	SetTemplateGravity(ParticleEffect[2], 0.005)
-	t0 = CreateTemplate()
-	SetTemplateEmitterBlend(t0, 1)
-	SetTemplateInterval(t0, 1)
-	SetTemplateEmitterLifeTime(t0, 3)
-	SetTemplateParticleLifeTime(t0, 30, 45)
-	SetTemplateTexture(t0, "GFX\smoke2.png", 2, 1)
-	SetTemplateOffset(t0, -0.1, 0.1, -0.1, 0.1, -0.1, 0.1)
-	SetTemplateVelocity(t0, -0.005, 0.005, 0.0, -0.03, -0.005, 0.005)
-	SetTemplateAlphaVel(t0, True)
-	SetTemplateSize(t0, 0.4, 0.4, 0.5, 1.5)
-	SetTemplateSizeVel(t0, .01, 1.01)
-	SetTemplateGravity(ParticleEffect[2], 0.005)
-	SetTemplateSubTemplate(ParticleEffect[2], t0)
 
 	;Big doors closing
-	ParticleEffect[3] = CreateTemplate()
-	SetTemplateEmitterBlend(ParticleEffect[3], 3)
-	SetTemplateEmitterLifeTime(ParticleEffect[3], 0)
-	SetTemplateParticlesPerInterval(ParticleEffect[3], 80)
-	SetTemplateParticleLifeTime(ParticleEffect[3], 90, 100)
-	SetTemplateTexture(ParticleEffect[3], "GFX\dust.png", 2, 1)
-	SetTemplateOffset(ParticleEffect[3], -0.2, 0.2, 0.0, 1.2, -0.2, 0.2)
-	SetTemplateVelocity(ParticleEffect[3], -0.005, 0.005, -0.0017, 0.0017, -0.005, 0.005)
-	SetTemplateSizeVel(ParticleEffect[3], -0.000005, 1)
-	SetTemplateSize(ParticleEffect[3], 0.005, 0.005)
-	SetTemplateAlphaVel(ParticleEffect[3], True)
+	ParticleEffect[2] = CreateTemplate()
+	SetTemplateEmitterBlend(ParticleEffect[2], 3)
+	SetTemplateEmitterLifeTime(ParticleEffect[2], 0)
+	SetTemplateParticlesPerInterval(ParticleEffect[2], 80)
+	SetTemplateParticleLifeTime(ParticleEffect[2], 90, 100)
+	SetTemplateTexture(ParticleEffect[2], "GFX\dust.png", 2, 1)
+	SetTemplateOffset(ParticleEffect[2], -0.2, 0.2, 0.0, 1.2, -0.2, 0.2)
+	SetTemplateVelocity(ParticleEffect[2], -0.005, 0.005, -0.0017, 0.0017, -0.005, 0.005)
+	SetTemplateSizeVel(ParticleEffect[2], -0.000005, 1)
+	SetTemplateSize(ParticleEffect[2], 0.005, 0.005)
+	SetTemplateAlphaVel(ParticleEffect[2], True)
 	
 	Room2slCam = CreateCamera()
 	CameraViewport(Room2slCam, 0, 0, 128, 128)
@@ -8552,10 +8541,10 @@ Function InitNewGame()
 	Next
 	If AccessCode = HARPCODE Then AccessCode = AccessCode + 1
 	
-	If SelectedMap = "" Then
+	If SelectedMap = -1 Then
 		CreateMap(50, 19)
 	Else
-		LoadMap("Map Creator\Maps\"+SelectedMap, 50, 19)
+		LoadMap(SavedMapsPath(SelectedMap), 50, 19)
 	EndIf
 	DrawLoading(70)
 	InitWayPoints(71, 9)
@@ -8651,7 +8640,7 @@ Function InitNewGame()
 	
 	ResetEntity Collider
 	
-	If SelectedMap = "" Then InitEvents()
+	If SelectedMap = -1 Then InitEvents()
 	
 	For e.Events = Each Events
 		If e\EventName = "room2nuke"
@@ -8817,7 +8806,7 @@ Function NullGame(playbuttonsfx%=True)
 	
 	DeathMSG$=""
 	
-	SelectedMap = ""
+	SelectedMap = -1
 	
 	UsedConsole = False
 	
@@ -8870,6 +8859,10 @@ Function NullGame(playbuttonsfx%=True)
 	Shake = 0
 	LightFlash = 0
 	
+	user_camera_pitch = 0.0
+	mouse_y_speed_1 = 0.0
+	mouse_x_speed_1 = 0.0
+
 	GodMode = 0
 	NoClip = 0
 	WireframeState = 0
@@ -9661,7 +9654,7 @@ Function Use914(item.Items, setting$, x#, y#, z#)
 					PositionEntity(item\collider, x, y, z)
 					ResetEntity(item\collider)
 			End Select
-		Case "supernv", "supernv", "finenvgoggles"
+		Case "nvgoggles", "supernv", "finenvgoggles"
 			Select setting
 				Case "rough", "coarse"
 					d.Decals = CreateDecal(0, x, 8 * RoomScale + 0.005, z, 90, Rand(360), 0)
@@ -9736,7 +9729,7 @@ Function Use914(item.Items, setting$, x#, y#, z#)
 					EndIf
 			End Select
 			RemoveItem(item)
-		Case "firstaidkit", "firstaid2" ; TODO Missing small and very fine
+		Case "firstaid", "firstaid2" ; TODO Missing small and very fine
 			Select setting
 				Case "rough", "coarse"
 					d.Decals = CreateDecal(0, x, 8 * RoomScale + 0.005, z, 90, Rand(360), 0)
@@ -11103,7 +11096,7 @@ Function PutINIValue%(file$, INI_sSection$, INI_sKey$, INI_sValue$)
 	
 	; Returns: True (Success) Or False (Failed)
 	
-	INI_sSection = "[" + Trim$(INI_sSection) + "]"
+	If INI_sSection <> "" Then INI_sSection = "[" + Trim$(INI_sSection) + "]"
 	Local INI_sUpperSection$ = Upper$(INI_sSection)
 	INI_sKey = Trim$(INI_sKey)
 	INI_sValue = Trim$(INI_sValue)
@@ -11116,7 +11109,7 @@ Function PutINIValue%(file$, INI_sSection$, INI_sKey$, INI_sValue$)
 		; (Re)Create the INI file updating/adding the SECTION, KEY And VALUE
 	
 	Local INI_bWrittenKey% = False
-	Local INI_bSectionFound% = False
+	Local INI_bSectionFound% = INI_sSection = ""
 	Local INI_sCurrentSection$ = ""
 	
 	Local INI_lFileHandle% = WriteFile(INI_sFilename)
@@ -11142,20 +11135,18 @@ Function PutINIValue%(file$, INI_sSection$, INI_sKey$, INI_sValue$)
 				If (INI_sCurrentSection = INI_sUpperSection) Then INI_bSectionFound = True
 				
 			Else
-				If Left(INI_sTemp, 1) = ":" Then
-					WriteLine INI_lFileHandle, INI_sTemp
-				Else
-						; KEY=VALUE				
-					Local lEqualsPos% = Instr(INI_sTemp, "=")
-					If (lEqualsPos <> 0) Then
-						If (INI_sCurrentSection = INI_sUpperSection) And (Upper$(Trim$(Left$(INI_sTemp, (lEqualsPos - 1)))) = Upper$(INI_sKey)) Then
-							If (INI_sValue <> "") Then INI_CreateKey INI_lFileHandle, INI_sKey, INI_sValue
-							INI_bWrittenKey = True
-						Else
-							WriteLine INI_lFileHandle, INI_sTemp
-						End If
+				Local lEqualsPos% = Instr(INI_sTemp, "=")
+				If (lEqualsPos <> 0) Then
+					; KEY=VALUE
+					If (INI_sCurrentSection = INI_sUpperSection) And (Upper$(Trim$(Left$(INI_sTemp, (lEqualsPos - 1)))) = Upper$(INI_sKey)) Then
+						If (INI_sValue <> "") Then INI_CreateKey INI_lFileHandle, INI_sKey, INI_sValue
+						INI_bWrittenKey = True
+					Else
+						WriteLine INI_lFileHandle, INI_sTemp
 					End If
-				EndIf
+				Else 
+					WriteLine INI_lFileHandle, INI_sTemp
+				End If
 				
 			End If
 			

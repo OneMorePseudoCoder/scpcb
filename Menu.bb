@@ -11,7 +11,7 @@ ScaleImage(Menu173, MenuScale, MenuScale)
 For i = 0 To 3
 	ArrowIMG(i) = LoadImage_Strict("GFX\menu\arrow.png")
 	ScaleImage(ArrowIMG(i), HUDScale, HUDScale)
-	RotateImage(ArrowIMG(i), -90 * i)
+	RotateImage(ArrowIMG(i), 90 * i)
 	HandleImage(ArrowIMG(i), 0, 0)
 Next
 
@@ -48,13 +48,25 @@ Dim SaveGamePlayTime$(SaveGameAmount + 1)
 
 Global SavedMapsAmount% = 0
 Dim SavedMaps$(SavedMapsAmount+1)
+Dim SavedMapsPath$(SavedMapsAmount+1)
 Dim SavedMapsAuthor$(SavedMapsAmount+1)
 
-Global SelectedMap$
+Global SelectedMap% = -1
 
 LoadSaveGames()
 
 Global CurrLoadGamePage% = 0
+Global EntriesPerPage%
+Global PagingFrameHeight%
+
+Function CalculatePagingVariables()
+	Local y = 286+70+10
+	Local availableHeight# = GraphicHeight - ((y + 55 + 30) * MenuScale)
+	EntriesPerPage% = Min(availableHeight / (100 * MenuScale), 6)
+	; height = 510 * MenuScale
+	PagingFrameHeight = EntriesPerPage * 80 * MenuScale + 30 * MenuScale
+End Function
+CalculatePagingVariables()
 
 ; 0 is idle; 1 is upload confirmation; 2 is update confirmation 
 Global ModUIState%
@@ -241,7 +253,7 @@ Function UpdateMainMenu()
 		
 		DrawFrame(x, y, width, height)
 		
-		If DrawButton(x + width + 20 * MenuScale, y, 580 * MenuScale - width - 20 * MenuScale, height, I_Loc\Menu_BackUpper, False, False, UpdatingMod<>Null) Then 
+		If DrawButton(x + width + 10 * MenuScale, y, 580 * MenuScale - width - 10 * MenuScale, height, I_Loc\Menu_BackUpper, False, False, UpdatingMod<>Null) Then 
 			Select MainMenuTab
 				Case 1
 					PutINIValue(OptionFile, "general", "intro enabled", IntroEnabled%)
@@ -263,6 +275,7 @@ Function UpdateMainMenu()
 					CurrLoadGamePage = 0
 					MouseHit1 = False
 				Case 8
+					CurrLoadGamePage = 0
 					MainMenuTab = 0
 					SerializeMods()
 					If ModsDirty Then
@@ -290,8 +303,7 @@ Function UpdateMainMenu()
 				SetFont Font2
 				Text(x + width / 2, y + height / 2, I_Loc\Menu_NewUpper, True, True)
 				
-				x = 160 * MenuScale
-				y = y + height + 20 * MenuScale
+				y = y + height + 10 * MenuScale
 				width = 580 * MenuScale
 				height = 330 * MenuScale
 				
@@ -314,10 +326,10 @@ Function UpdateMainMenu()
 				CurrSave = Replace(CurrSave,"*","")
 				
 				Color 255,255,255
-				If SelectedMap = "" Then
+				If SelectedMap = -1 Then
 					Text (x + 20 * MenuScale, y + 60 * MenuScale, I_Loc\Menu_Seed)
 					If HasNumericSeed Then
-						Local inputBoxSeed$ = InputBox(x+150*MenuScale, y+55*MenuScale, 200*MenuScale, 30*MenuScale, Str(RandomSeedNumeric), 3)
+						Local inputBoxSeed$ = InputBox(x+150*MenuScale, y+55*MenuScale, 200*MenuScale, 30*MenuScale, Str(RandomSeedNumeric), 3, 3)
 						If Instr(inputBoxSeed, "-", 2) <> 0 Then
 							RandomSeedNumeric = -RandomSeedNumeric
 						Else
@@ -334,14 +346,15 @@ Function UpdateMainMenu()
 					Rect(x+150*MenuScale+2, y+55*MenuScale+2, 200*MenuScale-4, 30*MenuScale-4)
 					
 					Color (255, 0,0)
-					If Len(SelectedMap)>15 Then
-						Text(x+150*MenuScale + 100*MenuScale, y+55*MenuScale + 15*MenuScale, Left(SelectedMap,14)+"...", True, True)
+					Local mapName$ = SavedMaps(SelectedMap)
+					If Len(mapName)>15 Then
+						Text(x+150*MenuScale + 100*MenuScale, y+55*MenuScale + 15*MenuScale, Left(mapName,14)+"...", True, True)
 					Else
-						Text(x+150*MenuScale + 100*MenuScale, y+55*MenuScale + 15*MenuScale, SelectedMap, True, True)
+						Text(x+150*MenuScale + 100*MenuScale, y+55*MenuScale + 15*MenuScale, mapName, True, True)
 					EndIf
 					
 					If DrawButton(x+370*MenuScale, y+55*MenuScale, 120*MenuScale, 30*MenuScale, I_Loc\NewGame_Deselect, False) Then
-						SelectedMap=""
+						SelectedMap=-1
 					EndIf
 				EndIf	
 				
@@ -402,14 +415,14 @@ Function UpdateMainMenu()
 					RowText(SelectedDifficulty\description, x+160*MenuScale, y+165*MenuScale, (410-20)*MenuScale, 140*MenuScale)					
 				EndIf
 				
-				If DrawButton(x, y + height + 20 * MenuScale, 160 * MenuScale, 70 * MenuScale, I_Loc\NewGame_Loadmap, False) Then
+				If DrawButton(x, y + height + 10 * MenuScale, 160 * MenuScale, 70 * MenuScale, I_Loc\NewGame_Loadmap, False) Then
 					MainMenuTab = 4
 					LoadSavedMaps()
 				EndIf
 				
 				SetFont Font2
 				
-				If DrawButton(x + 420 * MenuScale, y + height + 20 * MenuScale, 160 * MenuScale, 70 * MenuScale, I_Loc\NewGame_Start, False) Then
+				If DrawButton(x + 420 * MenuScale, y + height + 10 * MenuScale, 160 * MenuScale, 70 * MenuScale, I_Loc\NewGame_Start, False) Then
 					TimerStopped = True
 
 					If CurrSave = "" Then CurrSave = I_Loc\NewGame_Untitled
@@ -417,6 +430,7 @@ Function UpdateMainMenu()
 					
 					Local SameFound% = 1
 
+					LoadSaveGames()
 					For i% = 1 To SaveGameAmount
 						If SaveGames(i - 1) = CurrSave Then
 							SameFound = SameFound + 1
@@ -449,10 +463,11 @@ Function UpdateMainMenu()
 			Case 2 ;load game
 				;[Block]
 				
-				y = y + height + 20 * MenuScale
+				y = y + height + 10 * MenuScale
 				width = 580 * MenuScale
 				;height = 300 * MenuScale
-				height = 510 * MenuScale
+				;height = 510 * MenuScale
+				height = PagingFrameHeight
 				
 				DrawFrame(x, y, width, height)
 				
@@ -466,8 +481,7 @@ Function UpdateMainMenu()
 				SetFont Font2
 				Text(x + width / 2, y + height / 2, I_Loc\Menu_LoadUpper, True, True)
 				
-				x = 160 * MenuScale
-				y = y + height + 20 * MenuScale
+				y = y + height + 10 * MenuScale
 				width = 580 * MenuScale
 				height = 296 * MenuScale
 				
@@ -475,32 +489,32 @@ Function UpdateMainMenu()
 				
 				SetFont Font2
 				
-				If CurrLoadGamePage < Ceil(Float(SaveGameAmount)/6.0)-1 And SaveMSG = "" Then 
-					If DrawButton(x+530*MenuScale, y + 510*MenuScale, 50*MenuScale, 55*MenuScale, ">") Then
+				If CurrLoadGamePage < Ceil(Float(SaveGameAmount)/EntriesPerPage)-1 And SaveMSG = "" Then 
+					If DrawButton(x+530*MenuScale, y + PagingFrameHeight, 50*MenuScale, 55*MenuScale, ">") Then
 						CurrLoadGamePage = CurrLoadGamePage+1
 					EndIf
 				Else
-					DrawFrame(x+530*MenuScale, y + 510*MenuScale, 50*MenuScale, 55*MenuScale)
+					DrawFrame(x+530*MenuScale, y + PagingFrameHeight, 50*MenuScale, 55*MenuScale)
 					Color(100, 100, 100)
-					Text(x+555*MenuScale, y + 537.5*MenuScale, ">", True, True)
+					Text(x+555*MenuScale, y + PagingFrameHeight + 27.5*MenuScale, ">", True, True)
 				EndIf
 				If CurrLoadGamePage > 0 And SaveMSG = "" Then
-					If DrawButton(x, y + 510*MenuScale, 50*MenuScale, 55*MenuScale, "<") Then
+					If DrawButton(x, y + PagingFrameHeight, 50*MenuScale, 55*MenuScale, "<") Then
 						CurrLoadGamePage = CurrLoadGamePage-1
 					EndIf
 				Else
-					DrawFrame(x, y + 510*MenuScale, 50*MenuScale, 55*MenuScale)
+					DrawFrame(x, y + PagingFrameHeight, 50*MenuScale, 55*MenuScale)
 					Color(100, 100, 100)
-					Text(x+25*MenuScale, y + 537.5*MenuScale, "<", True, True)
+					Text(x+25*MenuScale, y + PagingFrameHeight + 27.5*MenuScale, "<", True, True)
 				EndIf
 				
-				DrawFrame(x+50*MenuScale,y+510*MenuScale,width-100*MenuScale,55*MenuScale)
+				DrawFrame(x+50*MenuScale,y+PagingFrameHeight,width-100*MenuScale,55*MenuScale)
 				
-				Text(x+(width/2.0),y+536*MenuScale,Format(I_Loc\Menu_Page, Int(Max((CurrLoadGamePage+1),1)), Int(Max((Int(Ceil(Float(SaveGameAmount)/6.0))),1))),True,True)
+				Text(x+(width/2.0),y+PagingFrameHeight+26*MenuScale,Format(I_Loc\Menu_Page, Int(Max((CurrLoadGamePage+1),1)), Int(Max((Int(Ceil(Float(SaveGameAmount)/EntriesPerPage))),1))),True,True)
 				
 				SetFont Font1
 				
-				If CurrLoadGamePage > Ceil(Float(SaveGameAmount)/6.0)-1 Then
+				If CurrLoadGamePage > Ceil(Float(SaveGameAmount)/EntriesPerPage)-1 Then
 					CurrLoadGamePage = CurrLoadGamePage - 1
 				EndIf
 				
@@ -510,7 +524,7 @@ Function UpdateMainMenu()
 					x = x + 20 * MenuScale
 					y = y + 20 * MenuScale
 					
-					For i% = (1+(6*CurrLoadGamePage)) To 6+(6*CurrLoadGamePage)
+					For i% = (1+(EntriesPerPage*CurrLoadGamePage)) To EntriesPerPage+(EntriesPerPage*CurrLoadGamePage)
 						If i <= SaveGameAmount Then
 							DrawFrame(x,y,540* MenuScale, 70* MenuScale)
 							
@@ -521,17 +535,16 @@ Function UpdateMainMenu()
 							EndIf
 							
 							Text(x + 20 * MenuScale, y + 10 * MenuScale, SaveGames(i - 1))
-							Text(x + 20 * MenuScale, y + (10+18) * MenuScale, SaveGameTime(i - 1)) ;y + (10+23) * MenuScale
-							Text(x + 120 * MenuScale, y + (10+18) * MenuScale, SaveGameDate(i - 1))
-							Text(x + 20 * MenuScale, y + (10+36) * MenuScale, SaveGameVersion(i - 1) + RSet(FormatDuration(SaveGamePlayTime(i - 1), False), 14))
+							Text(x + 20 * MenuScale, y + (10+18) * MenuScale, SaveGameTime(i - 1) + RSet(SaveGameDate(i - 1), 21 - Len(SaveGameTime(i - 1))))
+							Text(x + 20 * MenuScale, y + (10+36) * MenuScale, SaveGameVersion(i - 1) + RSet(FormatDuration(SaveGamePlayTime(i - 1), False), 21 - Len(SaveGameVersion(i - 1))))
 							
 							If SaveMSG = "" Then
 								If SaveGameVersion(i - 1) <> CompatibleNumber Then
-									DrawFrame(x + 280 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale)
+									DrawFrame(x + 300 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale)
 									Color(255, 0, 0)
-									Text(x + 330 * MenuScale, y + 34 * MenuScale, I_Loc\LoadGame_Load, True, True)
+									Text(x + 350 * MenuScale, y + 35 * MenuScale, I_Loc\LoadGame_Load, True, True)
 								Else
-									If DrawButton(x + 280 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\LoadGame_Load, False) Then
+									If DrawButton(x + 300 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\LoadGame_Load, False) Then
 										LoadEntities()
 										LoadAllSounds()
 										InitRoomTemplates()
@@ -543,23 +556,23 @@ Function UpdateMainMenu()
 									EndIf
 								EndIf
 								
-								If DrawButton(x + 400 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\LoadGame_Delete, False) Then
+								If DrawButton(x + 420 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\LoadGame_Delete, False) Then
 									SaveMSG = SaveGames(i - 1)
 									DebugLog SaveMSG
 									Exit
 								EndIf
 							Else
-								DrawFrame(x + 280 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale)
+								DrawFrame(x + 300 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale)
 								If SaveGameVersion(i - 1) <> CompatibleNumber Then
 									Color(255, 0, 0)
 								Else
 									Color(100, 100, 100)
 								EndIf
-								Text(x + 330 * MenuScale, y + 34 * MenuScale, I_Loc\LoadGame_Load, True, True)
+								Text(x + 350 * MenuScale, y + 35 * MenuScale, I_Loc\LoadGame_Load, True, True)
 								
-								DrawFrame(x + 400 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale)
+								DrawFrame(x + 420 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale)
 								Color(100, 100, 100)
-								Text(x + 450 * MenuScale, y + 34 * MenuScale, I_Loc\LoadGame_Delete, True, True)
+								Text(x + 470 * MenuScale, y + 35 * MenuScale, I_Loc\LoadGame_Delete, True, True)
 							EndIf
 							
 							y = y + 80 * MenuScale
@@ -570,15 +583,17 @@ Function UpdateMainMenu()
 					
 					If SaveMSG <> ""
 						x = 740 * MenuScale
-						y = 376 * MenuScale
-						DrawFrame(x, y, 420 * MenuScale, 200 * MenuScale)
-						RowText(I_Loc\LoadGame_DeleteConfirm, x + 20 * MenuScale, y + 15 * MenuScale, 400 * MenuScale, 200 * MenuScale)
-						If DrawButton(x + 50 * MenuScale, y + 150 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Menu_Yes, False) Then
+						y = 366 * MenuScale
+						height = 100 * MenuScale
+						DrawFrame(x, y, 420 * MenuScale, height)
+						RowText(I_Loc\LoadGame_DeleteConfirm, x + 20 * MenuScale, y + 15 * MenuScale, 400 * MenuScale, height)
+						y = y + height - (30 + 15) * MenuScale
+						If DrawButton(x + 50 * MenuScale, y, 100 * MenuScale, 30 * MenuScale, I_Loc\Menu_Yes, False) Then
 							DeleteFile(CurrentDir() + SavePath + SaveMSG + ".cbsav")
 							SaveMSG = ""
 							LoadSaveGames()
 						EndIf
-						If DrawButton(x + 250 * MenuScale, y + 150 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Menu_No, False) Then
+						If DrawButton(x + 250 * MenuScale, y, 100 * MenuScale, 30 * MenuScale, I_Loc\Menu_No, False) Then
 							SaveMSG = ""
 						EndIf
 					EndIf
@@ -600,8 +615,7 @@ Function UpdateMainMenu()
 				SetFont Font2
 				Text(x + width / 2, y + height / 2, I_Loc\Menu_OptionsUpper, True, True)
 				
-				x = 160 * MenuScale
-				y = y + height + 20 * MenuScale
+				y = y + height + 10 * MenuScale
 				width = 580 * MenuScale
 				height = 60 * MenuScale
 				DrawFrame(x, y, width, height)
@@ -633,8 +647,8 @@ Function UpdateMainMenu()
 				
 				Local tx# = x+width
 				Local ty# = y
-				Local tw# = 400*MenuScale
-				Local th# = 150*MenuScale
+				Local tw# = 440*MenuScale
+				Local th# = 160*MenuScale
 				
 				;DrawOptionsTooltip(tx,ty,tw,th,"")
 				
@@ -876,26 +890,26 @@ Function UpdateMainMenu()
 					y = y + 10*MenuScale
 					
 					Text(x + 20 * MenuScale, y + 20 * MenuScale, I_Loc\OptionName_BindMoveForward)
-					InputBox(x + 160 * MenuScale, y + 20 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_UP,210)),5)		
+					InputBox(x + 160 * MenuScale, y + 20 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_UP,210)),5,-1)		
 					Text(x + 20 * MenuScale, y + 40 * MenuScale, I_Loc\OptionName_BindMoveLeft)
-					InputBox(x + 160 * MenuScale, y + 40 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_LEFT,210)),3)	
+					InputBox(x + 160 * MenuScale, y + 40 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_LEFT,210)),3,-1)	
 					Text(x + 20 * MenuScale, y + 60 * MenuScale, I_Loc\OptionName_BindMoveBack)
-					InputBox(x + 160 * MenuScale, y + 60 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_DOWN,210)),6)				
+					InputBox(x + 160 * MenuScale, y + 60 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_DOWN,210)),6,-1)				
 					Text(x + 20 * MenuScale, y + 80 * MenuScale, I_Loc\OptionName_BindMoveRight)
-					InputBox(x + 160 * MenuScale, y + 80 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_RIGHT,210)),4)	
+					InputBox(x + 160 * MenuScale, y + 80 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_RIGHT,210)),4,-1)	
 					Text(x + 20 * MenuScale, y + 100 * MenuScale, I_Loc\OptionName_BindSave)
-					InputBox(x + 160 * MenuScale, y + 100 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_SAVE,210)),11)
+					InputBox(x + 160 * MenuScale, y + 100 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_SAVE,210)),11,-1)
 
 					Text(x + 280 * MenuScale, y + 20 * MenuScale, I_Loc\OptionName_BindBlink)
-					InputBox(x + 470 * MenuScale, y + 20 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_BLINK,210)),7)				
+					InputBox(x + 470 * MenuScale, y + 20 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_BLINK,210)),7,-1)				
 					Text(x + 280 * MenuScale, y + 40 * MenuScale, I_Loc\OptionName_BindSprint)
-					InputBox(x + 470 * MenuScale, y + 40 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_SPRINT,210)),8)
+					InputBox(x + 470 * MenuScale, y + 40 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_SPRINT,210)),8,-1)
 					Text(x + 280 * MenuScale, y + 60 * MenuScale, I_Loc\OptionName_BindInv)
-					InputBox(x + 470 * MenuScale, y + 60 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_INV,210)),9)
+					InputBox(x + 470 * MenuScale, y + 60 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_INV,210)),9,-1)
 					Text(x + 280 * MenuScale, y + 80 * MenuScale, I_Loc\OptionName_BindCrouch)
-					InputBox(x + 470 * MenuScale, y + 80 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_CROUCH,210)),10)	
+					InputBox(x + 470 * MenuScale, y + 80 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_CROUCH,210)),10,-1)	
 					Text(x + 280 * MenuScale, y + 100 * MenuScale, I_Loc\OptionName_BindConsole)
-					InputBox(x + 470 * MenuScale, y + 100 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_CONSOLE,210)),12)
+					InputBox(x + 470 * MenuScale, y + 100 * MenuScale,100*MenuScale,20*MenuScale,GetKeyName(Min(KEY_CONSOLE,210)),12,-1)
 					
 					If MouseOn(x+20*MenuScale,y,width-40*MenuScale,120*MenuScale) And OnSliderID=0
 						DrawOptionsTooltip(tx,ty,tw,th,"controls")
@@ -1036,11 +1050,10 @@ Function UpdateMainMenu()
 				;[End Block]
 			Case 4 ; load map
 				;[Block]
-				y = y + height + 20 * MenuScale
+				y = y + height + 10 * MenuScale
 				width = 580 * MenuScale
-				height = 510 * MenuScale
 				
-				DrawFrame(x, y, width, height)
+				DrawFrame(x, y, width, PagingFrameHeight)
 				
 				x = 159 * MenuScale
 				y = 286 * MenuScale
@@ -1052,44 +1065,43 @@ Function UpdateMainMenu()
 				SetFont Font2
 				Text(x + width / 2, y + height / 2, I_Loc\NewGame_LoadmapUpper, True, True)
 				
-				x = 160 * MenuScale
-				y = y + height + 20 * MenuScale
+				y = y + height + 10 * MenuScale
 				width = 580 * MenuScale
 				height = 350 * MenuScale
 				
 				SetFont Font2
 				
-				tx# = x+width
+				tx# = x+width+1*MenuScale
 				ty# = y
 				tw# = 400*MenuScale
 				th# = 150*MenuScale
 				
-				If CurrLoadGamePage < Ceil(Float(SavedMapsAmount)/6.0)-1 Then 
-					If DrawButton(x+530*MenuScale, y + 510*MenuScale, 50*MenuScale, 55*MenuScale, ">") Then
+				If CurrLoadGamePage < Ceil(Float(SavedMapsAmount)/EntriesPerPage)-1 Then 
+					If DrawButton(x+530*MenuScale, y + PagingFrameHeight, 50*MenuScale, 55*MenuScale, ">") Then
 						CurrLoadGamePage = CurrLoadGamePage+1
 					EndIf
 				Else
-					DrawFrame(x+530*MenuScale, y + 510*MenuScale, 50*MenuScale, 55*MenuScale)
+					DrawFrame(x+530*MenuScale, y + PagingFrameHeight, 50*MenuScale, 55*MenuScale)
 					Color(100, 100, 100)
-					Text(x+555*MenuScale, y + 537.5*MenuScale, ">", True, True)
+					Text(x+555*MenuScale, y + PagingFrameHeight + 27.5*MenuScale, ">", True, True)
 				EndIf
 				If CurrLoadGamePage > 0 Then
-					If DrawButton(x, y + 510*MenuScale, 50*MenuScale, 55*MenuScale, "<") Then
+					If DrawButton(x, y + PagingFrameHeight, 50*MenuScale, 55*MenuScale, "<") Then
 						CurrLoadGamePage = CurrLoadGamePage-1
 					EndIf
 				Else
-					DrawFrame(x, y + 510*MenuScale, 50*MenuScale, 55*MenuScale)
+					DrawFrame(x, y + PagingFrameHeight, 50*MenuScale, 55*MenuScale)
 					Color(100, 100, 100)
-					Text(x+25*MenuScale, y + 537.5*MenuScale, "<", True, True)
+					Text(x+25*MenuScale, y + PagingFrameHeight + 27.5*MenuScale, "<", True, True)
 				EndIf
 				
-				DrawFrame(x+50*MenuScale,y+510*MenuScale,width-100*MenuScale,55*MenuScale)
+				DrawFrame(x+50*MenuScale,y+PagingFrameHeight,width-100*MenuScale,55*MenuScale)
 				
-				Text(x+(width/2.0),y+536*MenuScale,Format(I_Loc\Menu_Page, Int(Max((CurrLoadGamePage+1),1)), Int(Max((Int(Ceil(Float(SavedMapsAmount)/6.0))),1))),True,True)
+				Text(x+(width/2.0),y+PagingFrameHeight+26*MenuScale,Format(I_Loc\Menu_Page, Int(Max((CurrLoadGamePage+1),1)), Int(Max((Int(Ceil(Float(SavedMapsAmount)/EntriesPerPage))),1))),True,True)
 				
 				SetFont Font1
 				
-				If CurrLoadGamePage > Ceil(Float(SavedMapsAmount)/6.0)-1 Then
+				If CurrLoadGamePage > Ceil(Float(SavedMapsAmount)/EntriesPerPage)-1 Then
 					CurrLoadGamePage = CurrLoadGamePage - 1
 				EndIf
 				
@@ -1100,19 +1112,19 @@ Function UpdateMainMenu()
 				Else
 					x = x + 20 * MenuScale
 					y = y + 20 * MenuScale
-					For i = (1+(6*CurrLoadGamePage)) To 6+(6*CurrLoadGamePage)
+					For i = (1+(EntriesPerPage*CurrLoadGamePage)) To EntriesPerPage+(EntriesPerPage*CurrLoadGamePage)
 						If i <= SavedMapsAmount Then
 							DrawFrame(x,y,540* MenuScale, 70* MenuScale)
 							
-							Text(x + 20 * MenuScale, y + 10 * MenuScale, SavedMaps(i - 1))
-							Text(x + 20 * MenuScale, y + (10+27) * MenuScale, SavedMapsAuthor(i - 1))
+							Text(x + 20 * MenuScale, y + 15 * MenuScale, SavedMaps(i - 1))
+							Text(x + 20 * MenuScale, y + (15+27) * MenuScale, SavedMapsAuthor(i - 1))
 							
 							If DrawButton(x + 400 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\LoadGame_Load, False) Then
-								SelectedMap=SavedMaps(i - 1)
+								SelectedMap=i - 1
 								MainMenuTab = 1
 							EndIf
 							If MouseOn(x + 400 * MenuScale, y + 20 * MenuScale, 100*MenuScale,30*MenuScale)
-								DrawMapCreatorTooltip(tx,ty,tw,th,SavedMaps(i-1))
+								DrawMapCreatorTooltip(tx,ty,tw,th,SavedMapsPath(i-1))
 							EndIf
 							
 							y = y + 80 * MenuScale
@@ -1124,10 +1136,10 @@ Function UpdateMainMenu()
 				;[End Block]
 			Case 8 ;Mods
 
-				y = y + height + 20 * MenuScale
+				y = y + height + 10 * MenuScale
 				width = 580 * MenuScale
-				height = 510 * MenuScale
-				
+				height = PagingFrameHeight
+
 				DrawFrame(x, y, width, height)
 				
 				x = 159 * MenuScale
@@ -1140,39 +1152,38 @@ Function UpdateMainMenu()
 				SetFont Font2
 				Text(x + width / 2, y + height / 2, I_Loc\Menu_ModsUpper, True, True)
 				
-				x = 160 * MenuScale
-				y = y + height + 20 * MenuScale
+				y = y + height + 10 * MenuScale
 				width = 580 * MenuScale
 				height = 296 * MenuScale
 				
 				SetFont Font2
 
-				If CurrLoadGamePage < Ceil(Float(ModCount)/6.0)-1 And SaveMSG = "" Then 
-					If DrawButton(x+530*MenuScale, y + 510*MenuScale, 50*MenuScale, 55*MenuScale, ">") Then
+				If CurrLoadGamePage < Ceil(Float(ModCount)/EntriesPerPage)-1 And SaveMSG = "" Then 
+					If DrawButton(x+530*MenuScale, y + PagingFrameHeight, 50*MenuScale, 55*MenuScale, ">") Then
 						CurrLoadGamePage = CurrLoadGamePage+1
 					EndIf
 				Else
-					DrawFrame(x+530*MenuScale, y + 510*MenuScale, 50*MenuScale, 55*MenuScale)
+					DrawFrame(x+530*MenuScale, y + PagingFrameHeight, 50*MenuScale, 55*MenuScale)
 					Color(100, 100, 100)
-					Text(x+555*MenuScale, y + 537.5*MenuScale, ">", True, True)
+					Text(x+555*MenuScale, y + PagingFrameHeight + 27.5*MenuScale, ">", True, True)
 				EndIf
 				If CurrLoadGamePage > 0 And SaveMSG = "" Then
-					If DrawButton(x, y + 510*MenuScale, 50*MenuScale, 55*MenuScale, "<") Then
+					If DrawButton(x, y + PagingFrameHeight, 50*MenuScale, 55*MenuScale, "<") Then
 						CurrLoadGamePage = CurrLoadGamePage-1
 					EndIf
 				Else
-					DrawFrame(x, y + 510*MenuScale, 50*MenuScale, 55*MenuScale)
+					DrawFrame(x, y + PagingFrameHeight, 50*MenuScale, 55*MenuScale)
 					Color(100, 100, 100)
-					Text(x+25*MenuScale, y + 537.5*MenuScale, "<", True, True)
+					Text(x+25*MenuScale, y + PagingFrameHeight + 27.5*MenuScale, "<", True, True)
 				EndIf
 				
-				DrawFrame(x+50*MenuScale,y+510*MenuScale,width-100*MenuScale,55*MenuScale)
+				DrawFrame(x+50*MenuScale,y+PagingFrameHeight,width-100*MenuScale,55*MenuScale)
 				
-				Text(x+(width/2.0),y+536*MenuScale,Format(I_Loc\Menu_Page, Int(Max((CurrLoadGamePage+1),1)), Int(Max((Int(Ceil(Float(ModCount)/6.0))),1))),True,True)
+				Text(x+(width/2.0),y+PagingFrameHeight+26*MenuScale,Format(I_Loc\Menu_Page, Int(Max((CurrLoadGamePage+1),1)), Int(Max((Int(Ceil(Float(ModCount)/entriesPerPage))),1))),True,True)
 				
 				SetFont Font1
 				
-				If CurrLoadGamePage > Ceil(Float(ModCount)/6.0)-1 Then
+				If CurrLoadGamePage > Ceil(Float(ModCount)/EntriesPerPage)-1 Then
 					CurrLoadGamePage = CurrLoadGamePage - 1
 				EndIf
 
@@ -1180,7 +1191,7 @@ Function UpdateMainMenu()
 					Text (x + 20 * MenuScale, y + 20 * MenuScale, I_Loc\Mods_Nomods)
 				Else
 					x = x + 10 * MenuScale
-					y = y + (20 + 5 * 80) * MenuScale
+					y = y + (20 + (EntriesPerPage-1) * 80) * MenuScale
 					
 					UpdateUpdatingMod()
 
@@ -1188,11 +1199,11 @@ Function UpdateMainMenu()
 
 					Local milis% = MilliSecs()
 					i% = ModCount
-					If (i Mod 6) <> 0 Then i = i - (i Mod 6) + 6
+					If (i Mod EntriesPerPage) <> 0 Then i = i - (i Mod EntriesPerPage) + EntriesPerPage
 					Local drawn% = 0
 					Local m.Mods = Last Mods
 					Repeat
-						If i <= (6+(6*CurrLoadGamePage)) Then
+						If i <= (EntriesPerPage+(EntriesPerPage*CurrLoadGamePage)) Then
 							If i <= ModCount Then
 								x = xStart
 
@@ -1267,12 +1278,14 @@ Function UpdateMainMenu()
 										If DrawButton(x + 370 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Mods_Upload, False, False, buttonsInactive) Then
 											ModUIState = 1
 											SelectedMod = m
+											ReadTagsFromMod(m)
 										EndIf
 									Else
 										If m\IsUserOwner Then
 											If DrawButton(x + 370 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Mods_Update, False, False, buttonsInactive) Then
 												ModUIState = 2
 												SelectedMod = m
+												ReadTagsFromMod(m)
 											EndIf
 										Else
 											If DrawButton(x + 370 * MenuScale, y + 20 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Mods_Visit, False, False, buttonsInactive) Then
@@ -1300,49 +1313,57 @@ Function UpdateMainMenu()
 						EndIf
 						If i <= ModCount Then m = Before m
 						i = i - 1
-					Until i <= 0 Lor drawn => 6
+					Until i <= 0 Lor drawn => EntriesPerPage
 
 					x = 740 * MenuScale
-					y = 376 * MenuScale
+					y = 366 * MenuScale
 					If UpdateModErrorCode <> 0
 						DrawFrame(x, y, 420 * MenuScale, 200 * MenuScale)
 						Color(255, 0, 0)
-						RowText(Format(I_Loc\Mods_UpdateFailed, GetWorkshopErrorCodeStr(UpdateModErrorCode)), x + 20 * MenuScale, y + 15 * MenuScale, 400 * MenuScale, 200 * MenuScale)
+						RowText(Format(I_Loc\Mods_UpdateFailed, GetWorkshopErrorCodeStr(UpdateModErrorCode)), x + 20 * MenuScale, y + 15 * MenuScale, 380 * MenuScale, 200 * MenuScale)
 						If DrawButton(x + 150 * MenuScale, y + 150 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Menu_Ok, False) Then
 							UpdateModErrorCode = 0
 						EndIf
 					Else If ModUIState = 1 Then
-						DrawFrame(x, y, 420 * MenuScale, 200 * MenuScale)
-						RowText(I_Loc\Mods_UploadConfirm, x + 20 * MenuScale, y + 15 * MenuScale, 400 * MenuScale, 200 * MenuScale)
-						If DrawButton(x + 25 * MenuScale, y + 150 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Menu_Yes, False) Then
+						DrawFrame(x, y, 420 * MenuScale, 285 * MenuScale)
+						RowText(I_Loc\Mods_UploadConfirm, x + 20 * MenuScale, y + 15 * MenuScale, 380 * MenuScale, 200 * MenuScale)
+						If DrawButton(x + 22.5 * MenuScale, y + 100 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Menu_Yes, False) Then
+							WriteTagsToMod(SelectedMod)
+							SetSteamTags()
 							UploadMod(SelectedMod)
 							ModUIState = 0
 							SelectedMod = Null
 						EndIf
-						If DrawButton(x + 150 * MenuScale, y + 150 * MenuScale, 125 * MenuScale, 30 * MenuScale, I_Loc\Mods_Viewterms, False) Then
+						If DrawButton(x + 150 * MenuScale, y + 100 * MenuScale, 125 * MenuScale, 30 * MenuScale, I_Loc\Mods_Viewterms, False) Then
 							ExecFile("https://steamcommunity.com/sharedfiles/workshoplegalagreement")
 						EndIf
-						If DrawButton(x + 300 * MenuScale, y + 150 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Menu_No, False) Then
+						If DrawButton(x + (320 - 22.5) * MenuScale, y + 100 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Menu_No, False) Then
+							WriteTagsToMod(SelectedMod)
 							ModUIState = 0
 							SelectedMod = Null
 						EndIf
+						DrawTagSelection(x + 10 * MenuScale, y + 160 * MenuScale, 380 * MenuScale)
 					Else If ModUIState = 2 Then
-						DrawFrame(x, y, 420 * MenuScale, 200 * MenuScale)
+						DrawFrame(x, y, 420 * MenuScale, 335 * MenuScale)
 						RowText(I_Loc\Mods_UpdateConfirm, x + 20 * MenuScale, y + 15 * MenuScale, 400 * MenuScale, 200 * MenuScale)
 						ModChangelog = InputBox(x + 20 * MenuScale, y + 80 * MenuScale, 380 * MenuScale, 30 * MenuScale, ModChangelog, 99)
 						Text(x + 20 * MenuScale, y + 125 * MenuScale, I_Loc\Mods_Keepdesc)
 						ShouldKeepModDescription = DrawTick(x + 325 * MenuScale, y + 121 * MenuScale, ShouldKeepModDescription)
 						If DrawButton(x + 50 * MenuScale, y + 155 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Menu_Yes, False) Then
+							WriteTagsToMod(SelectedMod)
+							SetSteamTags()
 							UpdateMod(SelectedMod, ModChangelog)
 							ModChangelog = ""
 							ModUIState = 0
 							SelectedMod = Null
 						EndIf
 						If DrawButton(x + 250 * MenuScale, y + 155 * MenuScale, 100 * MenuScale, 30 * MenuScale, I_Loc\Menu_No, False) Then
+							WriteTagsToMod(SelectedMod)
 							ModChangelog = ""
 							ModUIState = 0
 							SelectedMod = Null
 						EndIf
+						DrawTagSelection(x + 10 * MenuScale, y + 210 * MenuScale, 400 * MenuScale)
 					Else
 						If DrawButton(x + 10 * MenuScale, y, 150 * MenuScale, 30 * MenuScale, I_Loc\Mods_Reloadmods, False, False, UpdatingMod<>Null) Then
 							SerializeMods()
@@ -1369,7 +1390,7 @@ Function UpdateMainMenu()
 	If SpeedRunMode And (Not TimerStopped) Then
 		DrawTimer()
 		If MainMenuOpen Then
-			If DrawButton(GraphicWidth - 150 * MenuScale - 24, 60 * MenuScale + 24, 150 * MenuScale, 30 * MenuScale, "Stop timer", False) Then
+			If DrawButton(GraphicWidth - 150 * MenuScale - 24, 60 * MenuScale + 24, 150 * MenuScale, 30 * MenuScale, I_Loc\HUD_SpeedrunStoptimer, False) Then
 				TimerStopped = True
 			EndIf
 		EndIf
@@ -1384,6 +1405,71 @@ Function UpdateMainMenu()
 	If Fullscreen Then DrawImage CursorIMG, ScaledMouseX(),ScaledMouseY()
 	
 	SetFont Font1
+End Function
+
+Const TAG_COUNT = 8
+Global TagActive%[TAG_COUNT]
+Global TagSteamName$[TAG_COUNT]
+TagSteamName[0] = "Textures"
+TagSteamName[1] = "Sounds"
+TagSteamName[2] = "Models"
+TagSteamName[3] = "Rooms"
+TagSteamName[4] = "Items"
+TagSteamName[5] = "SCP-294 Drinks"
+TagSteamName[6] = "Loading Screens"
+TagSteamName[7] = "Custom Maps"
+
+Function ReadTagsFromMod(m.Mods)
+	For i = 0 To TAG_COUNT-1
+		TagActive[i] = False
+	Next
+	Local tags$ = GetINIString2(m\Path + "info.ini", 1, "tags")
+	Local tag$, tagIdx%
+	DebugLog(tags)
+	Repeat
+		tag = Trim(Piece(tags, tagIdx, ","))
+		DebugLog(tag)
+		tagIdx = tagIdx + 1
+		For i = 0 To TAG_COUNT-1
+			If tag = TagSteamName[i] Then TagActive[i] = True : Exit
+		Next
+	Until tag = ""
+End Function
+
+Function WriteTagsToMod(m.Mods)
+	Local txt$, comma%
+	For i = 0 To TAG_COUNT-1
+		If TagActive[i] Then
+			If comma Then txt = txt + ", "
+			txt = txt + TagSteamName[i]
+			comma = True
+		EndIf
+	Next
+	PutINIValue(m\Path + "info.ini", "", "tags", txt)
+End Function
+
+Function SetSteamTags()
+	Steam_ClearItemTags()
+	For i = 0 To TAG_COUNT-1
+		If TagActive[i] Then Steam_AddItemTag(TagSteamName[i])
+	Next
+End Function
+
+Function DrawTagSelection(x%, y%, width%)
+	Text x + 10 * MenuScale, y, I_Loc\Mods_Tags
+	y = y + 25 * MenuScale
+
+	Local xStep% = (width - 20 * MenuScale) / 3
+	Local xBegin% = x + width - 40 * MenuScale - xStep * 2
+	For i = 0 To TAG_COUNT-1
+		Local myX% = xBegin + (i Mod 3) * xStep
+		Local row% = i / 3
+		Local myY% = y + row * 30 * MenuScale
+		If i = 6 Then myX = x + StringWidth(TagSteamName[i]) + 20 * MenuScale
+		If i = 7 Then myX = myX + xStep
+		Text(myX - StringWidth(I_Loc\Mods_Tag[i+1]) - 5, myY, I_Loc\Mods_Tag[i+1])
+		TagActive[i] = DrawTick(myX, myY, TagActive[i])
+	Next
 End Function
 
 Function CreateGrayScaleImage%(img%)
@@ -1961,7 +2047,7 @@ Function RandomDefaultWidthChar$(min%, max%, def$)
 	If StringWidth(c) <> StringWidth("L") Then Return def Else Return c
 End Function
 
-Function InputBox$(x%, y%, width%, height%, Txt$, ID% = 0)
+Function InputBox$(x%, y%, width%, height%, Txt$, ID% = 0, virtualKeyboardMode=0)
 	;TextBox(x,y,width,height,Txt$)
 	Color (255, 255, 255)
 	DrawTiledImageRect(MenuWhite, (x Mod 256), (y Mod 256), 512, 512, x, y, width, height)
@@ -1972,13 +2058,20 @@ Function InputBox$(x%, y%, width%, height%, Txt$, ID% = 0)
 	If MouseOn(x, y, width, height) Then
 		Color(50, 50, 50)
 		MouseOnBox = True
-		If MouseHit1 Then SelectedInputBox = ID : FlushKeys
+		If MouseHit1 Then
+			SelectedInputBox = ID
+			If virtualKeyboardMode >= 0 Then Steam_OpenOnScreenKeyboard(virtualKeyboardMode, x, y, width, height)
+			FlushKeys
+		EndIf
 	EndIf
 	
 	Rect(x + 2, y + 2, width - 4, height - 4)
 	Color (255, 255, 255)	
 	
-	If (Not MouseOnBox) And MouseHit1 And SelectedInputBox = ID Then SelectedInputBox = 0
+	If (Not MouseOnBox) And MouseHit1 And SelectedInputBox = ID Then
+		SelectedInputBox = 0
+		If virtualKeyboardMode >= 0 Then Steam_CloseOnScreenKeyboard()
+	EndIf
 	
 	Text(x + width / 2, y + height / 2, Txt, True, True)
 
@@ -2164,31 +2257,24 @@ Function GetLineAmount(A$, W, H, Leading#=1)
 	Local LinesShown = 0
 	Local Height = StringHeight(A$) + Leading
 	Local b$
-	
+
 	While Len(A) > 0
 		Local space = Instr(A$, " ")
-		If space = 0 Then space = Len(A$)
-		Local temp$ = Left(A$, space)
-		Local trimmed$ = Trim(temp) ;we might ignore a final space 
-		Local extra = 0 ;we haven't ignored it yet
-		;ignore final space If doing so would make a word fit at End of Line:
-		If (StringWidth (b$ + temp$) > W) And (StringWidth (b$ + trimmed$) <= W) Then
-			temp = trimmed
-			extra = 1
-		EndIf
+		If space = 0 Then space = Len(A$) + 1
+		Local temp$ = Left(A$, space - 1)
 		
 		If StringWidth (b$ + temp$) > W Then ;too big, so Print what will fit
-			
 			LinesShown = LinesShown + 1
 			b$=""
 		Else ;append it To b$ (which will eventually be printed) And remove it from A$
+			If b <> "" Then b = b + " "
 			b$ = b$ + temp$
-			A$ = Right(A$, Len(A$) - (Len(temp$) + extra))
+			A$ = Right(A$, Max(0, Len(A$) - Len(temp$) - 1))
 		EndIf
 		
 		If ((LinesShown + 1) * Height) > H Then Exit ;the Next Line would be too tall, so leave
 	Wend
-	
+
 	Return LinesShown+1
 	
 End Function
@@ -2224,10 +2310,10 @@ Function DrawQuickLoading()
 End Function
 
 Function DrawOptionsTooltip(x%,y%,width%,height%,option$,value#=0,ingame%=False)
-	Local fx# = x+6*MenuScale
-	Local fy# = y+6*MenuScale
-	Local fw# = width-12*MenuScale
-	Local fh# = height-12*MenuScale
+	Local fx# = x+10*MenuScale
+	Local fy# = y+10*MenuScale
+	Local fw# = width-20*MenuScale
+	Local fh# = height-20*MenuScale
 	Local lines% = 0, lines2% = 0
 	Local txt$ = ""
 	Local txt2$ = "", R% = 0, G% = 0, B% = 0
@@ -2317,7 +2403,7 @@ Function DrawOptionsTooltip(x%,y%,width%,height%,option$,value#=0,ingame%=False)
 		Case "hud"
 			txt = I_Loc\OptionTooltip_Showhud
 		Case "consoleenable"
-			txt = I_Loc\OptionTooltip_Console
+			txt = Format(I_Loc\OptionTooltip_Console, KeyName(KEY_CONSOLE))
 			R = 255
 			txt2 = I_Loc\OptionTooltip_ConsoleNote
 		Case "consoleerror"
@@ -2344,10 +2430,10 @@ Function DrawOptionsTooltip(x%,y%,width%,height%,option$,value#=0,ingame%=False)
 	
 	lines% = GetLineAmount(txt,fw,fh)
 	If txt2$ = ""
-		DrawFrame(x,y,width,((StringHeight(txt)*lines)+(10+lines)*MenuScale)+extraspace)
+		DrawFrame(x,y,width,((StringHeight(txt)*lines)+(15+lines)*MenuScale)+extraspace)
 	Else
 		lines2% = GetLineAmount(txt2,fw,fh)
-		DrawFrame(x,y,width,(((StringHeight(txt)*lines)+(10+lines)*MenuScale)+(StringHeight(txt2)*lines2)+(10+lines2)*MenuScale)+extraspace)
+		DrawFrame(x,y,width,(((StringHeight(txt)*lines)+(15+lines)*MenuScale)+(StringHeight(txt2)*lines2)+(10+lines2)*MenuScale)+extraspace)
 	EndIf
 	RowText(txt,fx,fy,fw,fh)
 	If txt2$ <> ""
@@ -2364,19 +2450,19 @@ Function DrawFramedRowText(txt$, x%, y%, width%)
 End Function
 
 Function DrawMapCreatorTooltip(x%,y%,width%,height%,mapname$)
-	Local fx# = x+6*MenuScale
-	Local fy# = y+6*MenuScale
-	Local fw# = width-12*MenuScale
-	Local fh# = height-12*MenuScale
+	Local fx# = x+20*MenuScale
+	Local fy# = y+20*MenuScale
+	Local fw# = width-40*MenuScale
+	Local fh# = height-40*MenuScale
 	Local lines% = 0
 	
 	SetFont Font1
 	Color 255,255,255
 	
 	Local txt$[6]
+	txt[0] = File_GetFileName(mapname)
 	If Right(mapname,6)="cbmap2" Then
-		txt[0] = Left(mapname$,Len(mapname$)-7)
-		Local f% = OpenFile("Map Creator\Maps\"+mapname$)
+		Local f% = OpenFile(mapname$)
 		
 		Local author$ = ReadLine(f)
 		Local descr$ = ReadLine(f)
@@ -2396,7 +2482,6 @@ Function DrawMapCreatorTooltip(x%,y%,width%,height%,mapname$)
 		
 		CloseFile f%
 	Else
-		txt[0] = Left(mapname$,Len(mapname$)-6)
 		author$ = I_Loc\LoadMap_Unknown
 		descr$ = I_Loc\LoadMap_Nodesc
 		ramount% = 0
@@ -2422,12 +2507,12 @@ Function DrawMapCreatorTooltip(x%,y%,width%,height%,mapname$)
 	EndIf
 	
 	lines% = GetLineAmount(txt[2],fw,fh)
-	DrawFrame(x,y,width,(StringHeight(txt[0])*6)+StringHeight(txt[2])*lines+5*MenuScale)
+	DrawFrame(x,y,width,(StringHeight(txt[0])*6)+StringHeight(txt[2])*lines+25*MenuScale)
 	
 	Color 255,255,255
 	Text(fx,fy,txt[0])
 	Text(fx,fy+StringHeight(txt[0]),txt[1])
-	RowText(txt[2],fx,fy+(StringHeight(txt[0])*2),fw,fh)
+	RowText(txt[2],fx,fy+(StringHeight(txt[0])*2),fw,height)
 	Text(fx,fy+((StringHeight(txt[0])*2)+StringHeight(txt[2])*lines+5*MenuScale),txt[3])
 	Text(fx,fy+((StringHeight(txt[0])*3)+StringHeight(txt[2])*lines+5*MenuScale),txt[4])
 	Text(fx,fy+((StringHeight(txt[0])*4)+StringHeight(txt[2])*lines+5*MenuScale),txt[5])
