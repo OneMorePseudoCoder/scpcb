@@ -655,7 +655,7 @@ Function UpdateMainMenu()
 				If MainMenuTab = 3 ;Graphics
 					;[Block]
 					;height = 380 * MenuScale
-					height = 330 * MenuScale
+					height = 280 * MenuScale
 					DrawFrame(x, y, width, height)
 					
 					y=y+20*MenuScale
