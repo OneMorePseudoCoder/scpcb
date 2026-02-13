@@ -2403,7 +2403,7 @@ Function DrawOptionsTooltip(x%,y%,width%,height%,option$,value#=0,ingame%=False)
 		Case "hud"
 			txt = I_Loc\OptionTooltip_Showhud
 		Case "consoleenable"
-			txt = Format(I_Loc\OptionTooltip_Console, KeyName(KEY_CONSOLE))
+			txt = Format(I_Loc\OptionTooltip_Console, GetKeyName(KEY_CONSOLE))
 			R = 255
 			txt2 = I_Loc\OptionTooltip_ConsoleNote
 		Case "consoleerror"
