@@ -595,7 +595,7 @@ Function UpdateConsole()
 		
 		SelectedInputBox = 2
 		Local oldConsoleInput$ = ConsoleInput
-		ConsoleInput = InputBox(x, y + height, width, 30*MenuScale, ConsoleInput, 2)
+		ConsoleInput = InputBox(x, y + height, width, 30*MenuScale, ConsoleInput, 2, -1)
 		If oldConsoleInput<>ConsoleInput Then
 			ConsoleReissue = Null
 		EndIf
@@ -3321,6 +3321,11 @@ While IsRunning
 		If KeyHit(KEY_CONSOLE) Then
 			If CanOpenConsole
 				ConsoleOpen = (Not ConsoleOpen)
+				If ConsoleOpen Then
+					Steam_OpenOnScreenKeyboard(0, GraphicWidth / 2, GraphicHeight / 2, GraphicWidth / 2, GraphicHeight / 2)
+				Else
+					Steam_CloseOnScreenKeyboard()
+				EndIf
 				UpdateMenuState()
 			EndIf
 		EndIf
