@@ -3365,10 +3365,12 @@ While IsRunning
 		If KeyHit(KEY_CONSOLE) Then
 			If CanOpenConsole
 				ConsoleOpen = (Not ConsoleOpen)
-				If ConsoleOpen Then
-					Steam_OpenOnScreenKeyboard(0, GraphicWidth / 2, GraphicHeight / 2, GraphicWidth / 2, GraphicHeight / 2)
-				Else
-					Steam_CloseOnScreenKeyboard()
+				If SteamActive Then
+					If ConsoleOpen Then
+						Steam_OpenOnScreenKeyboard(0, GraphicWidth / 2, GraphicHeight / 2, GraphicWidth / 2, GraphicHeight / 2)
+					Else
+						Steam_CloseOnScreenKeyboard()
+					EndIf
 				EndIf
 				UpdateMenuState()
 			EndIf
