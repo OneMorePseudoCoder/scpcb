@@ -3988,7 +3988,7 @@ Function UpdateEvents()
                     If e\EventState = 0 Then
                         If PlayerRoom = e\room Then e\EventState = 1
                     Else
-                        e\EventState = e\EventState + 1
+                        e\EventState = e\EventState + FPSfactor
                         PositionEntity(Curr106\Collider, EntityX(e\room\Objects[7], True), EntityY(e\room\Objects[7], True), EntityZ(e\room\Objects[7], True))
                         ResetEntity(Curr106\Collider)
                         
@@ -6913,7 +6913,7 @@ Function UpdateEvents()
 							EndIf
 						Else
 							;start a timer for 173 breaking through the window
-							e\EventState = e\EventState + 1
+							e\EventState = e\EventState + FPSfactor
 							dist# = EntityDistance(Collider, e\room\Objects[1])
 							If dist <1.0 Then
 								;if close, increase the timer so that 173 is ready to attack
