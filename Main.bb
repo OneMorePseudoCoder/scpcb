@@ -6626,6 +6626,8 @@ Function DrawGUI()
 				Case "snav", "snav300", "snav310", "snavulti"
 					;[Block]
 					
+					Color 255, 255, 255
+
 					If SelectedItem\itemtemplate\img=0 Then
 						SelectedItem\itemtemplate\img=LoadImage_Strict(SelectedItem\itemtemplate\imgpath)	
 						MaskImage(SelectedItem\itemtemplate\img, 255, 0, 255)
