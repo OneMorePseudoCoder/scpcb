@@ -7730,7 +7730,7 @@ Function CreateMap(loadingstart,loadingcount#)
 		r\Adjacent[2]=Null
 		r\Adjacent[3]=Null
 		For r2.Rooms = Each Rooms
-			If r<>r2 Then
+			If r2\y = 0 And r<>r2 Then
 				If r2\z=r\z Then
 					If (r2\x)=(r\x+8.0) Then
 						r\Adjacent[0]=r2
