@@ -6023,14 +6023,14 @@ Function DrawGUI()
 						
 						strtemp = GetINIString2(iniStr, loc, "sound")
 						If strtemp <> "" Then PlaySound_Strict LoadTempSound(strtemp)
-						
+
 						strtemp = GetINIString2(iniStr, loc, "message")
 						If strtemp <> "" Then Msg = strtemp : MsgTimer = 70*6
-						
-						If GetINIInt2(iniStr, loc, "lethal") Or GetINIInt2(iniStr, loc, "deathtimer") Then 
-							DeathMSG = GetINIString2(iniStr, loc, "deathmessage")
-							If GetINIInt2(iniStr, loc, "lethal") Then Kill()
-						EndIf
+
+						strtemp = GetINIString2(iniStr, loc, "deathmessage")
+						If strtemp <> "" Then DeathMSG = strtemp
+
+						If GetINIInt2(iniStr, loc, "lethal") Then Kill()
 						
 						BlurTimer = Max(BlurTimer + GetINIInt2(iniStr, loc, "blur")*70, 0);*temp
 						CameraShakeTimer = Max(CameraShakeTimer + GetINIString2(iniStr, loc, "camerashake"), 0)
