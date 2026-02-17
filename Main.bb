@@ -7369,14 +7369,15 @@ Function DrawMenu()
 		
 		If PlayerRoom\RoomTemplate\Name$ <> "exit1" And PlayerRoom\RoomTemplate\Name$ <> "gatea"
 			If StopHidingTimer = 0 Then
-				If EntityDistance(Curr173\Collider, Collider)<4.0 Or EntityDistance(Curr106\Collider, Collider)<4.0 Then 
+				If EntityDistance(Curr173\Collider, Collider) < 4.0 Or EntityDistance(Curr106\Collider, Collider) < 4.0 Or EntityDistance(Curr096\Collider, Collider) < 4.0 Then 
 					StopHidingTimer = 1
 				EndIf	
-			ElseIf StopHidingTimer < 40
+			ElseIf StopHidingTimer < 999
 				If KillTimer >= 0 Then 
-					StopHidingTimer = StopHidingTimer+FPSfactor
+					StopHidingTimer = StopHidingTimer+FPSfactor2
 					
-					If StopHidingTimer => 40 Then
+					If StopHidingTimer => 999 Then
+						StopHidingTimer = 0
 						PlaySound_Strict(HorrorSFX(15))
 						Msg = I_Loc\Message_Stophiding
 						MsgTimer = 6*70
@@ -8906,7 +8907,7 @@ Function NullGame(playbuttonsfx%=True)
 	QuickLoadPercent_DisplayTimer# = 0
 	QuickLoad_CurrEvent = Null
 	
-	DeathMSG$=""
+	DeathMSG$ = ""
 	
 	SelectedMap = -1
 	
@@ -8936,7 +8937,7 @@ Function NullGame(playbuttonsfx%=True)
 	Shake = 0
 	CurrSpeed = 0
 	
-	DeathTimer=0
+	DeathTimer = 0
 	
 	HeartBeatVolume = 0
 	
@@ -8973,10 +8974,12 @@ Function NullGame(playbuttonsfx%=True)
 	WearingHazmat = 0
 	WearingVest = 0
 	Wearing714 = 0
+
 	If WearingNightVision Then
 		CameraFogFar = StoredCameraFogFar
 		WearingNightVision = 0
 	EndIf
+
 	I_427\Using = 0
 	I_427\Timer = 0.0
 	
@@ -8990,6 +8993,7 @@ Function NullGame(playbuttonsfx%=True)
 	If Curr173 <> Null Then Curr173\Idle = False
 	
 	MTFtimer = 0
+
 	For i = 0 To 9
 		MTFrooms[i]=Null
 		MTFroomState[i]=0
@@ -9001,8 +9005,9 @@ Function NullGame(playbuttonsfx%=True)
 	Next
 	
 	For i = 0 To MAXACHIEVEMENTS-1
-		Achievements(i)=0
+		Achievements(i) = 0
 	Next
+
 	RefinedItems = 0
 	
 	ConsoleInput = ""
@@ -9019,6 +9024,7 @@ Function NullGame(playbuttonsfx%=True)
 	BlurTimer = 0
 	SuperMan = False
 	SuperManTimer = 0
+	StopHidingTimer = 0
 	Sanity = 0
 	RestoreSanity = True
 	Crouch = False
@@ -9041,6 +9047,7 @@ Function NullGame(playbuttonsfx%=True)
 	For i = 0 To MaxItemAmount - 1
 		Inventory(i) = Null
 	Next
+
 	SelectedItem = Null
 	
 	ClosestButton = 0
@@ -9067,9 +9074,11 @@ Function NullGame(playbuttonsfx%=True)
 	Curr173 = Null
 	Curr106 = Null
 	Curr096 = Null
+
 	For i = 0 To 6
 		MTFrooms[i]=Null
 	Next
+
 	ForestNPC = 0
 	ForestNPCTex = 0
 	
@@ -9105,7 +9114,9 @@ Function NullGame(playbuttonsfx%=True)
 	NTF_1499X# = 0.0
 	NTF_1499Y# = 0.0
 	NTF_1499Z# = 0.0
+
 	Wearing1499% = False
+
 	DeleteChunks()
 	
 	DeleteElevatorObjects()
