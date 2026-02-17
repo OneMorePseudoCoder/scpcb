@@ -6020,7 +6020,6 @@ Function DrawGUI()
 						EndIf
 
 						;Stop
-						
 						strtemp = GetINIString2(iniStr, loc, "sound")
 						If strtemp <> "" Then PlaySound_Strict LoadTempSound(strtemp)
 
@@ -6032,7 +6031,7 @@ Function DrawGUI()
 
 						If GetINIInt2(iniStr, loc, "lethal") Then Kill()
 						
-						BlurTimer = Max(BlurTimer + GetINIInt2(iniStr, loc, "blur")*70, 0);*temp
+						BlurTimer = Max(BlurTimer + GetINIInt2(iniStr, loc, "blur")*70, 0)
 						CameraShakeTimer = Max(CameraShakeTimer + GetINIString2(iniStr, loc, "camerashake"), 0)
 						
 						temp = GetINIInt2(iniStr, loc, "vomit")
@@ -6044,7 +6043,7 @@ Function DrawGUI()
 							EndIf
 						EndIf
 						
-						temp = GetINIInt2(iniStr, loc, "deathtimer")*70
+						temp = GetINIInt2(iniStr, loc, "deathtimer") * 70
 						If temp > 0 Then
 							If DeathTimer = 0 Then
 								DeathTimer = temp
@@ -6053,10 +6052,14 @@ Function DrawGUI()
 							EndIf
 						EndIf
 						
-						Injuries = Max(Injuries + GetINIInt2(iniStr, loc, "damage") + GetINIInt2(iniStr, loc, "injuries"), 0);*temp
-						Bloodloss = Max(Bloodloss + GetINIInt2(iniStr, loc, "blood loss"), 0);*temp
+						Injuries = Max(Injuries + GetINIInt2(iniStr, loc, "damage") + GetINIInt2(iniStr, loc, "injuries"), 0)
+						Bloodloss = Max(Bloodloss + GetINIInt2(iniStr, loc, "blood loss"), 0)
 						
-						If GetINIInt2(iniStr, loc, "stomachache") Then SCP1025state[3]=Max(1, SCP1025state[3])
+						If GetINIInt2(iniStr, loc, "stomachache") = 1 Then
+							SCP1025state[3] = Max(1, SCP1025state[3])
+						ElseIf GetINIInt2(iniStr, loc, "stomachache") = 0 Then
+							SCP1025state[3] = 0
+						EndIf
 						
 						;the state of refined drinks is more than 1.0 (fine setting increases it by 1, very fine doubles it)
 						strtemp = GetINIString2(iniStr, loc, "blink effect")
@@ -10437,7 +10440,7 @@ Function Use294()
 						PlayerRoom\SoundCHN = PlaySound_Strict (LoadTempSound(strtemp))
 					EndIf
 					
-					If GetINIInt2(iniStr, loc, "explosion")=True Then 
+					If GetINIInt2(iniStr, loc, "explosion") = True Then 
 						ExplosionTimer = 135
 						DeathMSG = GetINIString2(iniStr, loc, "deathmessage")
 					EndIf
